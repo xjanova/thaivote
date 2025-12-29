@@ -165,7 +165,6 @@
                         <div class="card-body p-0">
                             <ThailandMap
                                 :election-id="electionId"
-                                :provinces="provinces"
                                 @province-selected="onProvinceSelected"
                                 @constituency-selected="onConstituencySelected"
                             />
@@ -321,7 +320,6 @@ const liveFeed = ref([]);
 // Computed
 const election = computed(() => resultsStore.election);
 const stats = computed(() => resultsStore.stats);
-const provinces = computed(() => resultsStore.provinces);
 
 const sortedResults = computed(() => {
     return [...resultsStore.nationalResults].sort((a, b) => {
@@ -376,7 +374,6 @@ const fetchTrending = async () => {
 // Lifecycle
 onMounted(async () => {
     await resultsStore.fetchElection(props.electionId);
-    await resultsStore.fetchProvinces();
     await fetchNews();
     await fetchTrending();
 
