@@ -1,0 +1,90 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\ElectionController;
+use App\Http\Controllers\Api\ProvinceController;
+use App\Http\Controllers\Api\PartyController;
+use App\Http\Controllers\Api\NewsController;
+use App\Http\Controllers\Api\ConstituencyController;
+use App\Http\Controllers\Api\PartyApiController;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+*/
+
+// Public Election Routes
+Route::prefix('elections')->group(function () {
+    Route::get('/', [ElectionController::class, 'index']);
+    Route::get('/active', [ElectionController::class, 'active']);
+    Route::get('/{election}', [ElectionController::class, 'show']);
+    Route::get('/{election}/stats', [ElectionController::class, 'stats']);
+    Route::get('/{election}/national-results', [ElectionController::class, 'nationalResults']);
+    Route::get('/{election}/timeline', [ElectionController::class, 'timeline']);
+
+    // Province results within election
+    Route::get('/{electionId}/provinces/{province}/results', [ProvinceController::class, 'results']);
+
+    // Constituency results within election
+    Route::get('/{electionId}/constituencies/{constituency}/results', [ConstituencyController::class, 'results']);
+
+    // Party results within election
+    Route::get('/{electionId}/parties/{party}/results', [PartyController::class, 'results']);
+    Route::get('/{electionId}/parties/{party}/candidates', [PartyController::class, 'candidates']);
+});
+
+// Province Routes
+Route::prefix('provinces')->group(function () {
+    Route::get('/', [ProvinceController::class, 'index']);
+    Route::get('/geojson', [ProvinceController::class, 'geoJson']);
+    Route::get('/region/{region}', [ProvinceController::class, 'byRegion']);
+    Route::get('/{province}', [ProvinceController::class, 'show']);
+    Route::get('/{province}/constituencies', [ConstituencyController::class, 'index']);
+});
+
+// Party Routes
+Route::prefix('parties')->group(function () {
+    Route::get('/', [PartyController::class, 'index']);
+    Route::get('/trending', [PartyController::class, 'trending']);
+    Route::get('/{party}', [PartyController::class, 'show']);
+    Route::get('/{party}/posts', [PartyController::class, 'posts']);
+    Route::get('/{party}/news', [PartyController::class, 'news']);
+});
+
+// News Routes
+Route::prefix('news')->group(function () {
+    Route::get('/', [NewsController::class, 'index']);
+    Route::get('/breaking', [NewsController::class, 'breaking']);
+    Route::get('/featured', [NewsController::class, 'featured']);
+    Route::get('/sources', [NewsController::class, 'sources']);
+    Route::get('/sources/{source}', [NewsController::class, 'bySource']);
+    Route::get('/{article}', [NewsController::class, 'show']);
+});
+
+// Party API (Authenticated)
+Route::prefix('party-api')->group(function () {
+    Route::post('/authenticate', [PartyApiController::class, 'authenticate']);
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/profile', [PartyApiController::class, 'profile']);
+        Route::put('/profile', [PartyApiController::class, 'updateProfile']);
+        Route::post('/results', [PartyApiController::class, 'submitResults']);
+        Route::get('/feeds', [PartyApiController::class, 'getFeeds']);
+        Route::post('/feeds', [PartyApiController::class, 'addFeed']);
+        Route::post('/posts', [PartyApiController::class, 'submitPost']);
+        Route::get('/analytics', [PartyApiController::class, 'getAnalytics']);
+    });
+});
+
+// Webhook for external data sources
+Route::prefix('webhooks')->middleware('throttle:100,1')->group(function () {
+    Route::post('/results/{source}', function ($source) {
+        // Handle incoming results from external sources
+        // This would be validated with a secret key
+    });
+
+    Route::post('/news/{source}', function ($source) {
+        // Handle incoming news from RSS/API sources
+    });
+});

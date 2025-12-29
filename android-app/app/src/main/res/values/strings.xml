@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ThaiVote</string>
+    <string name="title_dashboard">หน้าแรก</string>
+    <string name="title_map">แผนที่</string>
+    <string name="title_news">ข่าว</string>
+    <string name="title_settings">ตั้งค่า</string>
+
+    <string name="label_live">LIVE</string>
+    <string name="label_counting_progress">นับคะแนนแล้ว</string>
+    <string name="label_total_votes">ผู้มาใช้สิทธิ์</string>
+    <string name="label_seats">ที่นั่ง</string>
+    <string name="label_votes">คะแนน</string>
+    <string name="label_party_results">ผลคะแนนรายพรรค</string>
+    <string name="label_breaking_news">ข่าวด่วน</string>
+    <string name="label_view_all">ดูทั้งหมด</string>
+    <string name="label_refresh">รีเฟรช</string>
+    <string name="label_last_updated">อัปเดตล่าสุด: %s</string>
+
+    <string name="error_network">ไม่สามารถเชื่อมต่อได้ กรุณาลองใหม่</string>
+    <string name="error_loading">เกิดข้อผิดพลาดในการโหลดข้อมูล</string>
+</resources>
