@@ -1,18 +1,60 @@
+# EditorConfig - https://editorconfig.org
+# ThaiVote Project Configuration
+
 root = true
 
+# Default for all files
 [*]
 charset = utf-8
 end_of_line = lf
-indent_size = 4
-indent_style = space
 insert_final_newline = true
 trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
 
-[*.md]
-trim_trailing_whitespace = false
+# PHP files
+[*.php]
+indent_size = 4
 
+# JavaScript/TypeScript files
+[*.{js,jsx,ts,tsx,cjs,mjs}]
+indent_size = 4
+
+# Vue files
+[*.vue]
+indent_size = 4
+
+# JSON files
+[*.json]
+indent_size = 2
+
+# YAML files
 [*.{yml,yaml}]
 indent_size = 2
 
+# Markdown files
+[*.md]
+trim_trailing_whitespace = false
+indent_size = 2
+
+# Blade templates
+[*.blade.php]
+indent_size = 4
+
+# CSS/SCSS files
+[*.{css,scss,sass,less}]
+indent_size = 4
+
+# Shell scripts
+[*.sh]
+indent_size = 4
+
+# Makefiles (require tabs)
+[Makefile]
+indent_style = tab
+
+# Docker Compose
 [compose.yaml]
+indent_size = 4
+[docker-compose.yml]
 indent_size = 4
