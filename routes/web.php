@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Install\InstallController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -8,6 +9,20 @@ use Inertia\Inertia;
 | Web Routes
 |--------------------------------------------------------------------------
 */
+
+// Installation Wizard Routes
+Route::prefix('install')->name('install.')->group(function () {
+    Route::get('/', [InstallController::class, 'checkInstallation']);
+    Route::get('/welcome', [InstallController::class, 'welcome'])->name('welcome');
+    Route::get('/requirements', [InstallController::class, 'requirements'])->name('requirements');
+    Route::get('/database', [InstallController::class, 'database'])->name('database');
+    Route::post('/database', [InstallController::class, 'databaseStore'])->name('database.store');
+    Route::get('/application', [InstallController::class, 'application'])->name('application');
+    Route::post('/application', [InstallController::class, 'applicationStore'])->name('application.store');
+    Route::get('/admin', [InstallController::class, 'admin'])->name('admin');
+    Route::post('/admin', [InstallController::class, 'adminStore'])->name('admin.store');
+    Route::get('/complete', [InstallController::class, 'complete'])->name('complete');
+});
 
 // Public Routes
 Route::get('/', function () {
