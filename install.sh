@@ -1,12 +1,19 @@
 #!/bin/bash
 #===============================================================================
 # ThaiVote - Election Results Tracker
-# Installation Script v2.0
+# Installation Script v3.0
 #
-# ติดตั้งครั้งแรกสำหรับ ThaiVote (MySQL Default)
+# Usage:
+#   ./install.sh              # Interactive installation
+#   ./install.sh --auto       # Non-interactive with defaults (SQLite)
+#   ./install.sh --mysql      # Non-interactive with MySQL
+#   ./install.sh --help       # Show help
 #===============================================================================
 
 set -e
+
+# Script version
+VERSION="3.0"
 
 # Colors
 RED='\033[0;31m'
@@ -15,32 +22,87 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
+WHITE='\033[1;37m'
 NC='\033[0m'
 
+# Get script directory
 APP_DIR=$(cd "$(dirname "$0")" && pwd)
 
-echo -e "${BLUE}╔════════════════════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║${NC}                                                                            ${BLUE}║${NC}"
-echo -e "${BLUE}║${NC}   ${PURPLE}████████╗██╗  ██╗ █████╗ ██╗██╗   ██╗ ██████╗ ████████╗███████╗${NC}        ${BLUE}║${NC}"
-echo -e "${BLUE}║${NC}   ${PURPLE}╚══██╔══╝██║  ██║██╔══██╗██║██║   ██║██╔═══██╗╚══██╔══╝██╔════╝${NC}        ${BLUE}║${NC}"
-echo -e "${BLUE}║${NC}   ${PURPLE}   ██║   ███████║███████║██║██║   ██║██║   ██║   ██║   █████╗${NC}          ${BLUE}║${NC}"
-echo -e "${BLUE}║${NC}   ${PURPLE}   ██║   ██╔══██║██╔══██║██║╚██╗ ██╔╝██║   ██║   ██║   ██╔══╝${NC}          ${BLUE}║${NC}"
-echo -e "${BLUE}║${NC}   ${PURPLE}   ██║   ██║  ██║██║  ██║██║ ╚████╔╝ ╚██████╔╝   ██║   ███████╗${NC}        ${BLUE}║${NC}"
-echo -e "${BLUE}║${NC}   ${PURPLE}   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝    ╚═╝   ╚══════╝${NC}        ${BLUE}║${NC}"
-echo -e "${BLUE}║${NC}                                                                            ${BLUE}║${NC}"
-echo -e "${BLUE}║${NC}                    ${CYAN}Election Results Tracker${NC}                              ${BLUE}║${NC}"
-echo -e "${BLUE}║${NC}                    ${GREEN}Installation Script v2.0${NC}                              ${BLUE}║${NC}"
-echo -e "${BLUE}║${NC}                                                                            ${BLUE}║${NC}"
-echo -e "${BLUE}╚════════════════════════════════════════════════════════════════════════════╝${NC}"
-echo ""
+# Default values
+AUTO_MODE=false
+USE_MYSQL=false
+DB_HOST="127.0.0.1"
+DB_PORT="3306"
+DB_NAME="thaivote"
+DB_USER="root"
+DB_PASS=""
+APP_URL="http://localhost"
+APP_ENV="local"
+SKIP_FRONTEND=false
+SKIP_ADMIN=false
+VERBOSE=false
+
+#===============================================================================
+# Helper Functions
+#===============================================================================
+
+show_banner() {
+    clear
+    echo -e "${BLUE}╔════════════════════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}║${NC}                                                                            ${BLUE}║${NC}"
+    echo -e "${BLUE}║${NC}   ${PURPLE}████████╗██╗  ██╗ █████╗ ██╗██╗   ██╗ ██████╗ ████████╗███████╗${NC}        ${BLUE}║${NC}"
+    echo -e "${BLUE}║${NC}   ${PURPLE}╚══██╔══╝██║  ██║██╔══██╗██║██║   ██║██╔═══██╗╚══██╔══╝██╔════╝${NC}        ${BLUE}║${NC}"
+    echo -e "${BLUE}║${NC}   ${PURPLE}   ██║   ███████║███████║██║██║   ██║██║   ██║   ██║   █████╗${NC}          ${BLUE}║${NC}"
+    echo -e "${BLUE}║${NC}   ${PURPLE}   ██║   ██╔══██║██╔══██║██║╚██╗ ██╔╝██║   ██║   ██║   ██╔══╝${NC}          ${BLUE}║${NC}"
+    echo -e "${BLUE}║${NC}   ${PURPLE}   ██║   ██║  ██║██║  ██║██║ ╚████╔╝ ╚██████╔╝   ██║   ███████╗${NC}        ${BLUE}║${NC}"
+    echo -e "${BLUE}║${NC}   ${PURPLE}   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝    ╚═╝   ╚══════╝${NC}        ${BLUE}║${NC}"
+    echo -e "${BLUE}║${NC}                                                                            ${BLUE}║${NC}"
+    echo -e "${BLUE}║${NC}                    ${CYAN}Election Results Tracker${NC}                              ${BLUE}║${NC}"
+    echo -e "${BLUE}║${NC}                    ${GREEN}Installation Script v${VERSION}${NC}                              ${BLUE}║${NC}"
+    echo -e "${BLUE}║${NC}                                                                            ${BLUE}║${NC}"
+    echo -e "${BLUE}╚════════════════════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+}
+
+show_help() {
+    echo -e "${CYAN}ThaiVote Installation Script v${VERSION}${NC}"
+    echo ""
+    echo "Usage: ./install.sh [OPTIONS]"
+    echo ""
+    echo "Options:"
+    echo "  --auto              Non-interactive mode with SQLite (fastest)"
+    echo "  --mysql             Non-interactive mode with MySQL"
+    echo "  --db-host=HOST      MySQL host (default: 127.0.0.1)"
+    echo "  --db-port=PORT      MySQL port (default: 3306)"
+    echo "  --db-name=NAME      Database name (default: thaivote)"
+    echo "  --db-user=USER      Database username (default: root)"
+    echo "  --db-pass=PASS      Database password"
+    echo "  --app-url=URL       Application URL (default: http://localhost)"
+    echo "  --env=ENV           Environment: local/production (default: local)"
+    echo "  --skip-frontend     Skip frontend build"
+    echo "  --skip-admin        Skip admin user creation"
+    echo "  --verbose           Show detailed output"
+    echo "  --help, -h          Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  ./install.sh                                    # Interactive mode"
+    echo "  ./install.sh --auto                             # Quick install with SQLite"
+    echo "  ./install.sh --mysql --db-pass=secret           # MySQL with password"
+    echo "  ./install.sh --auto --app-url=https://vote.th   # Custom URL"
+    echo ""
+}
 
 log() {
     echo -e "${GREEN}[✓]${NC} $1"
 }
 
+log_info() {
+    echo -e "${BLUE}[i]${NC} $1"
+}
+
 log_step() {
     echo -e "\n${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${PURPLE}📌 STEP $1:${NC} $2"
+    echo -e "${PURPLE}📌 STEP $1:${NC} ${WHITE}$2${NC}"
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
 }
 
@@ -52,94 +114,313 @@ log_error() {
     echo -e "${RED}[✗]${NC} $1"
 }
 
+log_debug() {
+    if [ "$VERBOSE" = true ]; then
+        echo -e "${CYAN}[DEBUG]${NC} $1"
+    fi
+}
+
+spinner() {
+    local pid=$1
+    local delay=0.1
+    local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+        local temp=${spinstr#?}
+        printf " ${CYAN}%c${NC}  " "$spinstr"
+        local spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
+        printf "\b\b\b\b"
+    done
+    printf "    \b\b\b\b"
+}
+
+run_cmd() {
+    local cmd="$1"
+    local msg="$2"
+
+    if [ "$VERBOSE" = true ]; then
+        echo -e "${BLUE}[>]${NC} $msg"
+        eval "$cmd"
+    else
+        echo -ne "${BLUE}[>]${NC} $msg "
+        if eval "$cmd" > /tmp/install_output.log 2>&1; then
+            echo -e "${GREEN}✓${NC}"
+            return 0
+        else
+            echo -e "${RED}✗${NC}"
+            echo -e "${RED}Error output:${NC}"
+            cat /tmp/install_output.log
+            return 1
+        fi
+    fi
+}
+
+check_command() {
+    command -v "$1" &> /dev/null
+}
+
+confirm() {
+    local prompt="$1"
+    local default="${2:-Y}"
+
+    if [ "$AUTO_MODE" = true ]; then
+        return 0
+    fi
+
+    if [ "$default" = "Y" ]; then
+        read -p "$prompt [Y/n]: " response
+        response=${response:-Y}
+    else
+        read -p "$prompt [y/N]: " response
+        response=${response:-N}
+    fi
+
+    [[ "$response" =~ ^[Yy]$ ]]
+}
+
+prompt_input() {
+    local prompt="$1"
+    local default="$2"
+    local var_name="$3"
+    local is_password="${4:-false}"
+
+    if [ "$AUTO_MODE" = true ]; then
+        eval "$var_name=\"$default\""
+        return
+    fi
+
+    if [ "$is_password" = true ]; then
+        read -sp "$prompt (default: hidden): " value
+        echo ""
+    else
+        read -p "$prompt (default: $default): " value
+    fi
+
+    eval "$var_name=\"${value:-$default}\""
+}
+
+#===============================================================================
+# Parse Arguments
+#===============================================================================
+
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --auto)
+                AUTO_MODE=true
+                shift
+                ;;
+            --mysql)
+                AUTO_MODE=true
+                USE_MYSQL=true
+                shift
+                ;;
+            --db-host=*)
+                DB_HOST="${1#*=}"
+                shift
+                ;;
+            --db-port=*)
+                DB_PORT="${1#*=}"
+                shift
+                ;;
+            --db-name=*)
+                DB_NAME="${1#*=}"
+                shift
+                ;;
+            --db-user=*)
+                DB_USER="${1#*=}"
+                shift
+                ;;
+            --db-pass=*)
+                DB_PASS="${1#*=}"
+                shift
+                ;;
+            --app-url=*)
+                APP_URL="${1#*=}"
+                shift
+                ;;
+            --env=*)
+                APP_ENV="${1#*=}"
+                shift
+                ;;
+            --skip-frontend)
+                SKIP_FRONTEND=true
+                shift
+                ;;
+            --skip-admin)
+                SKIP_ADMIN=true
+                shift
+                ;;
+            --verbose|-v)
+                VERBOSE=true
+                shift
+                ;;
+            --help|-h)
+                show_help
+                exit 0
+                ;;
+            *)
+                log_error "Unknown option: $1"
+                echo "Use --help to see available options"
+                exit 1
+                ;;
+        esac
+    done
+}
+
 #===============================================================================
 # Check Requirements
 #===============================================================================
 
-log_step "1" "Checking System Requirements"
+check_requirements() {
+    log_step "1" "Checking System Requirements"
 
-# Check PHP
-if command -v php &> /dev/null; then
-    PHP_VERSION=$(php -r "echo PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION;")
-    log "PHP $PHP_VERSION installed"
+    local has_errors=false
 
-    # Check required PHP extensions
-    REQUIRED_EXTENSIONS=("pdo" "pdo_mysql" "mbstring" "openssl" "tokenizer" "xml" "ctype" "json" "bcmath" "curl")
-    MISSING_EXTENSIONS=()
+    # Check PHP
+    if check_command php; then
+        PHP_VERSION=$(php -r "echo PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION;")
+        PHP_MAJOR=$(php -r "echo PHP_MAJOR_VERSION;")
+        PHP_MINOR=$(php -r "echo PHP_MINOR_VERSION;")
 
-    for ext in "${REQUIRED_EXTENSIONS[@]}"; do
-        if php -m | grep -qi "^${ext}$"; then
-            log "PHP extension: ${ext} ✓"
+        if [ "$PHP_MAJOR" -ge 8 ] && [ "$PHP_MINOR" -ge 2 ]; then
+            log "PHP ${PHP_VERSION} ✓"
         else
-            log_warning "PHP extension missing: ${ext}"
-            MISSING_EXTENSIONS+=("${ext}")
+            log_error "PHP ${PHP_VERSION} (requires 8.2+)"
+            has_errors=true
         fi
-    done
 
-    if [ ${#MISSING_EXTENSIONS[@]} -gt 0 ]; then
-        echo ""
-        log_warning "Missing extensions: ${MISSING_EXTENSIONS[*]}"
-        echo "Install with: sudo apt install php-${MISSING_EXTENSIONS[*]// / php-}"
+        # Check PHP extensions
+        local REQUIRED_EXTENSIONS=("pdo" "mbstring" "openssl" "tokenizer" "xml" "ctype" "json" "bcmath" "curl" "fileinfo")
+        local MISSING_EXTENSIONS=()
+
+        for ext in "${REQUIRED_EXTENSIONS[@]}"; do
+            if php -m 2>/dev/null | grep -qi "^${ext}$"; then
+                log_debug "PHP extension: ${ext} ✓"
+            else
+                MISSING_EXTENSIONS+=("$ext")
+            fi
+        done
+
+        # Check database extensions
+        if php -m 2>/dev/null | grep -qi "^pdo_mysql$"; then
+            log "PHP PDO MySQL extension ✓"
+        else
+            log_warning "PHP PDO MySQL extension not found (needed for MySQL)"
+        fi
+
+        if php -m 2>/dev/null | grep -qi "^pdo_sqlite$"; then
+            log "PHP PDO SQLite extension ✓"
+        else
+            log_warning "PHP PDO SQLite extension not found (needed for SQLite)"
+        fi
+
+        if [ ${#MISSING_EXTENSIONS[@]} -gt 0 ]; then
+            log_warning "Missing PHP extensions: ${MISSING_EXTENSIONS[*]}"
+            echo -e "  ${CYAN}Install with:${NC} sudo apt install ${MISSING_EXTENSIONS[*]/#/php-}"
+        fi
+    else
+        log_error "PHP is not installed"
+        echo -e "  ${CYAN}Install with:${NC} sudo apt install php8.2 php8.2-cli php8.2-common"
+        has_errors=true
     fi
-else
-    log_error "PHP is not installed"
-    echo "Please install PHP 8.2 or higher"
-    exit 1
-fi
 
-# Check MySQL
-if command -v mysql &> /dev/null; then
-    MYSQL_VERSION=$(mysql --version | grep -oP '\d+\.\d+\.\d+' | head -1)
-    log "MySQL ${MYSQL_VERSION} installed"
-else
-    log_warning "MySQL client not found"
-fi
+    # Check Composer
+    if check_command composer; then
+        COMPOSER_VERSION=$(composer --version 2>/dev/null | grep -oP '\d+\.\d+\.\d+' | head -1)
+        log "Composer ${COMPOSER_VERSION} ✓"
+    else
+        log_warning "Composer is not installed"
+        if confirm "Install Composer now?"; then
+            echo "Installing Composer..."
+            curl -sS https://getcomposer.org/installer | php
+            sudo mv composer.phar /usr/local/bin/composer
+            log "Composer installed"
+        else
+            has_errors=true
+        fi
+    fi
 
-# Check Composer
-if command -v composer &> /dev/null; then
-    log "Composer installed"
-else
-    log_error "Composer is not installed"
-    echo "Installing Composer..."
-    curl -sS https://getcomposer.org/installer | php
-    sudo mv composer.phar /usr/local/bin/composer
-fi
+    # Check Node.js
+    if check_command node; then
+        NODE_VERSION=$(node --version)
+        log "Node.js ${NODE_VERSION} ✓"
+    else
+        log_warning "Node.js is not installed (required for frontend)"
+        if [ "$SKIP_FRONTEND" = false ]; then
+            echo -e "  ${CYAN}Install with:${NC} curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && sudo apt install nodejs"
+        fi
+    fi
 
-# Check Node.js
-if command -v node &> /dev/null; then
-    NODE_VERSION=$(node --version)
-    log "Node.js ${NODE_VERSION} installed"
-else
-    log_warning "Node.js is not installed (recommended for frontend)"
-fi
+    # Check npm
+    if check_command npm; then
+        NPM_VERSION=$(npm --version)
+        log "npm ${NPM_VERSION} ✓"
+    else
+        if [ "$SKIP_FRONTEND" = false ]; then
+            log_warning "npm is not installed"
+        fi
+    fi
 
-# Check npm
-if command -v npm &> /dev/null; then
-    NPM_VERSION=$(npm --version)
-    log "npm ${NPM_VERSION} installed"
-else
-    log_warning "npm is not installed"
-fi
+    # Check MySQL (optional)
+    if check_command mysql; then
+        MYSQL_VERSION=$(mysql --version 2>/dev/null | grep -oP '\d+\.\d+\.\d+' | head -1 || echo "unknown")
+        log "MySQL client ${MYSQL_VERSION} ✓"
+    else
+        log_info "MySQL client not found (optional for SQLite mode)"
+    fi
+
+    if [ "$has_errors" = true ]; then
+        echo ""
+        log_error "Some requirements are missing. Please install them and try again."
+        exit 1
+    fi
+}
 
 #===============================================================================
-# Installation Mode Selection
+# Choose Installation Mode
 #===============================================================================
 
-echo ""
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${PURPLE}Installation Mode${NC}"
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo ""
-echo "  1) CLI Installation (Configure here in terminal)"
-echo "  2) Web Wizard (Configure via browser)"
-echo ""
-read -p "Select installation mode [1/2] (default: 1): " INSTALL_MODE
-INSTALL_MODE=${INSTALL_MODE:-1}
+choose_installation_mode() {
+    if [ "$AUTO_MODE" = true ]; then
+        return
+    fi
 
-if [ "$INSTALL_MODE" = "2" ]; then
-    #===============================================================================
-    # Web Wizard Mode
-    #===============================================================================
+    echo ""
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${PURPLE}Choose Installation Mode${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    echo "  1) ${GREEN}Quick Install (SQLite)${NC} - Fastest, no database setup needed"
+    echo "  2) ${BLUE}Full Install (MySQL)${NC}   - Production-ready with MySQL"
+    echo "  3) ${PURPLE}Web Wizard${NC}             - Configure via browser interface"
+    echo ""
+    read -p "Select mode [1/2/3] (default: 1): " INSTALL_MODE
+    INSTALL_MODE=${INSTALL_MODE:-1}
+
+    case $INSTALL_MODE in
+        1)
+            USE_MYSQL=false
+            ;;
+        2)
+            USE_MYSQL=true
+            ;;
+        3)
+            start_web_wizard
+            exit 0
+            ;;
+        *)
+            log_error "Invalid option"
+            exit 1
+            ;;
+    esac
+}
+
+#===============================================================================
+# Web Wizard Mode
+#===============================================================================
+
+start_web_wizard() {
     log_step "WEB" "Starting Web Installation Wizard"
 
     cd "${APP_DIR}"
@@ -151,18 +432,19 @@ if [ "$INSTALL_MODE" = "2" ]; then
     fi
 
     # Install dependencies
-    echo "Installing dependencies..."
-    composer install --no-interaction --quiet
+    run_cmd "composer install --no-interaction --quiet" "Installing PHP dependencies..."
 
-    if command -v npm &> /dev/null; then
-        npm install --silent
-        npm run build 2>/dev/null || true
+    if check_command npm; then
+        run_cmd "npm install --silent 2>/dev/null" "Installing frontend dependencies..."
+        run_cmd "npm run build 2>/dev/null || true" "Building frontend..."
     fi
 
     # Generate key
-    php artisan key:generate --force
+    php artisan key:generate --force --quiet
+    log "Application key generated"
 
     # Create installer flag
+    mkdir -p "${APP_DIR}/storage/app"
     touch "${APP_DIR}/storage/app/installing"
 
     echo ""
@@ -170,7 +452,7 @@ if [ "$INSTALL_MODE" = "2" ]; then
     echo -e "${GREEN}║${NC}                                                                            ${GREEN}║${NC}"
     echo -e "${GREEN}║${NC}   ${CYAN}Web Installation Wizard is ready!${NC}                                       ${GREEN}║${NC}"
     echo -e "${GREEN}║${NC}                                                                            ${GREEN}║${NC}"
-    echo -e "${GREEN}║${NC}   Start the development server:                                            ${GREEN}║${NC}"
+    echo -e "${GREEN}║${NC}   Start the server with:                                                   ${GREEN}║${NC}"
     echo -e "${GREEN}║${NC}   ${YELLOW}php artisan serve${NC}                                                        ${GREEN}║${NC}"
     echo -e "${GREEN}║${NC}                                                                            ${GREEN}║${NC}"
     echo -e "${GREEN}║${NC}   Then open your browser:                                                  ${GREEN}║${NC}"
@@ -178,253 +460,487 @@ if [ "$INSTALL_MODE" = "2" ]; then
     echo -e "${GREEN}║${NC}                                                                            ${GREEN}║${NC}"
     echo -e "${GREEN}╚════════════════════════════════════════════════════════════════════════════╝${NC}"
     echo ""
-
-    exit 0
-fi
+}
 
 #===============================================================================
-# CLI Installation Mode
+# Setup Environment
 #===============================================================================
 
-log_step "2" "Setting Up Environment"
+setup_environment() {
+    log_step "2" "Setting Up Environment"
 
-cd "${APP_DIR}"
+    cd "${APP_DIR}"
 
-# Create .env from example if it doesn't exist
-if [ ! -f ".env" ]; then
-    if [ -f ".env.example" ]; then
-        cp .env.example .env
-        log "Created .env from .env.example"
+    # Create .env from example if it doesn't exist
+    if [ ! -f ".env" ]; then
+        if [ -f ".env.example" ]; then
+            cp .env.example .env
+            log "Created .env from .env.example"
+        else
+            log_error ".env.example not found"
+            exit 1
+        fi
     else
-        log_error ".env.example not found"
-        exit 1
+        log ".env already exists"
+        if confirm "Overwrite existing .env file?" "N"; then
+            cp .env.example .env
+            log "Overwritten .env file"
+        fi
     fi
-else
-    log ".env already exists"
-fi
+}
 
 #===============================================================================
-# Database Configuration (MySQL Default)
+# Configure Database
 #===============================================================================
 
-echo ""
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${PURPLE}MySQL Database Configuration${NC}"
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo ""
+configure_database() {
+    log_step "3" "Database Configuration"
 
-read -p "Database host (default: 127.0.0.1): " DB_HOST
-DB_HOST=${DB_HOST:-127.0.0.1}
-
-read -p "Database port (default: 3306): " DB_PORT
-DB_PORT=${DB_PORT:-3306}
-
-read -p "Database name (default: thaivote): " DB_NAME
-DB_NAME=${DB_NAME:-thaivote}
-
-read -p "Database username (default: root): " DB_USER
-DB_USER=${DB_USER:-root}
-
-read -sp "Database password: " DB_PASS
-echo ""
-
-# Update .env file
-sed -i "s/DB_CONNECTION=.*/DB_CONNECTION=mysql/" .env
-sed -i "s/DB_HOST=.*/DB_HOST=${DB_HOST}/" .env
-sed -i "s/DB_PORT=.*/DB_PORT=${DB_PORT}/" .env
-sed -i "s/DB_DATABASE=.*/DB_DATABASE=${DB_NAME}/" .env
-sed -i "s/DB_USERNAME=.*/DB_USERNAME=${DB_USER}/" .env
-sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=${DB_PASS}/" .env
-
-log "MySQL database configured"
-
-# Test connection and create database if needed
-echo ""
-echo "Testing database connection..."
-if mysql -h "${DB_HOST}" -P "${DB_PORT}" -u "${DB_USER}" -p"${DB_PASS}" -e "SELECT 1" &>/dev/null; then
-    log "Database connection successful"
-
-    # Create database if not exists
-    mysql -h "${DB_HOST}" -P "${DB_PORT}" -u "${DB_USER}" -p"${DB_PASS}" -e "CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null
-    log "Database '${DB_NAME}' ready"
-else
-    log_warning "Could not connect to database. Please ensure MySQL is running and credentials are correct."
-    read -p "Continue anyway? [y/N]: " CONTINUE
-    if [[ ! "$CONTINUE" =~ ^[Yy]$ ]]; then
-        exit 1
+    if [ "$USE_MYSQL" = true ]; then
+        configure_mysql
+    else
+        configure_sqlite
     fi
-fi
+}
+
+configure_sqlite() {
+    echo -e "${GREEN}Using SQLite database${NC} (simple, no setup required)"
+    echo ""
+
+    # Create database directory and file
+    mkdir -p "${APP_DIR}/database"
+    touch "${APP_DIR}/database/database.sqlite"
+
+    # Update .env
+    sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env
+    # Comment out MySQL settings
+    sed -i 's/^DB_HOST=.*/#DB_HOST=127.0.0.1/' .env
+    sed -i 's/^DB_PORT=.*/#DB_PORT=3306/' .env
+    sed -i 's/^DB_DATABASE=.*/#DB_DATABASE=thaivote/' .env
+    sed -i 's/^DB_USERNAME=.*/#DB_USERNAME=root/' .env
+    sed -i 's/^DB_PASSWORD=.*/#DB_PASSWORD=/' .env
+
+    log "SQLite database configured"
+}
+
+configure_mysql() {
+    echo -e "${BLUE}Configuring MySQL database${NC}"
+    echo ""
+
+    prompt_input "Database host" "$DB_HOST" "DB_HOST"
+    prompt_input "Database port" "$DB_PORT" "DB_PORT"
+    prompt_input "Database name" "$DB_NAME" "DB_NAME"
+    prompt_input "Database username" "$DB_USER" "DB_USER"
+    prompt_input "Database password" "$DB_PASS" "DB_PASS" true
+
+    # Update .env file
+    sed -i "s/^DB_CONNECTION=.*/DB_CONNECTION=mysql/" .env
+    sed -i "s/^#*DB_HOST=.*/DB_HOST=${DB_HOST}/" .env
+    sed -i "s/^#*DB_PORT=.*/DB_PORT=${DB_PORT}/" .env
+    sed -i "s/^#*DB_DATABASE=.*/DB_DATABASE=${DB_NAME}/" .env
+    sed -i "s/^#*DB_USERNAME=.*/DB_USERNAME=${DB_USER}/" .env
+    sed -i "s/^#*DB_PASSWORD=.*/DB_PASSWORD=${DB_PASS}/" .env
+
+    log "MySQL configuration saved"
+
+    # Test connection
+    echo ""
+    echo "Testing database connection..."
+
+    if [ -n "$DB_PASS" ]; then
+        MYSQL_CMD="mysql -h \"${DB_HOST}\" -P \"${DB_PORT}\" -u \"${DB_USER}\" -p\"${DB_PASS}\""
+    else
+        MYSQL_CMD="mysql -h \"${DB_HOST}\" -P \"${DB_PORT}\" -u \"${DB_USER}\""
+    fi
+
+    if eval "$MYSQL_CMD -e 'SELECT 1'" &>/dev/null; then
+        log "Database connection successful"
+
+        # Create database if not exists
+        if eval "$MYSQL_CMD -e \"CREATE DATABASE IF NOT EXISTS \\\`${DB_NAME}\\\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\"" 2>/dev/null; then
+            log "Database '${DB_NAME}' ready"
+        fi
+    else
+        log_warning "Could not connect to database"
+        echo ""
+        if ! confirm "Continue anyway? (You can configure database later)" "Y"; then
+            exit 1
+        fi
+    fi
+}
 
 #===============================================================================
-# App Configuration
+# Configure Application
 #===============================================================================
 
-echo ""
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${PURPLE}Application Configuration${NC}"
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo ""
+configure_application() {
+    log_step "4" "Application Configuration"
 
-read -p "App URL (default: http://localhost): " APP_URL
-APP_URL=${APP_URL:-http://localhost}
-sed -i "s|APP_URL=.*|APP_URL=${APP_URL}|" .env
+    prompt_input "App URL" "$APP_URL" "APP_URL"
+    prompt_input "Environment (local/production)" "$APP_ENV" "APP_ENV"
 
-read -p "App Environment [local/production] (default: local): " APP_ENV
-APP_ENV=${APP_ENV:-local}
-sed -i "s/APP_ENV=.*/APP_ENV=${APP_ENV}/" .env
+    # Update .env
+    sed -i "s|^APP_URL=.*|APP_URL=${APP_URL}|" .env
+    sed -i "s/^APP_ENV=.*/APP_ENV=${APP_ENV}/" .env
+    sed -i "s/^APP_NAME=.*/APP_NAME=ThaiVote/" .env
 
-if [ "${APP_ENV}" = "production" ]; then
-    sed -i "s/APP_DEBUG=.*/APP_DEBUG=false/" .env
-else
-    sed -i "s/APP_DEBUG=.*/APP_DEBUG=true/" .env
-fi
+    if [ "${APP_ENV}" = "production" ]; then
+        sed -i "s/^APP_DEBUG=.*/APP_DEBUG=false/" .env
+    else
+        sed -i "s/^APP_DEBUG=.*/APP_DEBUG=true/" .env
+    fi
 
-log "Application configured"
+    log "Application configured"
+}
 
 #===============================================================================
 # Install Dependencies
 #===============================================================================
 
-log_step "3" "Installing PHP Dependencies"
+install_dependencies() {
+    log_step "5" "Installing Dependencies"
 
-composer install --no-interaction
-log "Composer dependencies installed"
+    cd "${APP_DIR}"
 
-log_step "4" "Installing Frontend Dependencies"
+    # Composer install
+    if [ "$APP_ENV" = "production" ]; then
+        run_cmd "composer install --no-interaction --no-dev --optimize-autoloader" "Installing PHP dependencies (production)..."
+    else
+        run_cmd "composer install --no-interaction" "Installing PHP dependencies..."
+    fi
 
-if command -v npm &> /dev/null; then
-    npm install
-    log "NPM dependencies installed"
-else
-    log_warning "Skipping NPM dependencies (npm not found)"
-fi
-
-#===============================================================================
-# Generate Keys and Setup
-#===============================================================================
-
-log_step "5" "Application Setup"
-
-# Generate application key
-php artisan key:generate
-log "Application key generated"
-
-# Create storage link
-php artisan storage:link 2>/dev/null || log_warning "Storage link already exists"
-log "Storage link created"
-
-# Set permissions
-chmod -R 775 storage bootstrap/cache
-log "Permissions set"
+    # NPM install
+    if [ "$SKIP_FRONTEND" = false ] && check_command npm; then
+        run_cmd "npm install" "Installing frontend dependencies..."
+    else
+        log_info "Skipping frontend dependencies"
+    fi
+}
 
 #===============================================================================
-# Database Setup
+# Setup Application
 #===============================================================================
 
-log_step "6" "Database Setup"
+setup_application() {
+    log_step "6" "Application Setup"
 
-# Run migrations
-php artisan migrate --force
-log "Database migrations completed"
+    cd "${APP_DIR}"
 
-# Ask about seeding
-read -p "Run database seeders? [y/N]: " RUN_SEED
-if [[ "$RUN_SEED" =~ ^[Yy]$ ]]; then
-    php artisan db:seed --force
-    log "Database seeded"
-fi
+    # Generate application key
+    php artisan key:generate --force --quiet
+    log "Application key generated"
+
+    # Create storage link
+    if [ ! -L "public/storage" ]; then
+        php artisan storage:link --quiet 2>/dev/null || true
+        log "Storage link created"
+    else
+        log "Storage link already exists"
+    fi
+
+    # Create required directories
+    mkdir -p storage/app/public/images/parties
+    mkdir -p storage/app/public/uploads
+    mkdir -p storage/backups
+    mkdir -p storage/logs
+    mkdir -p bootstrap/cache
+    log "Required directories created"
+
+    # Set permissions
+    chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+    log "Permissions set"
+}
 
 #===============================================================================
-# Admin User Setup
+# Setup Database
 #===============================================================================
 
-log_step "7" "Admin User Setup"
+setup_database() {
+    log_step "7" "Database Setup"
 
-read -p "Create admin user? [Y/n]: " CREATE_ADMIN
-CREATE_ADMIN=${CREATE_ADMIN:-Y}
+    cd "${APP_DIR}"
 
-if [[ "$CREATE_ADMIN" =~ ^[Yy]$ ]]; then
+    # Run migrations
+    echo "Running database migrations..."
+    if php artisan migrate --force 2>/tmp/migrate_error.log; then
+        log "Database migrations completed"
+    else
+        log_error "Migration failed"
+        cat /tmp/migrate_error.log
+        echo ""
+        if ! confirm "Continue anyway?" "N"; then
+            exit 1
+        fi
+    fi
+
+    # Ask about seeding
+    if confirm "Run database seeders (demo data)?" "N"; then
+        if php artisan db:seed --force 2>/dev/null; then
+            log "Database seeded"
+        else
+            log_warning "Seeding failed (might not have seeders)"
+        fi
+    fi
+}
+
+#===============================================================================
+# Create Admin User
+#===============================================================================
+
+create_admin_user() {
+    log_step "8" "Admin User Setup"
+
+    if [ "$SKIP_ADMIN" = true ]; then
+        log_info "Skipping admin user creation"
+        return
+    fi
+
+    if [ "$AUTO_MODE" = true ]; then
+        log_info "Skipping admin user creation in auto mode"
+        echo -e "  ${CYAN}Create admin later with:${NC} php artisan user:create-admin"
+        return
+    fi
+
+    if ! confirm "Create admin user?" "Y"; then
+        return
+    fi
+
     read -p "Admin name: " ADMIN_NAME
-    read -p "Admin email: " ADMIN_EMAIL
-    read -sp "Admin password: " ADMIN_PASSWORD
-    echo ""
+    if [ -z "$ADMIN_NAME" ]; then
+        log_warning "Skipping admin user (no name provided)"
+        return
+    fi
 
-    # Create admin user via artisan command
-    php artisan tinker --execute="
-        \$user = new App\Models\User();
-        \$user->name = '${ADMIN_NAME}';
-        \$user->email = '${ADMIN_EMAIL}';
-        \$user->password = bcrypt('${ADMIN_PASSWORD}');
-        \$user->is_admin = true;
-        \$user->email_verified_at = now();
-        \$user->save();
-        echo 'Admin user created successfully!';
-    " 2>/dev/null || log_warning "Could not create admin user (User model may not have is_admin field)"
-fi
+    read -p "Admin email: " ADMIN_EMAIL
+    if [ -z "$ADMIN_EMAIL" ]; then
+        log_warning "Skipping admin user (no email provided)"
+        return
+    fi
+
+    while true; do
+        read -sp "Admin password (min 8 characters): " ADMIN_PASSWORD
+        echo ""
+        if [ ${#ADMIN_PASSWORD} -lt 8 ]; then
+            log_warning "Password must be at least 8 characters"
+            continue
+        fi
+        read -sp "Confirm password: " ADMIN_PASSWORD_CONFIRM
+        echo ""
+        if [ "$ADMIN_PASSWORD" != "$ADMIN_PASSWORD_CONFIRM" ]; then
+            log_warning "Passwords do not match"
+            continue
+        fi
+        break
+    done
+
+    # Create admin using artisan command
+    if php artisan user:create-admin --name="$ADMIN_NAME" --email="$ADMIN_EMAIL" --password="$ADMIN_PASSWORD" 2>/dev/null; then
+        log "Admin user created successfully"
+    else
+        # Fallback: try using tinker with proper escaping
+        ESCAPED_NAME=$(printf '%s' "$ADMIN_NAME" | sed "s/'/\\\\'/g")
+        ESCAPED_EMAIL=$(printf '%s' "$ADMIN_EMAIL" | sed "s/'/\\\\'/g")
+        ESCAPED_PASS=$(printf '%s' "$ADMIN_PASSWORD" | sed "s/'/\\\\'/g")
+
+        php artisan tinker --execute="
+            try {
+                \$user = new App\Models\User();
+                \$user->name = '${ESCAPED_NAME}';
+                \$user->email = '${ESCAPED_EMAIL}';
+                \$user->password = bcrypt('${ESCAPED_PASS}');
+                if (property_exists(\$user, 'is_admin') || in_array('is_admin', \$user->getFillable())) {
+                    \$user->is_admin = true;
+                }
+                \$user->email_verified_at = now();
+                \$user->save();
+                echo 'Admin user created!';
+            } catch (\Exception \$e) {
+                echo 'Error: ' . \$e->getMessage();
+            }
+        " 2>/dev/null && log "Admin user created" || log_warning "Could not create admin user"
+    fi
+}
 
 #===============================================================================
 # Build Frontend
 #===============================================================================
 
-log_step "8" "Building Frontend Assets"
+build_frontend() {
+    log_step "9" "Building Frontend Assets"
 
-if command -v npm &> /dev/null; then
-    npm run build
-    log "Frontend assets built"
-else
-    log_warning "Skipping frontend build (npm not found)"
-fi
+    if [ "$SKIP_FRONTEND" = true ]; then
+        log_info "Skipping frontend build"
+        return
+    fi
 
-#===============================================================================
-# Create Required Directories
-#===============================================================================
+    if ! check_command npm; then
+        log_warning "npm not found, skipping frontend build"
+        return
+    fi
 
-log_step "9" "Creating Required Directories"
+    cd "${APP_DIR}"
 
-mkdir -p storage/app/public/images/parties
-mkdir -p storage/app/public/uploads
-mkdir -p storage/backups
-mkdir -p storage/logs
-
-log "Directories created"
-
-#===============================================================================
-# Mark Installation Complete
-#===============================================================================
-
-# Create installed marker file
-echo "installed_at=$(date '+%Y-%m-%d %H:%M:%S')" > "${APP_DIR}/storage/app/installed"
-echo "installed_by=cli" >> "${APP_DIR}/storage/app/installed"
+    if run_cmd "npm run build" "Building frontend assets..."; then
+        log "Frontend assets built"
+    else
+        log_warning "Frontend build failed (you can build later with: npm run build)"
+    fi
+}
 
 #===============================================================================
-# Final Summary
+# Configure Reverb (WebSocket)
 #===============================================================================
 
-echo -e "\n${GREEN}╔════════════════════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${GREEN}║${NC}                                                                            ${GREEN}║${NC}"
-echo -e "${GREEN}║${NC}   ${GREEN}✅ INSTALLATION COMPLETED SUCCESSFULLY!${NC}                                  ${GREEN}║${NC}"
-echo -e "${GREEN}║${NC}                                                                            ${GREEN}║${NC}"
-echo -e "${GREEN}╚════════════════════════════════════════════════════════════════════════════╝${NC}"
+configure_reverb() {
+    log_step "10" "WebSocket Configuration (Laravel Reverb)"
 
-echo -e "\n${CYAN}Configuration Summary:${NC}"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  Database: MySQL - ${DB_NAME}@${DB_HOST}:${DB_PORT}"
-echo "  App URL:  ${APP_URL}"
-echo "  Environment: ${APP_ENV}"
-echo ""
+    # Check if Reverb is installed
+    if ! grep -q "laravel/reverb" composer.json 2>/dev/null; then
+        log_info "Laravel Reverb not found in dependencies"
+        return
+    fi
 
-echo -e "${CYAN}Next Steps:${NC}"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
-echo "1. Configure your web server (Nginx/Apache) to point to: ${APP_DIR}/public"
-echo ""
-echo "2. For development, run:"
-echo "   ${CYAN}php artisan serve${NC}                    # Start Laravel server"
-echo "   ${CYAN}npm run dev${NC}                          # Start Vite dev server"
-echo "   ${CYAN}php artisan reverb:start${NC}             # Start WebSocket server"
-echo ""
-echo "3. For production, run:"
-echo "   ${CYAN}./deploy.sh${NC}                          # Full deployment"
-echo ""
-echo "4. Access your application at: ${CYAN}${APP_URL}${NC}"
-echo ""
+    # Generate Reverb keys if not set
+    if ! grep -q "^REVERB_APP_ID=" .env || grep -q "^REVERB_APP_ID=$" .env; then
+        # Generate random values
+        REVERB_APP_ID=$((RANDOM * RANDOM))
+        REVERB_APP_KEY=$(openssl rand -hex 16 2>/dev/null || cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+        REVERB_APP_SECRET=$(openssl rand -hex 32 2>/dev/null || cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
+
+        # Check if Reverb settings exist in .env
+        if grep -q "^REVERB_APP_ID" .env; then
+            sed -i "s/^REVERB_APP_ID=.*/REVERB_APP_ID=${REVERB_APP_ID}/" .env
+            sed -i "s/^REVERB_APP_KEY=.*/REVERB_APP_KEY=${REVERB_APP_KEY}/" .env
+            sed -i "s/^REVERB_APP_SECRET=.*/REVERB_APP_SECRET=${REVERB_APP_SECRET}/" .env
+        else
+            # Add Reverb settings
+            cat >> .env << EOF
+
+# Laravel Reverb (WebSocket)
+REVERB_APP_ID=${REVERB_APP_ID}
+REVERB_APP_KEY=${REVERB_APP_KEY}
+REVERB_APP_SECRET=${REVERB_APP_SECRET}
+REVERB_HOST="localhost"
+REVERB_PORT=8080
+REVERB_SCHEME=http
+
+VITE_REVERB_APP_KEY="\${REVERB_APP_KEY}"
+VITE_REVERB_HOST="\${REVERB_HOST}"
+VITE_REVERB_PORT="\${REVERB_PORT}"
+VITE_REVERB_SCHEME="\${REVERB_SCHEME}"
+EOF
+        fi
+        log "Reverb WebSocket configured"
+    else
+        log "Reverb already configured"
+    fi
+}
+
+#===============================================================================
+# Finalize Installation
+#===============================================================================
+
+finalize_installation() {
+    cd "${APP_DIR}"
+
+    # Clear and cache config for production
+    if [ "$APP_ENV" = "production" ]; then
+        php artisan config:cache --quiet 2>/dev/null || true
+        php artisan route:cache --quiet 2>/dev/null || true
+        php artisan view:cache --quiet 2>/dev/null || true
+        log "Configuration cached for production"
+    else
+        php artisan config:clear --quiet 2>/dev/null || true
+    fi
+
+    # Create installed marker file
+    mkdir -p "${APP_DIR}/storage/app"
+    cat > "${APP_DIR}/storage/app/installed" << EOF
+installed_at=$(date '+%Y-%m-%d %H:%M:%S')
+installed_by=cli
+version=${VERSION}
+php_version=$(php -r "echo PHP_VERSION;")
+database=${USE_MYSQL:+mysql}${USE_MYSQL:-sqlite}
+EOF
+
+    # Remove installer flag if exists
+    rm -f "${APP_DIR}/storage/app/installing"
+}
+
+#===============================================================================
+# Show Summary
+#===============================================================================
+
+show_summary() {
+    echo -e "\n${GREEN}╔════════════════════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${GREEN}║${NC}                                                                            ${GREEN}║${NC}"
+    echo -e "${GREEN}║${NC}   ${GREEN}✅ INSTALLATION COMPLETED SUCCESSFULLY!${NC}                                  ${GREEN}║${NC}"
+    echo -e "${GREEN}║${NC}                                                                            ${GREEN}║${NC}"
+    echo -e "${GREEN}╚════════════════════════════════════════════════════════════════════════════╝${NC}"
+
+    echo -e "\n${CYAN}Configuration Summary:${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    if [ "$USE_MYSQL" = true ]; then
+        echo -e "  Database:    ${BLUE}MySQL${NC} - ${DB_NAME}@${DB_HOST}:${DB_PORT}"
+    else
+        echo -e "  Database:    ${GREEN}SQLite${NC} - database/database.sqlite"
+    fi
+    echo -e "  App URL:     ${APP_URL}"
+    echo -e "  Environment: ${APP_ENV}"
+    echo ""
+
+    echo -e "${CYAN}Quick Start:${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo -e "  ${YELLOW}# Start development server${NC}"
+    echo -e "  php artisan serve"
+    echo ""
+    echo -e "  ${YELLOW}# Or start all services (server + queue + vite)${NC}"
+    echo -e "  composer dev"
+    echo ""
+
+    echo -e "${CYAN}Available Commands:${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo -e "  ${CYAN}php artisan serve${NC}         Start Laravel server"
+    echo -e "  ${CYAN}npm run dev${NC}               Start Vite dev server"
+    echo -e "  ${CYAN}php artisan reverb:start${NC}  Start WebSocket server"
+    echo -e "  ${CYAN}php artisan queue:work${NC}    Start queue worker"
+    echo ""
+
+    echo -e "  ${CYAN}./deploy.sh${NC}               Full production deployment"
+    echo -e "  ${CYAN}./deploy.sh quick${NC}         Quick deployment"
+    echo ""
+
+    echo -e "Access your application at: ${CYAN}${APP_URL}${NC}"
+    echo ""
+}
+
+#===============================================================================
+# Main
+#===============================================================================
+
+main() {
+    # Parse command line arguments
+    parse_args "$@"
+
+    # Show banner
+    show_banner
+
+    # Run installation steps
+    check_requirements
+    choose_installation_mode
+    setup_environment
+    configure_database
+    configure_application
+    install_dependencies
+    setup_application
+    setup_database
+    create_admin_user
+    build_frontend
+    configure_reverb
+    finalize_installation
+    show_summary
+}
+
+# Run main function
+main "$@"
