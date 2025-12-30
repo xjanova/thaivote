@@ -26,7 +26,7 @@
         "prettier": "^3.4.0",
         "tailwindcss": "^4.1.18",
         "vite": "^7.0.7",
-        "vitest": "^3.0.0"
+        "vitest": "^4.0.16"
     },
     "dependencies": {
         "@headlessui/vue": "^1.7.23",
