@@ -35,6 +35,7 @@ FRESH_COMPOSER=false
 SKIP_NPM=false
 SKIP_BACKUP=true  # Default: no backup (use --backup to enable)
 FORCE_MODE=false
+FIRST_INSTALL=false  # Set to true if this is a fresh installation
 
 # Create necessary directories
 mkdir -p "${BACKUP_DIR}"
@@ -279,11 +280,114 @@ backup_critical_files() {
 }
 
 #===============================================================================
+# Database Setup Functions
+#===============================================================================
+
+setup_database() {
+    log_step "3" "Setting Up Database & APP_KEY"
+
+    cd "${APP_DIR}"
+
+    # Read database connection type from .env
+    DB_CONNECTION=$(grep "^DB_CONNECTION=" "${APP_DIR}/.env" 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'" || echo "sqlite")
+
+    if [ "${DB_CONNECTION}" = "sqlite" ]; then
+        SQLITE_FILE="${APP_DIR}/database/database.sqlite"
+
+        # Create database directory if not exists
+        mkdir -p "${APP_DIR}/database"
+
+        # Create SQLite file if not exists
+        if [ ! -f "${SQLITE_FILE}" ]; then
+            touch "${SQLITE_FILE}"
+            chmod 664 "${SQLITE_FILE}"
+            log "Created SQLite database: ${SQLITE_FILE}"
+            FIRST_INSTALL=true
+        else
+            log "SQLite database exists: ${SQLITE_FILE}"
+        fi
+    elif [ "${DB_CONNECTION}" = "mysql" ]; then
+        # Test MySQL connection
+        DB_HOST=$(grep "^DB_HOST=" "${APP_DIR}/.env" | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+        DB_DATABASE=$(grep "^DB_DATABASE=" "${APP_DIR}/.env" | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+        DB_USERNAME=$(grep "^DB_USERNAME=" "${APP_DIR}/.env" | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+        DB_PASSWORD=$(grep "^DB_PASSWORD=" "${APP_DIR}/.env" | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+
+        log "Database: MySQL (${DB_DATABASE}@${DB_HOST})"
+
+        # Test connection
+        if php artisan tinker --execute="DB::connection()->getPdo();" 2>/dev/null; then
+            log "MySQL connection successful"
+        else
+            log_warning "MySQL connection test failed - will retry during migrations"
+        fi
+    else
+        log "Database: ${DB_CONNECTION}"
+    fi
+
+    log "Database setup complete ✓"
+}
+
+generate_app_key() {
+    cd "${APP_DIR}"
+
+    # Check if APP_KEY is set
+    APP_KEY=$(grep "^APP_KEY=" "${APP_DIR}/.env" | cut -d '=' -f2)
+
+    if [ -z "${APP_KEY}" ] || [ "${APP_KEY}" = "" ] || [ "${APP_KEY}" = "base64:" ]; then
+        log "Generating APP_KEY..."
+        php artisan key:generate --force
+        log "APP_KEY generated ✓"
+    else
+        log "APP_KEY already set ✓"
+    fi
+}
+
+create_admin_user() {
+    local args="$*"
+
+    # Check if --admin flag is passed
+    if [[ "$args" != *"--admin"* ]]; then
+        return 0
+    fi
+
+    cd "${APP_DIR}"
+
+    log_info "Creating admin user..."
+
+    # Check if admin user already exists
+    local admin_exists=false
+    if php artisan tinker --execute="echo App\Models\User::where('email', 'admin@thaivote.local')->exists() ? 'yes' : 'no';" 2>/dev/null | grep -q "yes"; then
+        admin_exists=true
+    fi
+
+    if [ "$admin_exists" = true ]; then
+        log_info "Admin user already exists (admin@thaivote.local)"
+        return 0
+    fi
+
+    # Create admin user
+    php artisan tinker --execute="
+        \$user = App\Models\User::create([
+            'name' => 'Administrator',
+            'email' => 'admin@thaivote.local',
+            'password' => Hash::make('admin1234'),
+        ]);
+        echo 'Admin user created: ' . \$user->email;
+    " 2>/dev/null && {
+        log "Admin user created:"
+        log "  Email: admin@thaivote.local"
+        log "  Password: admin1234"
+        log_warning "Please change the password after first login!"
+    } || log_warning "Failed to create admin user"
+}
+
+#===============================================================================
 # Deployment Steps
 #===============================================================================
 
 enable_maintenance_mode() {
-    log_step "3" "Enabling Maintenance Mode"
+    log_step "5" "Enabling Maintenance Mode"
 
     cd "${APP_DIR}"
     php artisan down --retry=60 --refresh=15 2>/dev/null || true
@@ -299,7 +403,7 @@ disable_maintenance_mode() {
 }
 
 pull_latest_code() {
-    log_step "4" "Pulling Latest Code"
+    log_step "6" "Pulling Latest Code"
 
     cd "${APP_DIR}"
 
@@ -330,7 +434,7 @@ pull_latest_code() {
 }
 
 install_composer_dependencies() {
-    log_step "5" "Installing Composer Dependencies"
+    log_step "7" "Installing Composer Dependencies"
 
     cd "${APP_DIR}"
 
@@ -390,7 +494,7 @@ install_npm_dependencies() {
         return 0
     fi
 
-    log_step "6" "Installing NPM Dependencies"
+    log_step "8" "Installing NPM Dependencies"
 
     cd "${APP_DIR}"
 
@@ -431,7 +535,7 @@ build_frontend() {
         return 0
     fi
 
-    log_step "7" "Building Frontend Assets"
+    log_step "9" "Building Frontend Assets"
 
     cd "${APP_DIR}"
 
@@ -448,7 +552,7 @@ build_frontend() {
 }
 
 run_migrations() {
-    log_step "8" "Running Database Migrations"
+    log_step "10" "Running Database Migrations"
 
     cd "${APP_DIR}"
 
@@ -461,7 +565,7 @@ run_migrations() {
 }
 
 clear_caches() {
-    log_step "9" "Clearing Caches"
+    log_step "11" "Clearing Caches"
 
     cd "${APP_DIR}"
 
@@ -476,7 +580,7 @@ clear_caches() {
 }
 
 optimize_application() {
-    log_step "10" "Optimizing Application"
+    log_step "12" "Optimizing Application"
 
     cd "${APP_DIR}"
 
@@ -496,7 +600,7 @@ optimize_application() {
 }
 
 setup_storage_links() {
-    log_step "11" "Setting Up Storage Links"
+    log_step "13" "Setting Up Storage Links"
 
     cd "${APP_DIR}"
 
@@ -527,7 +631,7 @@ setup_storage_links() {
 }
 
 fix_permissions() {
-    log_step "12" "Fixing Permissions"
+    log_step "14" "Fixing Permissions"
 
     cd "${APP_DIR}"
 
@@ -556,7 +660,7 @@ fix_permissions() {
 }
 
 restart_services() {
-    log_step "13" "Restarting Services"
+    log_step "15" "Restarting Services"
 
     cd "${APP_DIR}"
 
@@ -611,17 +715,30 @@ run_seeders() {
 
     # Check if core data already exists (provinces, parties)
     local has_core_data=false
-    if php artisan tinker --execute="echo App\Models\Province::count() > 0 && App\Models\Party::count() > 0 ? 'yes' : 'no';" 2>/dev/null | grep -q "yes"; then
+    local province_count=0
+    local party_count=0
+
+    # Try to get count from database
+    province_count=$(php artisan tinker --execute="echo App\Models\Province::count();" 2>/dev/null | grep -E "^[0-9]+$" | head -1 || echo "0")
+    party_count=$(php artisan tinker --execute="echo App\Models\Party::count();" 2>/dev/null | grep -E "^[0-9]+$" | head -1 || echo "0")
+
+    if [ "$province_count" -gt 0 ] && [ "$party_count" -gt 0 ]; then
         has_core_data=true
     fi
 
+    # Auto-seed on first install (detected by setup_database)
+    if [ "$FIRST_INSTALL" = true ]; then
+        force_seed=true
+        log_info "First installation detected - will seed database"
+    fi
+
     if [ "$has_core_data" = true ] && [ "$force_seed" = false ]; then
-        log_info "Core data exists (provinces, parties), skipping seeders (use --seed to update)"
+        log_info "Core data exists (provinces: ${province_count}, parties: ${party_count}), skipping seeders (use --seed to update)"
         return 0
     fi
 
     if [ "$force_seed" = true ] || [ "$has_core_data" = false ]; then
-        log_step "14" "Running Seeders (ข้อมูลจาก กกต.)"
+        log_step "16" "Running Seeders (ข้อมูลจาก กกต.)"
 
         if [ "$has_core_data" = true ]; then
             log_info "Force seeding requested, updating data..."
@@ -631,6 +748,9 @@ run_seeders() {
 
         if php artisan db:seed --force 2>&1; then
             log "Seeders executed ✓"
+            log "  - 77 จังหวัด (provinces)"
+            log "  - 400 เขตเลือกตั้ง (constituencies)"
+            log "  - พรรคการเมือง (parties)"
         else
             log_warning "Seeders failed (non-critical)"
         fi
@@ -638,7 +758,7 @@ run_seeders() {
 }
 
 verify_deployment() {
-    log_step "15" "Verifying Deployment"
+    log_step "17" "Verifying Deployment"
 
     cd "${APP_DIR}"
     local ERRORS=0
@@ -679,6 +799,17 @@ verify_deployment() {
         log "✓ Storage link exists"
     else
         log_warning "⚠ Storage link not found"
+    fi
+
+    # Check data status
+    local province_count=$(php artisan tinker --execute="echo App\Models\Province::count();" 2>/dev/null | grep -E "^[0-9]+$" | head -1 || echo "0")
+    local party_count=$(php artisan tinker --execute="echo App\Models\Party::count();" 2>/dev/null | grep -E "^[0-9]+$" | head -1 || echo "0")
+    local constituency_count=$(php artisan tinker --execute="echo App\Models\Constituency::count();" 2>/dev/null | grep -E "^[0-9]+$" | head -1 || echo "0")
+
+    if [ "$province_count" -gt 0 ] && [ "$party_count" -gt 0 ]; then
+        log "✓ Core data loaded (จังหวัด: ${province_count}, เขต: ${constituency_count}, พรรค: ${party_count})"
+    else
+        log_warning "⚠ Core data not loaded (run with --seed to populate)"
     fi
 
     if [ $ERRORS -eq 0 ]; then
@@ -747,6 +878,8 @@ deploy() {
     preflight_checks
     backup_database
     backup_critical_files
+    setup_database
+    generate_app_key
     enable_maintenance_mode
 
     # Wrap main deployment in trap for error handling
@@ -763,6 +896,7 @@ deploy() {
     fix_permissions
     restart_services
     run_seeders "$@"
+    create_admin_user "$@"
     generate_rollback_command
     verify_deployment
 
@@ -797,6 +931,24 @@ quick_deploy() {
     # Check composer.lock compatibility first
     check_composer_lock_compatibility
 
+    # Setup database (creates SQLite if needed)
+    DB_CONNECTION=$(grep "^DB_CONNECTION=" "${APP_DIR}/.env" 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'" || echo "sqlite")
+    if [ "${DB_CONNECTION}" = "sqlite" ]; then
+        SQLITE_FILE="${APP_DIR}/database/database.sqlite"
+        mkdir -p "${APP_DIR}/database"
+        if [ ! -f "${SQLITE_FILE}" ]; then
+            touch "${SQLITE_FILE}"
+            chmod 664 "${SQLITE_FILE}"
+            echo "Created SQLite database"
+        fi
+    fi
+
+    # Generate APP_KEY if not set
+    APP_KEY=$(grep "^APP_KEY=" "${APP_DIR}/.env" | cut -d '=' -f2)
+    if [ -z "${APP_KEY}" ] || [ "${APP_KEY}" = "" ] || [ "${APP_KEY}" = "base64:" ]; then
+        php artisan key:generate --force
+    fi
+
     php artisan down --retry=60 2>/dev/null || true
 
     # Pull if git repo
@@ -816,11 +968,18 @@ quick_deploy() {
     fi
 
     php artisan migrate --force 2>/dev/null || true
+    php artisan storage:link 2>/dev/null || true
     php artisan cache:clear 2>/dev/null || true
     php artisan config:cache 2>/dev/null || true
     php artisan route:cache 2>/dev/null || true
     php artisan view:cache 2>/dev/null || true
     php artisan queue:restart 2>/dev/null || true
+
+    # Seed if no data exists
+    province_count=$(php artisan tinker --execute="echo App\Models\Province::count();" 2>/dev/null | grep -E "^[0-9]+$" | head -1 || echo "0")
+    if [ "$province_count" -eq 0 ]; then
+        php artisan db:seed --force 2>/dev/null || true
+    fi
 
     php artisan up
 
@@ -873,10 +1032,14 @@ show_help() {
     echo "  help          Show this help message"
     echo ""
     echo "Options:"
-    echo "  --seed              Force run database seeders (auto-runs if no demo data exists)"
+    echo "  --seed              Force run database seeders (auto-runs if no data exists)"
+    echo "  --admin             Create admin user (admin@thaivote.local / admin1234)"
     echo "  --fresh-composer    Force regenerate composer.lock"
     echo "  --skip-npm          Skip NPM install and build"
     echo "  --backup            Enable database and file backups (disabled by default)"
+    echo ""
+    echo "First-time installation:"
+    echo "  $0 deploy --admin         # Deploy with admin user"
     echo ""
     echo "Examples:"
     echo "  $0                        # Full deployment (no backup)"
@@ -936,6 +1099,14 @@ show_status() {
     else
         echo "  Build: Not found"
     fi
+
+    echo -e "\n${PURPLE}Data Status (กกต.):${NC}"
+    local province_count=$(php artisan tinker --execute="echo App\Models\Province::count();" 2>/dev/null | grep -E "^[0-9]+$" | head -1 || echo "0")
+    local party_count=$(php artisan tinker --execute="echo App\Models\Party::count();" 2>/dev/null | grep -E "^[0-9]+$" | head -1 || echo "0")
+    local constituency_count=$(php artisan tinker --execute="echo App\Models\Constituency::count();" 2>/dev/null | grep -E "^[0-9]+$" | head -1 || echo "0")
+    echo "  จังหวัด (Provinces): ${province_count}"
+    echo "  เขตเลือกตั้ง (Constituencies): ${constituency_count}"
+    echo "  พรรคการเมือง (Parties): ${party_count}"
 
     echo ""
 }
