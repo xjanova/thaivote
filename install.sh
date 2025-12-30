@@ -533,40 +533,40 @@ configure_mysql() {
     prompt_input "Database username" "$DB_USER" "DB_USER"
     prompt_input "Database password" "$DB_PASS" "DB_PASS" true
 
-    # Update .env file
-    sed -i "s/^DB_CONNECTION=.*/DB_CONNECTION=mysql/" .env
-    sed -i "s/^#*DB_HOST=.*/DB_HOST=${DB_HOST}/" .env
-    sed -i "s/^#*DB_PORT=.*/DB_PORT=${DB_PORT}/" .env
-    sed -i "s/^#*DB_DATABASE=.*/DB_DATABASE=${DB_NAME}/" .env
-    sed -i "s/^#*DB_USERNAME=.*/DB_USERNAME=${DB_USER}/" .env
-    sed -i "s/^#*DB_PASSWORD=.*/DB_PASSWORD=${DB_PASS}/" .env
+    # Update .env file - handle special characters in password
+    # Use temp file approach for safety
+    local TEMP_ENV=$(mktemp)
+
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        case "$line" in
+            DB_CONNECTION=*|"#DB_CONNECTION="*)
+                echo "DB_CONNECTION=mysql" >> "$TEMP_ENV"
+                ;;
+            DB_HOST=*|"#DB_HOST="*)
+                echo "DB_HOST=${DB_HOST}" >> "$TEMP_ENV"
+                ;;
+            DB_PORT=*|"#DB_PORT="*)
+                echo "DB_PORT=${DB_PORT}" >> "$TEMP_ENV"
+                ;;
+            DB_DATABASE=*|"#DB_DATABASE="*)
+                echo "DB_DATABASE=${DB_NAME}" >> "$TEMP_ENV"
+                ;;
+            DB_USERNAME=*|"#DB_USERNAME="*)
+                echo "DB_USERNAME=${DB_USER}" >> "$TEMP_ENV"
+                ;;
+            DB_PASSWORD=*|"#DB_PASSWORD="*)
+                # Quote password to handle special characters
+                echo "DB_PASSWORD=\"${DB_PASS}\"" >> "$TEMP_ENV"
+                ;;
+            *)
+                echo "$line" >> "$TEMP_ENV"
+                ;;
+        esac
+    done < .env
+
+    mv "$TEMP_ENV" .env
 
     log "MySQL configuration saved"
-
-    # Test connection
-    echo ""
-    echo "Testing database connection..."
-
-    if [ -n "$DB_PASS" ]; then
-        MYSQL_CMD="mysql -h \"${DB_HOST}\" -P \"${DB_PORT}\" -u \"${DB_USER}\" -p\"${DB_PASS}\""
-    else
-        MYSQL_CMD="mysql -h \"${DB_HOST}\" -P \"${DB_PORT}\" -u \"${DB_USER}\""
-    fi
-
-    if eval "$MYSQL_CMD -e 'SELECT 1'" &>/dev/null; then
-        log "Database connection successful"
-
-        # Create database if not exists
-        if eval "$MYSQL_CMD -e \"CREATE DATABASE IF NOT EXISTS \\\`${DB_NAME}\\\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\"" 2>/dev/null; then
-            log "Database '${DB_NAME}' ready"
-        fi
-    else
-        log_warning "Could not connect to database"
-        echo ""
-        if ! confirm "Continue anyway? (You can configure database later)" "Y"; then
-            exit 1
-        fi
-    fi
 }
 
 #===============================================================================
@@ -630,20 +630,25 @@ setup_application() {
     php artisan key:generate --force --quiet
     log "Application key generated"
 
-    # Create storage link (using public_html instead of public)
-    if [ ! -L "public_html/storage" ]; then
-        php artisan storage:link --quiet 2>/dev/null || true
-        log "Storage link created"
-    else
-        log "Storage link already exists"
-    fi
-
-    # Create required directories
+    # Ensure directories exist first
     mkdir -p storage/app/public/images/parties
     mkdir -p storage/app/public/uploads
     mkdir -p storage/backups
     mkdir -p storage/logs
     mkdir -p bootstrap/cache
+    mkdir -p public_html
+
+    # Create storage link (using public_html instead of public)
+    if [ ! -L "public_html/storage" ]; then
+        if ! php artisan storage:link --quiet 2>/dev/null; then
+            # Manual fallback
+            ln -sf "${APP_DIR}/storage/app/public" "${APP_DIR}/public_html/storage" 2>/dev/null || true
+        fi
+        log "Storage link created"
+    else
+        log "Storage link already exists"
+    fi
+
     log "Required directories created"
 
     # Set permissions
@@ -659,6 +664,61 @@ setup_database() {
     log_step "7" "Database Setup"
 
     cd "${APP_DIR}"
+
+    # Clear config cache first
+    php artisan config:clear 2>/dev/null || true
+
+    # Loop until connection works or user skips
+    local MAX_RETRIES=3
+    local RETRY_COUNT=0
+
+    while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+        echo "Checking database connection..."
+
+        if php artisan migrate:status 2>/tmp/db_error.log >/dev/null; then
+            log "Database connection successful"
+            break
+        fi
+
+        RETRY_COUNT=$((RETRY_COUNT + 1))
+        log_error "Database connection failed (attempt ${RETRY_COUNT}/${MAX_RETRIES})"
+
+        # Check error type and show appropriate message
+        if grep -q "Access denied" /tmp/db_error.log 2>/dev/null; then
+            echo -e "${YELLOW}Database credentials are incorrect.${NC}"
+        elif grep -q "Unknown database" /tmp/db_error.log 2>/dev/null; then
+            echo -e "${YELLOW}Database '$(grep -oP "Unknown database '\K[^']+(?=')" /tmp/db_error.log 2>/dev/null || echo "specified")' does not exist.${NC}"
+        elif grep -q "Connection refused" /tmp/db_error.log 2>/dev/null; then
+            echo -e "${YELLOW}Cannot connect to database server. Check if MySQL is running.${NC}"
+        else
+            echo -e "${YELLOW}Database error occurred.${NC}"
+            cat /tmp/db_error.log 2>/dev/null | head -5
+        fi
+
+        echo ""
+
+        if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+            if confirm "Reconfigure database settings?" "Y"; then
+                # Re-run database configuration
+                echo ""
+                configure_mysql
+                php artisan config:clear 2>/dev/null || true
+            else
+                if confirm "Continue without database setup?" "N"; then
+                    log_warning "Skipping database setup - configure manually later"
+                    return
+                fi
+            fi
+        else
+            log_error "Max retries reached"
+            if confirm "Continue without database setup?" "N"; then
+                log_warning "Skipping database setup - configure manually later"
+                return
+            else
+                exit 1
+            fi
+        fi
+    done
 
     # Run migrations
     echo "Running database migrations..."
