@@ -1,0 +1,17 @@
+# Default owners for everything in the repo
+* @xjanova
+
+# Backend (Laravel)
+/app/ @xjanova
+/config/ @xjanova
+/database/ @xjanova
+/routes/ @xjanova
+
+# Frontend (Vue.js)
+/resources/js/ @xjanova
+/resources/css/ @xjanova
+
+# Infrastructure
+/.github/ @xjanova
+/deploy.sh @xjanova
+/install.sh @xjanova
