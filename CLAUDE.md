@@ -6,9 +6,10 @@
 
 - **Backend**: Laravel 11 (PHP 8.2+)
 - **Frontend**: Vue.js 3 + Inertia.js + Tailwind CSS
-- **Database**: MySQL 8.0+
+- **Database**: MySQL 8.0+ / SQLite
 - **Real-time**: Laravel Reverb (WebSocket)
 - **Queue**: Laravel Queue + Redis
+- **Public Directory**: `public_html` (สำหรับ shared hosting)
 
 ---
 
@@ -44,9 +45,16 @@ thaivote/
 │   ├── web.php               # Web Routes
 │   ├── api.php               # API Routes
 │   └── channels.php          # WebSocket Channels
+├── public_html/              # Web Root (ใช้แทน public/)
+│   ├── index.php             # Entry Point
+│   ├── build/                # Vite Build Output
+│   └── storage/              # Symlink to storage/app/public
 ├── docs/                     # Documentation
 └── tests/                    # Tests
 ```
+
+> **หมายเหตุ**: โปรเจคนี้ใช้ `public_html` แทน `public` เพื่อรองรับ shared hosting (DirectAdmin, cPanel)
+> การตั้งค่าอยู่ใน `bootstrap/app.php` ด้วย `usePublicPath()`
 
 ---
 

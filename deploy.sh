@@ -327,9 +327,9 @@ setup_storage_links() {
 
     cd "${APP_DIR}"
 
-    # Remove existing symlink if broken
-    if [ -L "${APP_DIR}/public/storage" ] && [ ! -e "${APP_DIR}/public/storage" ]; then
-        rm "${APP_DIR}/public/storage"
+    # Remove existing symlink if broken (using public_html instead of public)
+    if [ -L "${APP_DIR}/public_html/storage" ] && [ ! -e "${APP_DIR}/public_html/storage" ]; then
+        rm "${APP_DIR}/public_html/storage"
     fi
 
     # Create storage link
@@ -435,11 +435,11 @@ verify_deployment() {
         log_warning "⚠ Database connection check failed"
     fi
 
-    # Check if public/build exists (frontend assets)
-    if [ -d "${APP_DIR}/public/build" ]; then
+    # Check if public_html/build exists (frontend assets)
+    if [ -d "${APP_DIR}/public_html/build" ]; then
         log "✓ Frontend assets exist"
     else
-        log_warning "⚠ Frontend assets not found"
+        log_warning "⚠ Frontend assets not found in public_html/build"
     fi
 
     log "Deployment verification completed"

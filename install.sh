@@ -630,8 +630,8 @@ setup_application() {
     php artisan key:generate --force --quiet
     log "Application key generated"
 
-    # Create storage link
-    if [ ! -L "public/storage" ]; then
+    # Create storage link (using public_html instead of public)
+    if [ ! -L "public_html/storage" ]; then
         php artisan storage:link --quiet 2>/dev/null || true
         log "Storage link created"
     else

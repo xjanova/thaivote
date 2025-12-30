@@ -127,9 +127,9 @@ else
     php artisan migrate --force
 fi
 
-# Step 6: Create storage link
+# Step 6: Create storage link (using public_html)
 php artisan storage:link --quiet 2>/dev/null || true
-log "Storage linked"
+log "Storage linked to public_html"
 
 # Step 7: Create directories
 mkdir -p storage/app/public/images/parties
