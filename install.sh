@@ -570,6 +570,57 @@ configure_mysql() {
 }
 
 #===============================================================================
+# Test MySQL Connection (without requiring database to exist)
+#===============================================================================
+
+test_mysql_connection() {
+    local host="$1"
+    local port="$2"
+    local user="$3"
+    local pass="$4"
+
+    # Build mysql command with proper password handling
+    local MYSQL_CMD="mysql -h \"${host}\" -P \"${port}\" -u \"${user}\""
+    if [ -n "$pass" ]; then
+        MYSQL_CMD="${MYSQL_CMD} -p\"${pass}\""
+    fi
+
+    # Test connection by running simple query
+    if eval "${MYSQL_CMD} -e 'SELECT 1' 2>/dev/null >/dev/null"; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+#===============================================================================
+# Create MySQL Database if not exists
+#===============================================================================
+
+create_mysql_database() {
+    local host="$1"
+    local port="$2"
+    local user="$3"
+    local pass="$4"
+    local dbname="$5"
+
+    # Build mysql command
+    local MYSQL_CMD="mysql -h \"${host}\" -P \"${port}\" -u \"${user}\""
+    if [ -n "$pass" ]; then
+        MYSQL_CMD="${MYSQL_CMD} -p\"${pass}\""
+    fi
+
+    # Create database with proper charset
+    local CREATE_SQL="CREATE DATABASE IF NOT EXISTS \\\`${dbname}\\\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+    if eval "${MYSQL_CMD} -e \"${CREATE_SQL}\" 2>/tmp/mysql_create.log"; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+#===============================================================================
 # Configure Application
 #===============================================================================
 
@@ -668,70 +719,178 @@ setup_database() {
     # Clear config cache first
     php artisan config:clear 2>/dev/null || true
 
-    # Loop until connection works or user skips
+    # For SQLite, just run migrations
+    if [ "$USE_MYSQL" = false ]; then
+        echo "Setting up SQLite database..."
+        if php artisan migrate --force 2>/tmp/migrate_error.log; then
+            log "Database migrations completed"
+        else
+            log_error "Migration failed"
+            cat /tmp/migrate_error.log
+        fi
+        return
+    fi
+
+    # MySQL Setup
+    echo -e "${BLUE}Setting up MySQL database...${NC}"
+    echo ""
+
     local MAX_RETRIES=3
     local RETRY_COUNT=0
 
     while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-        echo "Checking database connection..."
-
-        if php artisan migrate:status 2>/tmp/db_error.log >/dev/null; then
-            log "Database connection successful"
-            break
-        fi
-
-        RETRY_COUNT=$((RETRY_COUNT + 1))
-        log_error "Database connection failed (attempt ${RETRY_COUNT}/${MAX_RETRIES})"
-
-        # Check error type and show appropriate message
-        if grep -q "Access denied" /tmp/db_error.log 2>/dev/null; then
-            echo -e "${YELLOW}Database credentials are incorrect.${NC}"
-        elif grep -q "Unknown database" /tmp/db_error.log 2>/dev/null; then
-            echo -e "${YELLOW}Database '$(grep -oP "Unknown database '\K[^']+(?=')" /tmp/db_error.log 2>/dev/null || echo "specified")' does not exist.${NC}"
-        elif grep -q "Connection refused" /tmp/db_error.log 2>/dev/null; then
-            echo -e "${YELLOW}Cannot connect to database server. Check if MySQL is running.${NC}"
-        else
-            echo -e "${YELLOW}Database error occurred.${NC}"
-            cat /tmp/db_error.log 2>/dev/null | head -5
-        fi
-
-        echo ""
-
-        if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
-            if confirm "Reconfigure database settings?" "Y"; then
-                # Re-run database configuration
-                echo ""
-                configure_mysql
-                php artisan config:clear 2>/dev/null || true
+        # Step 1: Check if MySQL client is available
+        if ! check_command mysql; then
+            log_warning "MySQL client not installed. Trying PHP connection test..."
+            # Fall back to PHP-based connection test
+            if php -r "
+                \$pdo = new PDO(
+                    'mysql:host=${DB_HOST};port=${DB_PORT}',
+                    '${DB_USER}',
+                    '${DB_PASS}'
+                );
+                echo 'OK';
+            " 2>/tmp/php_mysql_error.log | grep -q "OK"; then
+                log "MySQL connection successful (via PHP)"
             else
-                if confirm "Continue without database setup?" "N"; then
-                    log_warning "Skipping database setup - configure manually later"
+                RETRY_COUNT=$((RETRY_COUNT + 1))
+                log_error "MySQL connection failed (attempt ${RETRY_COUNT}/${MAX_RETRIES})"
+
+                if grep -q "Access denied" /tmp/php_mysql_error.log 2>/dev/null; then
+                    echo -e "${YELLOW}  → Username หรือ password ไม่ถูกต้อง${NC}"
+                elif grep -q "Connection refused" /tmp/php_mysql_error.log 2>/dev/null; then
+                    echo -e "${YELLOW}  → ไม่สามารถเชื่อมต่อ MySQL server ได้${NC}"
+                    echo -e "${CYAN}  → ตรวจสอบว่า MySQL service กำลังทำงาน: sudo systemctl status mysql${NC}"
+                else
+                    echo -e "${YELLOW}  → Error: $(cat /tmp/php_mysql_error.log 2>/dev/null | head -1)${NC}"
+                fi
+
+                if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                    if confirm "ต้องการแก้ไขการตั้งค่า database ไหม?" "Y"; then
+                        configure_mysql
+                        php artisan config:clear 2>/dev/null || true
+                        continue
+                    fi
+                fi
+
+                if confirm "ข้ามการติดตั้ง database? (ต้องตั้งค่าเองทีหลัง)" "N"; then
+                    log_warning "Skipping database setup"
                     return
+                else
+                    exit 1
                 fi
             fi
         else
-            log_error "Max retries reached"
-            if confirm "Continue without database setup?" "N"; then
-                log_warning "Skipping database setup - configure manually later"
+            # Step 1: Test MySQL connection (without database)
+            echo -ne "  ${BLUE}[1/4]${NC} Testing MySQL connection... "
+            if test_mysql_connection "$DB_HOST" "$DB_PORT" "$DB_USER" "$DB_PASS"; then
+                echo -e "${GREEN}✓${NC}"
+            else
+                echo -e "${RED}✗${NC}"
+                RETRY_COUNT=$((RETRY_COUNT + 1))
+                log_error "MySQL connection failed (attempt ${RETRY_COUNT}/${MAX_RETRIES})"
+
+                echo ""
+                echo -e "${YELLOW}ไม่สามารถเชื่อมต่อ MySQL ได้ กรุณาตรวจสอบ:${NC}"
+                echo -e "  1. MySQL service กำลังทำงาน: ${CYAN}sudo systemctl status mysql${NC}"
+                echo -e "  2. Host: ${CYAN}${DB_HOST}:${DB_PORT}${NC}"
+                echo -e "  3. Username: ${CYAN}${DB_USER}${NC}"
+                echo -e "  4. Password ถูกต้อง"
+                echo ""
+
+                if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                    if confirm "ต้องการแก้ไขการตั้งค่า database ไหม?" "Y"; then
+                        configure_mysql
+                        php artisan config:clear 2>/dev/null || true
+                        continue
+                    fi
+                fi
+
+                if confirm "ข้ามการติดตั้ง database? (ต้องตั้งค่าเองทีหลัง)" "N"; then
+                    log_warning "Skipping database setup"
+                    return
+                else
+                    exit 1
+                fi
+            fi
+        fi
+
+        # Step 2: Create database if not exists
+        echo -ne "  ${BLUE}[2/4]${NC} Creating database '${DB_NAME}'... "
+        if check_command mysql; then
+            if create_mysql_database "$DB_HOST" "$DB_PORT" "$DB_USER" "$DB_PASS" "$DB_NAME"; then
+                echo -e "${GREEN}✓${NC}"
+            else
+                echo -e "${YELLOW}(may already exist)${NC}"
+            fi
+        else
+            # Use PHP to create database
+            if php -r "
+                \$pdo = new PDO(
+                    'mysql:host=${DB_HOST};port=${DB_PORT}',
+                    '${DB_USER}',
+                    '${DB_PASS}'
+                );
+                \$pdo->exec('CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+                echo 'OK';
+            " 2>/dev/null | grep -q "OK"; then
+                echo -e "${GREEN}✓${NC}"
+            else
+                echo -e "${YELLOW}(may already exist)${NC}"
+            fi
+        fi
+
+        # Step 3: Test connection to database
+        echo -ne "  ${BLUE}[3/4]${NC} Verifying database connection... "
+        php artisan config:clear 2>/dev/null || true
+
+        if php artisan db:show 2>/dev/null >/dev/null || php -r "
+            new PDO(
+                'mysql:host=${DB_HOST};port=${DB_PORT};dbname=${DB_NAME}',
+                '${DB_USER}',
+                '${DB_PASS}'
+            );
+            echo 'OK';
+        " 2>/dev/null | grep -q "OK"; then
+            echo -e "${GREEN}✓${NC}"
+        else
+            echo -e "${RED}✗${NC}"
+            log_error "Cannot connect to database '${DB_NAME}'"
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+
+            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                if confirm "ต้องการลองใหม่ไหม?" "Y"; then
+                    continue
+                fi
+            fi
+
+            if confirm "ข้ามการติดตั้ง database?" "N"; then
+                log_warning "Skipping database setup"
                 return
             else
                 exit 1
             fi
         fi
-    done
 
-    # Run migrations
-    echo "Running database migrations..."
-    if php artisan migrate --force 2>/tmp/migrate_error.log; then
-        log "Database migrations completed"
-    else
-        log_error "Migration failed"
-        cat /tmp/migrate_error.log
-        echo ""
-        if ! confirm "Continue anyway?" "N"; then
-            exit 1
+        # Step 4: Run migrations
+        echo -ne "  ${BLUE}[4/4]${NC} Running migrations... "
+        if php artisan migrate --force 2>/tmp/migrate_error.log; then
+            echo -e "${GREEN}✓${NC}"
+            log "Database setup completed successfully"
+        else
+            echo -e "${RED}✗${NC}"
+            log_error "Migration failed"
+            echo ""
+            cat /tmp/migrate_error.log 2>/dev/null | head -10
+            echo ""
+
+            if ! confirm "Continue anyway?" "N"; then
+                exit 1
+            fi
         fi
-    fi
+
+        break
+    done
 
     # Ask about seeding
     if confirm "Run database seeders (demo data)?" "N"; then
