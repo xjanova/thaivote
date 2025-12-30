@@ -395,6 +395,8 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+@reference "tailwindcss";
+
 .nav-link {
     @apply text-gray-600 hover:text-primary transition-colors;
 }
