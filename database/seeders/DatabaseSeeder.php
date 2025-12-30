@@ -12,9 +12,18 @@ class DatabaseSeeder extends Seeder
 
     /**
      * Seed the application's database.
+     * ข้อมูลอ้างอิงจาก กกต. (สำนักงานคณะกรรมการการเลือกตั้ง)
+     * https://www.ect.go.th/
      */
     public function run(): void
     {
+        // Seed พรรคการเมือง, จังหวัด, และเขตเลือกตั้ง (ตามข้อมูล กกต.)
+        $this->call([
+            ProvinceSeeder::class,      // 77 จังหวัด
+            ConstituencySeeder::class,  // 400 เขตเลือกตั้ง
+            PartySeeder::class,         // พรรคการเมืองหลัก
+        ]);
+
         // Create test user only if it doesn't exist
         if (! User::where('email', 'test@example.com')->exists()) {
             User::factory()->create([

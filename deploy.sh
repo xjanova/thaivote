@@ -609,24 +609,24 @@ run_seeders() {
 
     cd "${APP_DIR}"
 
-    # Check if demo data already exists
-    local has_demo_data=false
-    if php artisan tinker --execute="echo App\Models\User::where('email', 'test@example.com')->exists() ? 'yes' : 'no';" 2>/dev/null | grep -q "yes"; then
-        has_demo_data=true
+    # Check if core data already exists (provinces, parties)
+    local has_core_data=false
+    if php artisan tinker --execute="echo App\Models\Province::count() > 0 && App\Models\Party::count() > 0 ? 'yes' : 'no';" 2>/dev/null | grep -q "yes"; then
+        has_core_data=true
     fi
 
-    if [ "$has_demo_data" = true ] && [ "$force_seed" = false ]; then
-        log_info "Demo data already exists, skipping seeders (use --seed to force)"
+    if [ "$has_core_data" = true ] && [ "$force_seed" = false ]; then
+        log_info "Core data exists (provinces, parties), skipping seeders (use --seed to update)"
         return 0
     fi
 
-    if [ "$force_seed" = true ] || [ "$has_demo_data" = false ]; then
-        log_step "14" "Running Seeders"
+    if [ "$force_seed" = true ] || [ "$has_core_data" = false ]; then
+        log_step "14" "Running Seeders (ข้อมูลจาก กกต.)"
 
-        if [ "$has_demo_data" = true ]; then
-            log_info "Force seeding requested, running seeders..."
+        if [ "$has_core_data" = true ]; then
+            log_info "Force seeding requested, updating data..."
         else
-            log_info "No demo data found, running seeders..."
+            log_info "No core data found, seeding provinces, constituencies, parties..."
         fi
 
         if php artisan db:seed --force 2>&1; then
