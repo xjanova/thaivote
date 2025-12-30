@@ -539,22 +539,22 @@ configure_mysql() {
 
     while IFS= read -r line || [[ -n "$line" ]]; do
         case "$line" in
-            DB_CONNECTION=*|"#DB_CONNECTION="*)
+            DB_CONNECTION=*|"#DB_CONNECTION="*|"# DB_CONNECTION="*)
                 echo "DB_CONNECTION=mysql" >> "$TEMP_ENV"
                 ;;
-            DB_HOST=*|"#DB_HOST="*)
+            DB_HOST=*|"#DB_HOST="*|"# DB_HOST="*)
                 echo "DB_HOST=${DB_HOST}" >> "$TEMP_ENV"
                 ;;
-            DB_PORT=*|"#DB_PORT="*)
+            DB_PORT=*|"#DB_PORT="*|"# DB_PORT="*)
                 echo "DB_PORT=${DB_PORT}" >> "$TEMP_ENV"
                 ;;
-            DB_DATABASE=*|"#DB_DATABASE="*)
+            DB_DATABASE=*|"#DB_DATABASE="*|"# DB_DATABASE="*)
                 echo "DB_DATABASE=${DB_NAME}" >> "$TEMP_ENV"
                 ;;
-            DB_USERNAME=*|"#DB_USERNAME="*)
+            DB_USERNAME=*|"#DB_USERNAME="*|"# DB_USERNAME="*)
                 echo "DB_USERNAME=${DB_USER}" >> "$TEMP_ENV"
                 ;;
-            DB_PASSWORD=*|"#DB_PASSWORD="*)
+            DB_PASSWORD=*|"#DB_PASSWORD="*|"# DB_PASSWORD="*)
                 # Quote password to handle special characters
                 echo "DB_PASSWORD=\"${DB_PASS}\"" >> "$TEMP_ENV"
                 ;;
