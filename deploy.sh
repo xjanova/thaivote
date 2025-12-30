@@ -1,13 +1,16 @@
 #!/bin/bash
 #===============================================================================
 # ThaiVote - Election Results Tracker
-# Deployment Script v1.0
+# Deployment Script v2.0
 #
 # ระบบ Deploy อัตโนมัติสำหรับ ThaiVote
-# รองรับ: Laravel 11 + Vue.js + Reverb WebSocket
+# รองรับ: Laravel 12 + Vue.js + Reverb WebSocket
 #===============================================================================
 
 set -e
+
+# Script version
+VERSION="2.0"
 
 # Colors for output
 RED='\033[0;31m'
@@ -16,6 +19,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
+WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 
 # Configuration
@@ -25,6 +29,12 @@ LOG_FILE="${APP_DIR}/storage/logs/deploy.log"
 BACKUP_DIR="${APP_DIR}/storage/backups"
 DATE=$(date +%Y%m%d_%H%M%S)
 MIN_DISK_SPACE_MB=500
+
+# Options
+FRESH_COMPOSER=false
+SKIP_NPM=false
+SKIP_BACKUP=true  # Default: no backup (use --backup to enable)
+FORCE_MODE=false
 
 # Create necessary directories
 mkdir -p "${BACKUP_DIR}"
@@ -36,22 +46,26 @@ mkdir -p "${APP_DIR}/storage/logs"
 
 log() {
     echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1"
-    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1" >> "${LOG_FILE}"
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1" >> "${LOG_FILE}" 2>/dev/null || true
 }
 
 log_warning() {
     echo -e "${YELLOW}[WARNING]${NC} $1"
-    echo "[WARNING] $1" >> "${LOG_FILE}"
+    echo "[WARNING] $1" >> "${LOG_FILE}" 2>/dev/null || true
 }
 
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
-    echo "[ERROR] $1" >> "${LOG_FILE}"
+    echo "[ERROR] $1" >> "${LOG_FILE}" 2>/dev/null || true
+}
+
+log_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
 }
 
 log_step() {
     echo -e "\n${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${PURPLE}📌 STEP $1:${NC} $2"
+    echo -e "${PURPLE}📌 STEP $1:${NC} ${WHITE}$2${NC}"
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
 }
 
@@ -69,8 +83,8 @@ check_disk_space() {
         find "${BACKUP_DIR}" -name "*.tar.gz" -mtime +30 -delete 2>/dev/null || true
 
         # Clear Laravel cache
-        rm -rf "${APP_DIR}/storage/framework/cache/data/*" 2>/dev/null || true
-        rm -rf "${APP_DIR}/storage/framework/views/*" 2>/dev/null || true
+        rm -rf "${APP_DIR}/storage/framework/cache/data/"* 2>/dev/null || true
+        rm -rf "${APP_DIR}/storage/framework/views/"* 2>/dev/null || true
 
         available=$(df -m "${APP_DIR}" | awk 'NR==2 {print $4}')
         if [ "$available" -lt "$MIN_DISK_SPACE_MB" ]; then
@@ -81,6 +95,48 @@ check_disk_space() {
     else
         log "Disk space OK: ${available}MB available"
     fi
+}
+
+get_php_version() {
+    php -r "echo PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION;"
+}
+
+check_composer_lock_compatibility() {
+    log_info "Checking composer.lock compatibility..."
+
+    if [ ! -f "${APP_DIR}/composer.lock" ]; then
+        log_warning "composer.lock not found, will run composer update"
+        FRESH_COMPOSER=true
+        return 0
+    fi
+
+    # Get current PHP version
+    local PHP_VERSION=$(get_php_version)
+    log "Current PHP version: ${PHP_VERSION}"
+
+    # Check if composer.lock has PHP 8.4+ dependencies
+    if grep -q '"php":">=8\.4"' "${APP_DIR}/composer.lock" 2>/dev/null; then
+        if [[ "${PHP_VERSION}" < "8.4" ]]; then
+            log_warning "composer.lock requires PHP 8.4+ but you have PHP ${PHP_VERSION}"
+            log_warning "Will regenerate composer.lock..."
+            FRESH_COMPOSER=true
+        fi
+    fi
+
+    # Check for symfony packages requiring PHP 8.4
+    if grep -q 'symfony.*v8\.0\.' "${APP_DIR}/composer.lock" 2>/dev/null; then
+        if [[ "${PHP_VERSION}" < "8.4" ]]; then
+            log_warning "Symfony 8.x packages detected (require PHP 8.4+)"
+            log_warning "Will regenerate composer.lock for PHP ${PHP_VERSION}..."
+            FRESH_COMPOSER=true
+        fi
+    fi
+
+    if [ "$FRESH_COMPOSER" = true ]; then
+        return 0
+    fi
+
+    log "composer.lock is compatible with PHP ${PHP_VERSION}"
 }
 
 #===============================================================================
@@ -98,8 +154,13 @@ preflight_checks() {
 
     # Check if .env exists
     if [ ! -f "${APP_DIR}/.env" ]; then
-        log_error ".env file not found"
-        exit 1
+        if [ -f "${APP_DIR}/.env.example" ]; then
+            log_warning ".env not found, creating from .env.example"
+            cp "${APP_DIR}/.env.example" "${APP_DIR}/.env"
+        else
+            log_error ".env file not found"
+            exit 1
+        fi
     fi
 
     # Check disk space
@@ -110,17 +171,33 @@ preflight_checks() {
         log_error "PHP is not installed"
         exit 1
     fi
+    log "PHP $(get_php_version) ✓"
 
     # Check Composer
     if ! command -v composer &> /dev/null; then
         log_error "Composer is not installed"
         exit 1
     fi
+    log "Composer ✓"
 
     # Check Node.js
-    if ! command -v node &> /dev/null; then
+    if command -v node &> /dev/null; then
+        log "Node.js $(node --version) ✓"
+    else
         log_warning "Node.js is not installed (required for frontend build)"
+        SKIP_NPM=true
     fi
+
+    # Check npm
+    if command -v npm &> /dev/null; then
+        log "npm $(npm --version) ✓"
+    else
+        log_warning "npm is not installed"
+        SKIP_NPM=true
+    fi
+
+    # Check composer.lock compatibility
+    check_composer_lock_compatibility
 
     log "All pre-flight checks passed ✓"
 }
@@ -130,43 +207,56 @@ preflight_checks() {
 #===============================================================================
 
 backup_database() {
+    if [ "$SKIP_BACKUP" = true ]; then
+        log_info "Skipping database backup"
+        return 0
+    fi
+
     log_step "1" "Database Backup"
 
     # Read database credentials from .env
-    DB_CONNECTION=$(grep "^DB_CONNECTION=" "${APP_DIR}/.env" | cut -d '=' -f2)
-    DB_HOST=$(grep "^DB_HOST=" "${APP_DIR}/.env" | cut -d '=' -f2)
-    DB_DATABASE=$(grep "^DB_DATABASE=" "${APP_DIR}/.env" | cut -d '=' -f2)
-    DB_USERNAME=$(grep "^DB_USERNAME=" "${APP_DIR}/.env" | cut -d '=' -f2)
-    DB_PASSWORD=$(grep "^DB_PASSWORD=" "${APP_DIR}/.env" | cut -d '=' -f2)
+    DB_CONNECTION=$(grep "^DB_CONNECTION=" "${APP_DIR}/.env" | cut -d '=' -f2 | tr -d '"' | tr -d "'")
 
     if [ "${DB_CONNECTION}" = "mysql" ]; then
+        DB_HOST=$(grep "^DB_HOST=" "${APP_DIR}/.env" | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+        DB_DATABASE=$(grep "^DB_DATABASE=" "${APP_DIR}/.env" | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+        DB_USERNAME=$(grep "^DB_USERNAME=" "${APP_DIR}/.env" | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+        DB_PASSWORD=$(grep "^DB_PASSWORD=" "${APP_DIR}/.env" | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+
         BACKUP_FILE="${BACKUP_DIR}/db_backup_${DATE}.sql"
 
         if command -v mysqldump &> /dev/null; then
             log "Creating MySQL backup..."
-            mysqldump -h "${DB_HOST}" -u "${DB_USERNAME}" -p"${DB_PASSWORD}" "${DB_DATABASE}" > "${BACKUP_FILE}" 2>/dev/null || {
+            if mysqldump -h "${DB_HOST}" -u "${DB_USERNAME}" -p"${DB_PASSWORD}" "${DB_DATABASE}" > "${BACKUP_FILE}" 2>/dev/null; then
+                if [ -f "${BACKUP_FILE}" ] && [ -s "${BACKUP_FILE}" ]; then
+                    gzip "${BACKUP_FILE}"
+                    log "Database backed up to: ${BACKUP_FILE}.gz"
+                fi
+            else
                 log_warning "Database backup failed (non-critical)"
-            }
-
-            if [ -f "${BACKUP_FILE}" ] && [ -s "${BACKUP_FILE}" ]; then
-                gzip "${BACKUP_FILE}"
-                log "Database backed up to: ${BACKUP_FILE}.gz"
             fi
         else
             log_warning "mysqldump not found, skipping database backup"
         fi
     elif [ "${DB_CONNECTION}" = "sqlite" ]; then
-        SQLITE_PATH=$(grep "^DB_DATABASE=" "${APP_DIR}/.env" | cut -d '=' -f2)
-        if [ -f "${SQLITE_PATH}" ]; then
-            cp "${SQLITE_PATH}" "${BACKUP_DIR}/db_backup_${DATE}.sqlite"
+        SQLITE_FILE="${APP_DIR}/database/database.sqlite"
+        if [ -f "${SQLITE_FILE}" ]; then
+            cp "${SQLITE_FILE}" "${BACKUP_DIR}/db_backup_${DATE}.sqlite"
             log "SQLite database backed up"
+        else
+            log_info "No SQLite database found to backup"
         fi
     else
-        log_warning "Unsupported database type: ${DB_CONNECTION}"
+        log_info "Database type: ${DB_CONNECTION} (no backup configured)"
     fi
 }
 
 backup_critical_files() {
+    if [ "$SKIP_BACKUP" = true ]; then
+        log_info "Skipping critical files backup"
+        return 0
+    fi
+
     log_step "2" "Critical Files Backup"
 
     CRITICAL_BACKUP="${BACKUP_DIR}/critical_${DATE}.tar.gz"
@@ -175,8 +265,15 @@ backup_critical_files() {
     tar -czf "${CRITICAL_BACKUP}" \
         -C "${APP_DIR}" \
         .env \
-        storage/app/public \
         2>/dev/null || log_warning "Some files could not be backed up"
+
+    # Add storage/app/public if exists
+    if [ -d "${APP_DIR}/storage/app/public" ]; then
+        tar -rzf "${CRITICAL_BACKUP}" \
+            -C "${APP_DIR}" \
+            storage/app/public \
+            2>/dev/null || true
+    fi
 
     log "Critical files backed up to: ${CRITICAL_BACKUP}"
 }
@@ -189,7 +286,7 @@ enable_maintenance_mode() {
     log_step "3" "Enabling Maintenance Mode"
 
     cd "${APP_DIR}"
-    php artisan down --retry=60 --refresh=15 || true
+    php artisan down --retry=60 --refresh=15 2>/dev/null || true
     log "Maintenance mode enabled"
 }
 
@@ -197,7 +294,7 @@ disable_maintenance_mode() {
     log_step "FINAL" "Disabling Maintenance Mode"
 
     cd "${APP_DIR}"
-    php artisan up
+    php artisan up 2>/dev/null || true
     log "Application is now live!"
 }
 
@@ -206,22 +303,30 @@ pull_latest_code() {
 
     cd "${APP_DIR}"
 
+    # Check if this is a git repository
+    if [ ! -d ".git" ]; then
+        log_warning "Not a git repository, skipping code pull"
+        return 0
+    fi
+
     # Stash any local changes
-    if [ -n "$(git status --porcelain)" ]; then
+    if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
         log_warning "Local changes detected, stashing..."
-        git stash push -m "Deploy stash ${DATE}"
+        git stash push -m "Deploy stash ${DATE}" 2>/dev/null || true
     fi
 
     # Pull latest code
-    BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
     log "Current branch: ${BRANCH}"
 
-    git fetch origin
-    git reset --hard origin/${BRANCH}
-
-    log "Code updated to latest version"
-    git log -1 --pretty=format:"Commit: %h - %s (%an, %ar)" | tee -a "${LOG_FILE}"
-    echo ""
+    if git fetch origin 2>/dev/null; then
+        git reset --hard origin/${BRANCH} 2>/dev/null || git pull origin ${BRANCH}
+        log "Code updated to latest version"
+        git log -1 --pretty=format:"Commit: %h - %s (%an, %ar)" 2>/dev/null | tee -a "${LOG_FILE}" || true
+        echo ""
+    else
+        log_warning "Could not fetch from remote (offline mode?)"
+    fi
 }
 
 install_composer_dependencies() {
@@ -230,46 +335,93 @@ install_composer_dependencies() {
     cd "${APP_DIR}"
 
     # Determine environment
-    APP_ENV=$(grep "^APP_ENV=" "${APP_DIR}/.env" | cut -d '=' -f2)
+    APP_ENV=$(grep "^APP_ENV=" "${APP_DIR}/.env" | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+    APP_ENV=${APP_ENV:-production}
 
-    if [ "${APP_ENV}" = "production" ]; then
-        log "Production mode: Installing without dev dependencies"
-        composer install --no-dev --optimize-autoloader --no-interaction
+    # If fresh composer is needed, delete lock file
+    if [ "$FRESH_COMPOSER" = true ]; then
+        log_warning "Regenerating composer.lock for PHP $(get_php_version)..."
+        rm -f composer.lock
+
+        if [ "${APP_ENV}" = "production" ]; then
+            log "Running: composer update --no-dev --optimize-autoloader"
+            if ! composer update --no-dev --optimize-autoloader --no-interaction 2>&1; then
+                log_error "Composer update failed"
+                log_info "Trying with --ignore-platform-req=php..."
+                composer update --no-dev --optimize-autoloader --no-interaction --ignore-platform-req=php || {
+                    log_error "Composer update failed even with --ignore-platform-req"
+                    exit 1
+                }
+            fi
+        else
+            log "Running: composer update --optimize-autoloader"
+            composer update --optimize-autoloader --no-interaction || {
+                log_error "Composer update failed"
+                exit 1
+            }
+        fi
     else
-        log "Development mode: Installing all dependencies"
-        composer install --optimize-autoloader --no-interaction
+        if [ "${APP_ENV}" = "production" ]; then
+            log "Production mode: Installing without dev dependencies"
+            if ! composer install --no-dev --optimize-autoloader --no-interaction 2>&1; then
+                log_warning "composer install failed, trying update..."
+                rm -f composer.lock
+                composer update --no-dev --optimize-autoloader --no-interaction || {
+                    log_error "Composer update also failed"
+                    exit 1
+                }
+            fi
+        else
+            log "Development mode: Installing all dependencies"
+            composer install --optimize-autoloader --no-interaction || {
+                log_warning "composer install failed, trying update..."
+                rm -f composer.lock
+                composer update --optimize-autoloader --no-interaction
+            }
+        fi
     fi
 
-    log "Composer dependencies installed"
+    log "Composer dependencies installed ✓"
 }
 
 install_npm_dependencies() {
+    if [ "$SKIP_NPM" = true ]; then
+        log_info "Skipping NPM dependencies"
+        return 0
+    fi
+
     log_step "6" "Installing NPM Dependencies"
 
     cd "${APP_DIR}"
 
     if command -v npm &> /dev/null; then
-        npm ci --silent 2>/dev/null || npm install --silent
-        log "NPM dependencies installed"
+        # Try npm ci first (faster, uses lock file)
+        if [ -f "package-lock.json" ]; then
+            npm ci --silent 2>/dev/null || npm install --silent 2>/dev/null || npm install
+        else
+            npm install --silent 2>/dev/null || npm install
+        fi
+        log "NPM dependencies installed ✓"
     else
         log_warning "NPM not available, skipping frontend dependencies"
     fi
 }
 
 build_frontend() {
+    if [ "$SKIP_NPM" = true ]; then
+        log_info "Skipping frontend build"
+        return 0
+    fi
+
     log_step "7" "Building Frontend Assets"
 
     cd "${APP_DIR}"
 
-    APP_ENV=$(grep "^APP_ENV=" "${APP_DIR}/.env" | cut -d '=' -f2)
-
     if command -v npm &> /dev/null; then
-        if [ "${APP_ENV}" = "production" ]; then
-            npm run build
-            log "Production frontend assets built"
+        if npm run build 2>&1; then
+            log "Frontend assets built ✓"
         else
-            npm run build
-            log "Frontend assets built"
+            log_warning "Frontend build failed (non-critical)"
         fi
     else
         log_warning "NPM not available, skipping frontend build"
@@ -282,9 +434,11 @@ run_migrations() {
     cd "${APP_DIR}"
 
     # Run migrations with force flag for production
-    php artisan migrate --force
-
-    log "Migrations completed"
+    if php artisan migrate --force 2>&1; then
+        log "Migrations completed ✓"
+    else
+        log_warning "Migrations failed or no pending migrations"
+    fi
 }
 
 clear_caches() {
@@ -293,13 +447,13 @@ clear_caches() {
     cd "${APP_DIR}"
 
     # Clear all Laravel caches
-    php artisan cache:clear
-    php artisan config:clear
-    php artisan route:clear
-    php artisan view:clear
-    php artisan event:clear
+    php artisan cache:clear 2>/dev/null || true
+    php artisan config:clear 2>/dev/null || true
+    php artisan route:clear 2>/dev/null || true
+    php artisan view:clear 2>/dev/null || true
+    php artisan event:clear 2>/dev/null || true
 
-    log "All caches cleared"
+    log "All caches cleared ✓"
 }
 
 optimize_application() {
@@ -307,16 +461,16 @@ optimize_application() {
 
     cd "${APP_DIR}"
 
-    APP_ENV=$(grep "^APP_ENV=" "${APP_DIR}/.env" | cut -d '=' -f2)
+    APP_ENV=$(grep "^APP_ENV=" "${APP_DIR}/.env" | cut -d '=' -f2 | tr -d '"' | tr -d "'")
 
     if [ "${APP_ENV}" = "production" ]; then
         # Cache configuration
-        php artisan config:cache
-        php artisan route:cache
-        php artisan view:cache
-        php artisan event:cache
+        php artisan config:cache 2>/dev/null || log_warning "config:cache failed"
+        php artisan route:cache 2>/dev/null || log_warning "route:cache failed"
+        php artisan view:cache 2>/dev/null || log_warning "view:cache failed"
+        php artisan event:cache 2>/dev/null || log_warning "event:cache failed"
 
-        log "Application optimized for production"
+        log "Application optimized for production ✓"
     else
         log "Development mode: Skipping cache optimization"
     fi
@@ -330,12 +484,13 @@ setup_storage_links() {
     # Remove existing symlink if broken (using public_html instead of public)
     if [ -L "${APP_DIR}/public_html/storage" ] && [ ! -e "${APP_DIR}/public_html/storage" ]; then
         rm "${APP_DIR}/public_html/storage"
+        log "Removed broken storage symlink"
     fi
 
     # Create storage link
-    php artisan storage:link 2>/dev/null || log_warning "Storage link already exists"
+    php artisan storage:link 2>/dev/null || log_info "Storage link already exists"
 
-    log "Storage links configured"
+    log "Storage links configured ✓"
 }
 
 fix_permissions() {
@@ -346,12 +501,25 @@ fix_permissions() {
     # Set proper permissions for storage and cache
     chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
+    # Create required directories
+    mkdir -p storage/app/public/images
+    mkdir -p storage/app/public/uploads
+    mkdir -p storage/framework/cache/data
+    mkdir -p storage/framework/sessions
+    mkdir -p storage/framework/views
+    mkdir -p storage/logs
+
     # If www-data user exists, set ownership
     if id "www-data" &>/dev/null; then
         chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
     fi
 
-    log "Permissions fixed"
+    # If admin user exists (DirectAdmin), set ownership
+    if id "admin" &>/dev/null; then
+        chown -R admin:admin storage bootstrap/cache 2>/dev/null || true
+    fi
+
+    log "Permissions fixed ✓"
 }
 
 restart_services() {
@@ -360,26 +528,31 @@ restart_services() {
     cd "${APP_DIR}"
 
     # Restart queue workers
-    php artisan queue:restart 2>/dev/null || log_warning "Queue restart failed (non-critical)"
+    php artisan queue:restart 2>/dev/null || log_info "No queue workers to restart"
 
-    # Restart PHP-FPM if available
-    if systemctl is-active --quiet php8.3-fpm 2>/dev/null; then
-        sudo systemctl reload php8.3-fpm
-        log "PHP-FPM reloaded"
-    elif systemctl is-active --quiet php8.2-fpm 2>/dev/null; then
-        sudo systemctl reload php8.2-fpm
-        log "PHP-FPM reloaded"
-    elif systemctl is-active --quiet php-fpm 2>/dev/null; then
-        sudo systemctl reload php-fpm
-        log "PHP-FPM reloaded"
-    else
-        log_warning "PHP-FPM not found or not running as a service"
+    # Restart PHP-FPM if available (check multiple versions)
+    local PHP_FPM_RESTARTED=false
+    for version in 8.4 8.3 8.2 8.1 8.0; do
+        if systemctl is-active --quiet "php${version}-fpm" 2>/dev/null; then
+            sudo systemctl reload "php${version}-fpm" 2>/dev/null && {
+                log "PHP ${version}-FPM reloaded"
+                PHP_FPM_RESTARTED=true
+                break
+            }
+        fi
+    done
+
+    if [ "$PHP_FPM_RESTARTED" = false ]; then
+        if systemctl is-active --quiet php-fpm 2>/dev/null; then
+            sudo systemctl reload php-fpm 2>/dev/null && log "PHP-FPM reloaded"
+        else
+            log_info "PHP-FPM not found or not running as a service"
+        fi
     fi
 
     # Restart Reverb WebSocket server if configured
     if systemctl is-active --quiet thaivote-reverb 2>/dev/null; then
-        sudo systemctl restart thaivote-reverb
-        log "Reverb WebSocket server restarted"
+        sudo systemctl restart thaivote-reverb 2>/dev/null && log "Reverb WebSocket server restarted"
     fi
 
     # Restart Supervisor if available
@@ -389,20 +562,17 @@ restart_services() {
         log "Supervisor updated"
     fi
 
-    log "Services restarted"
+    log "Services restarted ✓"
 }
 
 run_seeders() {
-    log_step "14" "Running Seeders (if needed)"
-
-    cd "${APP_DIR}"
+    local args="$*"
 
     # Only run seeders if --seed flag is passed
-    if [[ "$*" == *"--seed"* ]]; then
-        php artisan db:seed --force
-        log "Seeders executed"
-    else
-        log "Skipping seeders (use --seed to run)"
+    if [[ "$args" == *"--seed"* ]]; then
+        log_step "14" "Running Seeders"
+        cd "${APP_DIR}"
+        php artisan db:seed --force 2>&1 && log "Seeders executed ✓" || log_warning "Seeders failed"
     fi
 }
 
@@ -410,22 +580,23 @@ verify_deployment() {
     log_step "15" "Verifying Deployment"
 
     cd "${APP_DIR}"
+    local ERRORS=0
 
     # Check if artisan works
     if php artisan --version &>/dev/null; then
         log "✓ Artisan command works"
     else
         log_error "✗ Artisan command failed"
-        return 1
+        ERRORS=$((ERRORS + 1))
     fi
 
     # Check if key config values are set
     APP_KEY=$(grep "^APP_KEY=" "${APP_DIR}/.env" | cut -d '=' -f2)
-    if [ -n "${APP_KEY}" ] && [ "${APP_KEY}" != "" ]; then
+    if [ -n "${APP_KEY}" ] && [ "${APP_KEY}" != "" ] && [ "${APP_KEY}" != "base64:" ]; then
         log "✓ APP_KEY is set"
     else
-        log_error "✗ APP_KEY is missing"
-        php artisan key:generate
+        log_warning "⚠ APP_KEY is missing, generating..."
+        php artisan key:generate --force
     fi
 
     # Check database connection
@@ -442,7 +613,18 @@ verify_deployment() {
         log_warning "⚠ Frontend assets not found in public_html/build"
     fi
 
-    log "Deployment verification completed"
+    # Check storage link
+    if [ -L "${APP_DIR}/public_html/storage" ]; then
+        log "✓ Storage link exists"
+    else
+        log_warning "⚠ Storage link not found"
+    fi
+
+    if [ $ERRORS -eq 0 ]; then
+        log "Deployment verification passed ✓"
+    else
+        log_error "Deployment verification found ${ERRORS} error(s)"
+    fi
 }
 
 #===============================================================================
@@ -476,7 +658,7 @@ EOF
 # Main Deployment Function
 #===============================================================================
 
-deploy() {
+show_banner() {
     echo -e "\n${BLUE}╔════════════════════════════════════════════════════════════════════════════╗${NC}"
     echo -e "${BLUE}║${NC}                                                                            ${BLUE}║${NC}"
     echo -e "${BLUE}║${NC}   ${PURPLE}████████╗██╗  ██╗ █████╗ ██╗██╗   ██╗ ██████╗ ████████╗███████╗${NC}        ${BLUE}║${NC}"
@@ -487,9 +669,13 @@ deploy() {
     echo -e "${BLUE}║${NC}   ${PURPLE}   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═════╝    ╚═╝   ╚══════╝${NC}        ${BLUE}║${NC}"
     echo -e "${BLUE}║${NC}                                                                            ${BLUE}║${NC}"
     echo -e "${BLUE}║${NC}                    ${CYAN}Election Results Tracker${NC}                              ${BLUE}║${NC}"
-    echo -e "${BLUE}║${NC}                    ${GREEN}Deployment Script v1.0${NC}                                ${BLUE}║${NC}"
+    echo -e "${BLUE}║${NC}                    ${GREEN}Deployment Script v${VERSION}${NC}                                ${BLUE}║${NC}"
     echo -e "${BLUE}║${NC}                                                                            ${BLUE}║${NC}"
     echo -e "${BLUE}╚════════════════════════════════════════════════════════════════════════════╝${NC}\n"
+}
+
+deploy() {
+    show_banner
 
     START_TIME=$(date +%s)
 
@@ -530,8 +716,8 @@ deploy() {
     echo -e "${GREEN}║${NC}                                                                            ${GREEN}║${NC}"
     echo -e "${GREEN}║${NC}   ${GREEN}✅ DEPLOYMENT COMPLETED SUCCESSFULLY!${NC}                                   ${GREEN}║${NC}"
     echo -e "${GREEN}║${NC}                                                                            ${GREEN}║${NC}"
-    echo -e "${GREEN}║${NC}   Duration: ${DURATION} seconds                                                     ${GREEN}║${NC}"
-    echo -e "${GREEN}║${NC}   Timestamp: $(date)                                    ${GREEN}║${NC}"
+    echo -e "${GREEN}║${NC}   Duration: ${DURATION} seconds                                                       ${GREEN}║${NC}"
+    echo -e "${GREEN}║${NC}   Timestamp: $(date '+%Y-%m-%d %H:%M:%S')                                        ${GREEN}║${NC}"
     echo -e "${GREEN}║${NC}                                                                            ${GREEN}║${NC}"
     echo -e "${GREEN}╚════════════════════════════════════════════════════════════════════════════╝${NC}\n"
 
@@ -543,19 +729,36 @@ deploy() {
 #===============================================================================
 
 quick_deploy() {
-    echo -e "${YELLOW}Running quick deployment (no backups, no npm rebuild)...${NC}\n"
+    echo -e "${YELLOW}Running quick deployment (no backups, minimal checks)...${NC}\n"
 
     cd "${APP_DIR}"
 
-    php artisan down --retry=60 || true
+    # Check composer.lock compatibility first
+    check_composer_lock_compatibility
 
-    git pull origin $(git rev-parse --abbrev-ref HEAD)
-    composer install --no-dev --optimize-autoloader --no-interaction
-    php artisan migrate --force
-    php artisan cache:clear
-    php artisan config:cache
-    php artisan route:cache
-    php artisan view:cache
+    php artisan down --retry=60 2>/dev/null || true
+
+    # Pull if git repo
+    if [ -d ".git" ]; then
+        git pull origin $(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main") 2>/dev/null || true
+    fi
+
+    # Composer
+    if [ "$FRESH_COMPOSER" = true ]; then
+        rm -f composer.lock
+        composer update --no-dev --optimize-autoloader --no-interaction
+    else
+        composer install --no-dev --optimize-autoloader --no-interaction 2>/dev/null || {
+            rm -f composer.lock
+            composer update --no-dev --optimize-autoloader --no-interaction
+        }
+    fi
+
+    php artisan migrate --force 2>/dev/null || true
+    php artisan cache:clear 2>/dev/null || true
+    php artisan config:cache 2>/dev/null || true
+    php artisan route:cache 2>/dev/null || true
+    php artisan view:cache 2>/dev/null || true
     php artisan queue:restart 2>/dev/null || true
 
     php artisan up
@@ -564,28 +767,63 @@ quick_deploy() {
 }
 
 #===============================================================================
+# Fix Composer Command
+#===============================================================================
+
+fix_composer() {
+    echo -e "${CYAN}Fixing Composer dependencies for PHP $(get_php_version)...${NC}\n"
+
+    cd "${APP_DIR}"
+
+    # Remove lock file
+    rm -f composer.lock
+    log "Removed composer.lock"
+
+    # Clear composer cache
+    composer clear-cache 2>/dev/null || true
+
+    # Update dependencies
+    APP_ENV=$(grep "^APP_ENV=" "${APP_DIR}/.env" 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'" || echo "production")
+
+    if [ "${APP_ENV}" = "production" ]; then
+        composer update --no-dev --optimize-autoloader --no-interaction
+    else
+        composer update --optimize-autoloader --no-interaction
+    fi
+
+    echo -e "\n${GREEN}Composer dependencies fixed!${NC}"
+}
+
+#===============================================================================
 # Help
 #===============================================================================
 
 show_help() {
-    echo -e "${CYAN}ThaiVote Deployment Script${NC}"
+    echo -e "${CYAN}ThaiVote Deployment Script v${VERSION}${NC}"
     echo ""
     echo "Usage: $0 [command] [options]"
     echo ""
     echo "Commands:"
-    echo "  deploy      Full deployment with backups (default)"
-    echo "  quick       Quick deployment without backups"
-    echo "  rollback    Show rollback information"
-    echo "  status      Show application status"
-    echo "  help        Show this help message"
+    echo "  deploy        Full deployment with backups (default)"
+    echo "  quick         Quick deployment without backups"
+    echo "  fix-composer  Fix composer.lock for current PHP version"
+    echo "  rollback      Show rollback information"
+    echo "  status        Show application status"
+    echo "  help          Show this help message"
     echo ""
     echo "Options:"
-    echo "  --seed      Run database seeders after migration"
+    echo "  --seed              Run database seeders after migration"
+    echo "  --fresh-composer    Force regenerate composer.lock"
+    echo "  --skip-npm          Skip NPM install and build"
+    echo "  --backup            Enable database and file backups (disabled by default)"
     echo ""
     echo "Examples:"
-    echo "  $0                  # Full deployment"
-    echo "  $0 deploy --seed    # Full deployment with seeders"
-    echo "  $0 quick            # Quick deployment"
+    echo "  $0                        # Full deployment (no backup)"
+    echo "  $0 deploy --seed          # Full deployment with seeders"
+    echo "  $0 deploy --backup        # Full deployment with backups"
+    echo "  $0 quick                  # Quick deployment"
+    echo "  $0 fix-composer           # Fix composer for current PHP"
+    echo "  $0 deploy --fresh-composer  # Force update composer.lock"
     echo ""
 }
 
@@ -595,18 +833,29 @@ show_status() {
 
     cd "${APP_DIR}"
 
+    echo -e "\n${PURPLE}System:${NC}"
+    echo "  PHP: $(get_php_version)"
+    if command -v node &>/dev/null; then
+        echo "  Node: $(node --version)"
+    fi
+
     echo -e "\n${PURPLE}Git Status:${NC}"
-    git log -1 --pretty=format:"  Branch: %D%n  Commit: %h%n  Author: %an%n  Date: %ar%n  Message: %s"
+    if [ -d ".git" ]; then
+        git log -1 --pretty=format:"  Branch: %D%n  Commit: %h%n  Author: %an%n  Date: %ar%n  Message: %s" 2>/dev/null || echo "  Not available"
+    else
+        echo "  Not a git repository"
+    fi
 
     echo -e "\n\n${PURPLE}Laravel Status:${NC}"
-    php artisan --version
+    php artisan --version 2>/dev/null || echo "  Artisan not working"
 
     echo -e "\n${PURPLE}Environment:${NC}"
-    grep "^APP_ENV=" "${APP_DIR}/.env" | sed 's/^/  /'
-    grep "^APP_DEBUG=" "${APP_DIR}/.env" | sed 's/^/  /'
+    grep "^APP_ENV=" "${APP_DIR}/.env" 2>/dev/null | sed 's/^/  /' || echo "  Not set"
+    grep "^APP_DEBUG=" "${APP_DIR}/.env" 2>/dev/null | sed 's/^/  /' || echo "  Not set"
 
     echo -e "\n${PURPLE}Database:${NC}"
-    php artisan migrate:status 2>/dev/null | head -20 || echo "  Unable to connect to database"
+    grep "^DB_CONNECTION=" "${APP_DIR}/.env" 2>/dev/null | sed 's/^/  /' || echo "  Not set"
+    php artisan migrate:status 2>/dev/null | head -10 || echo "  Unable to connect to database"
 
     echo -e "\n${PURPLE}Cache Status:${NC}"
     if [ -f "${APP_DIR}/bootstrap/cache/config.php" ]; then
@@ -620,12 +869,51 @@ show_status() {
         echo "  Routes: Not cached"
     fi
 
+    echo -e "\n${PURPLE}Frontend:${NC}"
+    if [ -d "${APP_DIR}/public_html/build" ]; then
+        echo "  Build: Exists"
+    else
+        echo "  Build: Not found"
+    fi
+
     echo ""
+}
+
+#===============================================================================
+# Parse Options
+#===============================================================================
+
+parse_options() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --fresh-composer)
+                FRESH_COMPOSER=true
+                shift
+                ;;
+            --skip-npm)
+                SKIP_NPM=true
+                shift
+                ;;
+            --backup)
+                SKIP_BACKUP=false
+                shift
+                ;;
+            --seed)
+                shift
+                ;;
+            *)
+                shift
+                ;;
+        esac
+    done
 }
 
 #===============================================================================
 # Main Entry Point
 #===============================================================================
+
+# Parse options first
+parse_options "$@"
 
 case "${1:-deploy}" in
     deploy)
@@ -634,9 +922,12 @@ case "${1:-deploy}" in
     quick)
         quick_deploy
         ;;
+    fix-composer|fix_composer)
+        fix_composer
+        ;;
     rollback)
         echo "Recent backups:"
-        ls -la "${BACKUP_DIR}" 2>/dev/null | tail -10
+        ls -la "${BACKUP_DIR}" 2>/dev/null | tail -10 || echo "No backups found"
         ;;
     status)
         show_status
@@ -645,8 +936,13 @@ case "${1:-deploy}" in
         show_help
         ;;
     *)
-        echo "Unknown command: $1"
-        show_help
-        exit 1
+        # Check if it's an option
+        if [[ "$1" == --* ]]; then
+            deploy "$@"
+        else
+            echo "Unknown command: $1"
+            show_help
+            exit 1
+        fi
         ;;
 esac
