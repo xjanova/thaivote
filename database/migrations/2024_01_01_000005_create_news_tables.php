@@ -60,7 +60,11 @@ return new class extends Migration
 
             $table->index('published_at');
             $table->index('relevance_score');
-            $table->fullText(['title', 'content']);
+
+            // Fulltext index is only supported by MySQL/MariaDB
+            if (in_array(Schema::getConnection()->getDriverName(), ['mysql', 'mariadb'])) {
+                $table->fullText(['title', 'content']);
+            }
         });
 
         // News article - party relationship
