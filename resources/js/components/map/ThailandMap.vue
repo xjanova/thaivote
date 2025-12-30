@@ -582,7 +582,8 @@ onMounted(() => {
 }
 
 .hexagon-button {
-    @apply absolute bottom-24 right-4 z-10 w-14 h-14 bg-gradient-to-br from-primary to-orange-600 text-white rounded-xl shadow-lg flex items-center justify-center hover:scale-110 transition-transform;
+    @apply absolute bottom-24 right-4 z-10 w-14 h-14 text-white rounded-xl shadow-lg flex items-center justify-center hover:scale-110 transition-transform;
+    background: linear-gradient(to bottom right, var(--color-primary), #ea580c);
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
 }
 
