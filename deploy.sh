@@ -600,12 +600,40 @@ restart_services() {
 
 run_seeders() {
     local args="$*"
+    local force_seed=false
 
-    # Only run seeders if --seed flag is passed
+    # Check if --seed flag is passed
     if [[ "$args" == *"--seed"* ]]; then
+        force_seed=true
+    fi
+
+    cd "${APP_DIR}"
+
+    # Check if demo data already exists
+    local has_demo_data=false
+    if php artisan tinker --execute="echo App\Models\User::where('email', 'test@example.com')->exists() ? 'yes' : 'no';" 2>/dev/null | grep -q "yes"; then
+        has_demo_data=true
+    fi
+
+    if [ "$has_demo_data" = true ] && [ "$force_seed" = false ]; then
+        log_info "Demo data already exists, skipping seeders (use --seed to force)"
+        return 0
+    fi
+
+    if [ "$force_seed" = true ] || [ "$has_demo_data" = false ]; then
         log_step "14" "Running Seeders"
-        cd "${APP_DIR}"
-        php artisan db:seed --force 2>&1 && log "Seeders executed ✓" || log_warning "Seeders failed"
+
+        if [ "$has_demo_data" = true ]; then
+            log_info "Force seeding requested, running seeders..."
+        else
+            log_info "No demo data found, running seeders..."
+        fi
+
+        if php artisan db:seed --force 2>&1; then
+            log "Seeders executed ✓"
+        else
+            log_warning "Seeders failed (non-critical)"
+        fi
     fi
 }
 
@@ -845,7 +873,7 @@ show_help() {
     echo "  help          Show this help message"
     echo ""
     echo "Options:"
-    echo "  --seed              Run database seeders after migration"
+    echo "  --seed              Force run database seeders (auto-runs if no demo data exists)"
     echo "  --fresh-composer    Force regenerate composer.lock"
     echo "  --skip-npm          Skip NPM install and build"
     echo "  --backup            Enable database and file backups (disabled by default)"

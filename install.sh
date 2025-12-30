@@ -892,14 +892,7 @@ setup_database() {
         break
     done
 
-    # Ask about seeding
-    if confirm "Run database seeders (demo data)?" "N"; then
-        if php artisan db:seed --force 2>/dev/null; then
-            log "Database seeded"
-        else
-            log_warning "Seeding failed (might not have seeders)"
-        fi
-    fi
+    log_info "To seed demo data, run: ./deploy.sh --seed"
 }
 
 #===============================================================================
