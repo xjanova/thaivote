@@ -500,14 +500,28 @@ setup_storage_links() {
 
     cd "${APP_DIR}"
 
-    # Remove existing symlink if broken (using public_html instead of public)
+    # Ensure storage/app/public exists
+    mkdir -p "${APP_DIR}/storage/app/public"
+
+    # Ensure public_html exists
+    mkdir -p "${APP_DIR}/public_html"
+
+    # Remove existing symlink if broken
     if [ -L "${APP_DIR}/public_html/storage" ] && [ ! -e "${APP_DIR}/public_html/storage" ]; then
         rm "${APP_DIR}/public_html/storage"
         log "Removed broken storage symlink"
     fi
 
-    # Create storage link
-    php artisan storage:link 2>/dev/null || log_info "Storage link already exists"
+    # Create storage link manually if artisan fails
+    if ! php artisan storage:link 2>/dev/null; then
+        if [ ! -L "${APP_DIR}/public_html/storage" ]; then
+            ln -s "${APP_DIR}/storage/app/public" "${APP_DIR}/public_html/storage" 2>/dev/null && \
+                log "Created storage symlink manually" || \
+                log_warning "Could not create storage symlink"
+        else
+            log_info "Storage link already exists"
+        fi
+    fi
 
     log "Storage links configured ✓"
 }
