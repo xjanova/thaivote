@@ -600,12 +600,40 @@ restart_services() {
 
 run_seeders() {
     local args="$*"
+    local force_seed=false
 
-    # Only run seeders if --seed flag is passed
+    # Check if --seed flag is passed
     if [[ "$args" == *"--seed"* ]]; then
-        log_step "14" "Running Seeders"
-        cd "${APP_DIR}"
-        php artisan db:seed --force 2>&1 && log "Seeders executed ✓" || log_warning "Seeders failed"
+        force_seed=true
+    fi
+
+    cd "${APP_DIR}"
+
+    # Check if core data already exists (provinces, parties)
+    local has_core_data=false
+    if php artisan tinker --execute="echo App\Models\Province::count() > 0 && App\Models\Party::count() > 0 ? 'yes' : 'no';" 2>/dev/null | grep -q "yes"; then
+        has_core_data=true
+    fi
+
+    if [ "$has_core_data" = true ] && [ "$force_seed" = false ]; then
+        log_info "Core data exists (provinces, parties), skipping seeders (use --seed to update)"
+        return 0
+    fi
+
+    if [ "$force_seed" = true ] || [ "$has_core_data" = false ]; then
+        log_step "14" "Running Seeders (ข้อมูลจาก กกต.)"
+
+        if [ "$has_core_data" = true ]; then
+            log_info "Force seeding requested, updating data..."
+        else
+            log_info "No core data found, seeding provinces, constituencies, parties..."
+        fi
+
+        if php artisan db:seed --force 2>&1; then
+            log "Seeders executed ✓"
+        else
+            log_warning "Seeders failed (non-critical)"
+        fi
     fi
 }
 
@@ -845,7 +873,7 @@ show_help() {
     echo "  help          Show this help message"
     echo ""
     echo "Options:"
-    echo "  --seed              Run database seeders after migration"
+    echo "  --seed              Force run database seeders (auto-runs if no demo data exists)"
     echo "  --fresh-composer    Force regenerate composer.lock"
     echo "  --skip-npm          Skip NPM install and build"
     echo "  --backup            Enable database and file backups (disabled by default)"
