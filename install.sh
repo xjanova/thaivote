@@ -630,20 +630,25 @@ setup_application() {
     php artisan key:generate --force --quiet
     log "Application key generated"
 
-    # Create storage link (using public_html instead of public)
-    if [ ! -L "public_html/storage" ]; then
-        php artisan storage:link --quiet 2>/dev/null || true
-        log "Storage link created"
-    else
-        log "Storage link already exists"
-    fi
-
-    # Create required directories
+    # Ensure directories exist first
     mkdir -p storage/app/public/images/parties
     mkdir -p storage/app/public/uploads
     mkdir -p storage/backups
     mkdir -p storage/logs
     mkdir -p bootstrap/cache
+    mkdir -p public_html
+
+    # Create storage link (using public_html instead of public)
+    if [ ! -L "public_html/storage" ]; then
+        if ! php artisan storage:link --quiet 2>/dev/null; then
+            # Manual fallback
+            ln -sf "${APP_DIR}/storage/app/public" "${APP_DIR}/public_html/storage" 2>/dev/null || true
+        fi
+        log "Storage link created"
+    else
+        log "Storage link already exists"
+    fi
+
     log "Required directories created"
 
     # Set permissions
@@ -659,6 +664,37 @@ setup_database() {
     log_step "7" "Database Setup"
 
     cd "${APP_DIR}"
+
+    # Check database connection first
+    echo "Checking database connection..."
+    if ! php artisan migrate:status 2>/tmp/db_error.log >/dev/null; then
+        log_error "Database connection failed"
+
+        # Check error type
+        if grep -q "Access denied" /tmp/db_error.log 2>/dev/null; then
+            echo -e "${YELLOW}Database credentials are incorrect.${NC}"
+            echo ""
+            echo "Please edit .env file with correct database credentials:"
+            echo -e "  ${CYAN}nano .env${NC}"
+            echo ""
+            echo "Required settings:"
+            echo "  DB_CONNECTION=mysql"
+            echo "  DB_HOST=localhost"
+            echo "  DB_DATABASE=your_database"
+            echo "  DB_USERNAME=your_username"
+            echo "  DB_PASSWORD=your_password"
+            echo ""
+        elif grep -q "Unknown database" /tmp/db_error.log 2>/dev/null; then
+            echo -e "${YELLOW}Database does not exist.${NC}"
+            echo "Please create the database first or check DB_DATABASE in .env"
+            echo ""
+        fi
+
+        if ! confirm "Continue without database setup?" "N"; then
+            exit 1
+        fi
+        return
+    fi
 
     # Run migrations
     echo "Running database migrations..."
