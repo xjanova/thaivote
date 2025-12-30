@@ -33,7 +33,7 @@ MIN_DISK_SPACE_MB=500
 # Options
 FRESH_COMPOSER=false
 SKIP_NPM=false
-SKIP_BACKUP=false
+SKIP_BACKUP=true  # Default: no backup (use --backup to enable)
 FORCE_MODE=false
 
 # Create necessary directories
@@ -815,11 +815,12 @@ show_help() {
     echo "  --seed              Run database seeders after migration"
     echo "  --fresh-composer    Force regenerate composer.lock"
     echo "  --skip-npm          Skip NPM install and build"
-    echo "  --skip-backup       Skip database and file backups"
+    echo "  --backup            Enable database and file backups (disabled by default)"
     echo ""
     echo "Examples:"
-    echo "  $0                        # Full deployment"
+    echo "  $0                        # Full deployment (no backup)"
     echo "  $0 deploy --seed          # Full deployment with seeders"
+    echo "  $0 deploy --backup        # Full deployment with backups"
     echo "  $0 quick                  # Quick deployment"
     echo "  $0 fix-composer           # Fix composer for current PHP"
     echo "  $0 deploy --fresh-composer  # Force update composer.lock"
@@ -893,8 +894,8 @@ parse_options() {
                 SKIP_NPM=true
                 shift
                 ;;
-            --skip-backup)
-                SKIP_BACKUP=true
+            --backup)
+                SKIP_BACKUP=false
                 shift
                 ;;
             --seed)
