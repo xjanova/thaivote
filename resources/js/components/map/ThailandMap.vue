@@ -548,6 +548,8 @@ onMounted(() => {
 </script>
 
 <style scoped>
+@reference "tailwindcss";
+
 .thailand-map-container {
     @apply w-full h-[600px] lg:h-[800px] bg-gradient-to-b from-blue-50 to-blue-100 rounded-2xl overflow-hidden;
 }
