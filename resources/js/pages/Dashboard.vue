@@ -398,11 +398,15 @@ onUnmounted(() => {
 @reference "tailwindcss";
 
 .nav-link {
-    @apply text-gray-600 hover:text-primary transition-colors;
+    @apply text-gray-600 transition-colors;
+    &:hover {
+        color: var(--color-primary);
+    }
 }
 
 .nav-link.active {
-    @apply text-primary font-semibold;
+    @apply font-semibold;
+    color: var(--color-primary);
 }
 
 .circular-chart {
