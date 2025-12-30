@@ -395,13 +395,31 @@ install_npm_dependencies() {
     cd "${APP_DIR}"
 
     if command -v npm &> /dev/null; then
+        # Set npm timeout (5 minutes max)
+        export npm_config_fetch_timeout=300000
+        export npm_config_fetch_retries=2
+
         # Try npm ci first (faster, uses lock file)
         if [ -f "package-lock.json" ]; then
-            npm ci --silent 2>/dev/null || npm install --silent 2>/dev/null || npm install
+            log "Running npm ci..."
+            if timeout 300 npm ci 2>&1; then
+                log "NPM dependencies installed ✓"
+            else
+                log_warning "npm ci failed, trying npm install..."
+                timeout 300 npm install 2>&1 || {
+                    log_warning "NPM install failed or timed out (non-critical)"
+                    return 0
+                }
+                log "NPM dependencies installed ✓"
+            fi
         else
-            npm install --silent 2>/dev/null || npm install
+            log "Running npm install..."
+            timeout 300 npm install 2>&1 || {
+                log_warning "NPM install failed or timed out (non-critical)"
+                return 0
+            }
+            log "NPM dependencies installed ✓"
         fi
-        log "NPM dependencies installed ✓"
     else
         log_warning "NPM not available, skipping frontend dependencies"
     fi
@@ -418,10 +436,11 @@ build_frontend() {
     cd "${APP_DIR}"
 
     if command -v npm &> /dev/null; then
-        if npm run build 2>&1; then
+        log "Running npm run build..."
+        if timeout 600 npm run build 2>&1; then
             log "Frontend assets built ✓"
         else
-            log_warning "Frontend build failed (non-critical)"
+            log_warning "Frontend build failed or timed out (non-critical)"
         fi
     else
         log_warning "NPM not available, skipping frontend build"
