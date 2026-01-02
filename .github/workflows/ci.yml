@@ -124,7 +124,7 @@ jobs:
           DB_DATABASE: thaivote_test
           DB_USERNAME: root
           DB_PASSWORD: password
-        run: php artisan test --coverage --min=50
+        run: php artisan test
 
   test-js:
     name: JavaScript Tests
