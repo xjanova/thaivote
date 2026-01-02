@@ -86,11 +86,11 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <button
-                                    @click="toggleActive(party)"
                                     :class="[
                                         'px-2 py-1 text-xs font-medium rounded-full',
                                         party.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                                     ]"
+                                    @click="toggleActive(party)"
                                 >
                                     {{ party.is_active ? 'ใช้งาน' : 'ไม่ใช้งาน' }}
                                 </button>
@@ -104,8 +104,8 @@
                                         แก้ไข
                                     </Link>
                                     <button
-                                        @click="confirmDelete(party)"
                                         class="text-red-600 hover:text-red-900"
+                                        @click="confirmDelete(party)"
                                     >
                                         ลบ
                                     </button>
@@ -136,8 +136,7 @@
                                     link.active ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100',
                                     !link.url && 'opacity-50 cursor-not-allowed'
                                 ]"
-                                v-html="link.label"
-                            />
+                            ><span v-html="link.label" /></Link>
                         </div>
                     </div>
                 </div>
@@ -156,14 +155,14 @@
                     </p>
                     <div class="flex justify-end gap-3">
                         <button
-                            @click="showDeleteModal = false"
                             class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                            @click="showDeleteModal = false"
                         >
                             ยกเลิก
                         </button>
                         <button
-                            @click="deleteParty"
                             class="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700"
+                            @click="deleteParty"
                         >
                             ลบ
                         </button>

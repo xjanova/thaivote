@@ -15,20 +15,14 @@ export const useResultsStore = defineStore('results', () => {
     const lastUpdated = ref(null);
 
     // Getters
-    const totalSeats = computed(() => {
-        return nationalResults.value.reduce((sum, r) => sum + r.total_seats, 0);
-    });
+    const totalSeats = computed(() => nationalResults.value.reduce((sum, r) => sum + r.total_seats, 0));
 
-    const totalVotes = computed(() => {
-        return nationalResults.value.reduce((sum, r) => sum + r.total_votes, 0);
-    });
+    const totalVotes = computed(() => nationalResults.value.reduce((sum, r) => sum + r.total_votes, 0));
 
-    const countingProgress = computed(() => {
-        return stats.value?.counting_progress || 0;
-    });
+    const countingProgress = computed(() => stats.value?.counting_progress || 0);
 
     const leadingParty = computed(() => {
-        if (!nationalResults.value.length) return null;
+        if (!nationalResults.value.length) {return null;}
         return nationalResults.value.sort((a, b) => b.total_seats - a.total_seats)[0];
     });
 
@@ -71,21 +65,17 @@ export const useResultsStore = defineStore('results', () => {
         return response.data;
     };
 
-    const getProvinceResults = (provinceId) => {
-        return provinceResults.value.filter(r => r.province_id === provinceId);
-    };
+    const getProvinceResults = (provinceId) => provinceResults.value.filter(r => r.province_id === provinceId);
 
     const getProvinceCountingProgress = (provinceId) => {
         const results = getProvinceResults(provinceId);
-        if (!results.length) return 0;
+        if (!results.length) {return 0;}
         const total = results.reduce((sum, r) => sum + r.constituencies_total, 0);
         const counted = results.reduce((sum, r) => sum + r.constituencies_counted, 0);
         return total > 0 ? Math.round((counted / total) * 100) : 0;
     };
 
-    const getConstituencies = (provinceId) => {
-        return constituencyResults.value.filter(c => c.province_id === provinceId);
-    };
+    const getConstituencies = (provinceId) => constituencyResults.value.filter(c => c.province_id === provinceId);
 
     const getProvincesWonByParty = (partyId) => {
         const partyProvinces = new Set();
@@ -126,9 +116,7 @@ export const useResultsStore = defineStore('results', () => {
         lastUpdated.value = new Date();
     };
 
-    const getPartyById = (partyId) => {
-        return parties.value.find(p => p.id === partyId);
-    };
+    const getPartyById = (partyId) => parties.value.find(p => p.id === partyId);
 
     return {
         // State
