@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.21.2](https://github.com/xjanova/thaivote/compare/v1.21.1...v1.21.2) (2026-01-02)
+
+
+### Bug Fixes
+
+* create tar archive in parent dir to avoid self-inclusion ([af3c65e](https://github.com/xjanova/thaivote/commit/af3c65e3721f1b686bfc80d9b4934cd546639ff4))
+* create tar archive in parent dir to avoid self-inclusion ([49d033d](https://github.com/xjanova/thaivote/commit/49d033d1122af2ae2e00856be442bb1a10d67ac9))
+
 ## [1.21.1](https://github.com/xjanova/thaivote/compare/v1.21.0...v1.21.1) (2026-01-02)
 
 
