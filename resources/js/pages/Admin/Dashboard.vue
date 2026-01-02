@@ -5,7 +5,9 @@
             <div class="flex items-center justify-between">
                 <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
                 <div class="flex items-center gap-2">
-                    <span class="text-sm text-gray-500">อัปเดตล่าสุด: {{ formatTime(lastUpdated) }}</span>
+                    <span class="text-sm text-gray-500"
+                        >อัปเดตล่าสุด: {{ formatTime(lastUpdated) }}</span
+                    >
                     <button class="btn btn-primary text-sm" @click="refresh">
                         <RefreshIcon class="w-4 h-4 mr-1" />
                         รีเฟรช
@@ -69,7 +71,9 @@
                                     <div
                                         :class="[
                                             'w-3 h-3 rounded-full',
-                                            source.status === 'active' ? 'bg-green-500' : 'bg-red-500'
+                                            source.status === 'active'
+                                                ? 'bg-green-500'
+                                                : 'bg-red-500',
                                         ]"
                                     ></div>
                                     <span>{{ source.name }}</span>
@@ -92,13 +96,11 @@
                         <a href="/admin/news" class="text-sm text-primary">ดูทั้งหมด</a>
                     </div>
                     <div class="divide-y divide-gray-100">
-                        <div
-                            v-for="news in recentNews"
-                            :key="news.id"
-                            class="p-4 hover:bg-gray-50"
-                        >
+                        <div v-for="news in recentNews" :key="news.id" class="p-4 hover:bg-gray-50">
                             <p class="text-sm font-medium line-clamp-2">{{ news.title }}</p>
-                            <p class="text-xs text-gray-500 mt-1">{{ news.source }} • {{ news.time }}</p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                {{ news.source }} • {{ news.time }}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -148,9 +150,11 @@
                                 <span
                                     :class="[
                                         'px-1 py-0.5 text-xs rounded',
-                                        log.level === 'error' ? 'bg-red-100 text-red-600' :
-                                        log.level === 'warning' ? 'bg-yellow-100 text-yellow-600' :
-                                        'bg-gray-100 text-gray-600'
+                                        log.level === 'error'
+                                            ? 'bg-red-100 text-red-600'
+                                            : log.level === 'warning'
+                                              ? 'bg-yellow-100 text-yellow-600'
+                                              : 'bg-gray-100 text-gray-600',
                                     ]"
                                 >
                                     {{ log.level }}
@@ -192,8 +196,18 @@ const sources = ref([
 ]);
 
 const recentNews = ref([
-    { id: 1, title: 'กกต.เปิดเผยผลคะแนนเลือกตั้งอย่างเป็นทางการ', source: 'Thai PBS', time: '5 นาทีที่แล้ว' },
-    { id: 2, title: 'พรรคก้าวไกลประกาศชัยชนะในหลายจังหวัด', source: 'มติชน', time: '12 นาทีที่แล้ว' },
+    {
+        id: 1,
+        title: 'กกต.เปิดเผยผลคะแนนเลือกตั้งอย่างเป็นทางการ',
+        source: 'Thai PBS',
+        time: '5 นาทีที่แล้ว',
+    },
+    {
+        id: 2,
+        title: 'พรรคก้าวไกลประกาศชัยชนะในหลายจังหวัด',
+        source: 'มติชน',
+        time: '12 นาทีที่แล้ว',
+    },
     { id: 3, title: 'ประชาชนแห่ออกมาใช้สิทธิ์คึกคัก', source: 'ไทยรัฐ', time: '20 นาทีที่แล้ว' },
 ]);
 
@@ -209,7 +223,8 @@ const logs = ref([
     { id: 3, level: 'error', message: 'Failed to parse results from source #4', time: '10:40:00' },
 ]);
 
-const formatTime = (date) => new Intl.DateTimeFormat('th-TH', {
+const formatTime = (date) =>
+    new Intl.DateTimeFormat('th-TH', {
         hour: '2-digit',
         minute: '2-digit',
     }).format(date);
@@ -225,24 +240,26 @@ onMounted(() => {
             type: 'line',
             data: {
                 labels: ['10:00', '10:15', '10:30', '10:45', '11:00', '11:15'],
-                datasets: [{
-                    label: 'Users',
-                    data: [1200, 1900, 3000, 5000, 4200, 3500],
-                    borderColor: '#FF6B35',
-                    backgroundColor: 'rgba(255, 107, 53, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                }]
+                datasets: [
+                    {
+                        label: 'Users',
+                        data: [1200, 1900, 3000, 5000, 4200, 3500],
+                        borderColor: '#FF6B35',
+                        backgroundColor: 'rgba(255, 107, 53, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                    },
+                ],
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { display: false }
+                    legend: { display: false },
                 },
                 scales: {
-                    y: { beginAtZero: true }
-                }
-            }
+                    y: { beginAtZero: true },
+                },
+            },
         });
     }
 });

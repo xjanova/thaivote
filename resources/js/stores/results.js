@@ -15,14 +15,20 @@ export const useResultsStore = defineStore('results', () => {
     const lastUpdated = ref(null);
 
     // Getters
-    const totalSeats = computed(() => nationalResults.value.reduce((sum, r) => sum + r.total_seats, 0));
+    const totalSeats = computed(() =>
+        nationalResults.value.reduce((sum, r) => sum + r.total_seats, 0)
+    );
 
-    const totalVotes = computed(() => nationalResults.value.reduce((sum, r) => sum + r.total_votes, 0));
+    const totalVotes = computed(() =>
+        nationalResults.value.reduce((sum, r) => sum + r.total_votes, 0)
+    );
 
     const countingProgress = computed(() => stats.value?.counting_progress || 0);
 
     const leadingParty = computed(() => {
-        if (!nationalResults.value.length) {return null;}
+        if (!nationalResults.value.length) {
+            return null;
+        }
         return nationalResults.value.sort((a, b) => b.total_seats - a.total_seats)[0];
     });
 
@@ -47,10 +53,12 @@ export const useResultsStore = defineStore('results', () => {
     };
 
     const fetchProvinceResults = async (electionId, provinceId) => {
-        const response = await axios.get(`/api/elections/${electionId}/provinces/${provinceId}/results`);
+        const response = await axios.get(
+            `/api/elections/${electionId}/provinces/${provinceId}/results`
+        );
         // Update or add to provinceResults
         const index = provinceResults.value.findIndex(
-            r => r.election_id === electionId && r.province_id === provinceId
+            (r) => r.election_id === electionId && r.province_id === provinceId
         );
         if (index >= 0) {
             provinceResults.value[index] = response.data;
@@ -61,30 +69,37 @@ export const useResultsStore = defineStore('results', () => {
     };
 
     const fetchConstituencyResults = async (electionId, constituencyId) => {
-        const response = await axios.get(`/api/elections/${electionId}/constituencies/${constituencyId}/results`);
+        const response = await axios.get(
+            `/api/elections/${electionId}/constituencies/${constituencyId}/results`
+        );
         return response.data;
     };
 
-    const getProvinceResults = (provinceId) => provinceResults.value.filter(r => r.province_id === provinceId);
+    const getProvinceResults = (provinceId) =>
+        provinceResults.value.filter((r) => r.province_id === provinceId);
 
     const getProvinceCountingProgress = (provinceId) => {
         const results = getProvinceResults(provinceId);
-        if (!results.length) {return 0;}
+        if (!results.length) {
+            return 0;
+        }
         const total = results.reduce((sum, r) => sum + r.constituencies_total, 0);
         const counted = results.reduce((sum, r) => sum + r.constituencies_counted, 0);
         return total > 0 ? Math.round((counted / total) * 100) : 0;
     };
 
-    const getConstituencies = (provinceId) => constituencyResults.value.filter(c => c.province_id === provinceId);
+    const getConstituencies = (provinceId) =>
+        constituencyResults.value.filter((c) => c.province_id === provinceId);
 
     const getProvincesWonByParty = (partyId) => {
         const partyProvinces = new Set();
-        provinceResults.value.forEach(result => {
+        provinceResults.value.forEach((result) => {
             if (result.party_id === partyId && result.seats_won > 0) {
                 // Check if this party won the most seats in this province
-                const provinceTotal = provinceResults.value
-                    .filter(r => r.province_id === result.province_id);
-                const maxSeats = Math.max(...provinceTotal.map(r => r.seats_won));
+                const provinceTotal = provinceResults.value.filter(
+                    (r) => r.province_id === result.province_id
+                );
+                const maxSeats = Math.max(...provinceTotal.map((r) => r.seats_won));
                 if (result.seats_won === maxSeats) {
                     partyProvinces.add(result.province_id);
                 }
@@ -102,9 +117,9 @@ export const useResultsStore = defineStore('results', () => {
             stats.value = newResults.stats;
         }
         if (newResults.provinces) {
-            newResults.provinces.forEach(update => {
+            newResults.provinces.forEach((update) => {
                 const index = provinceResults.value.findIndex(
-                    r => r.province_id === update.province_id && r.party_id === update.party_id
+                    (r) => r.province_id === update.province_id && r.party_id === update.party_id
                 );
                 if (index >= 0) {
                     provinceResults.value[index] = { ...provinceResults.value[index], ...update };
@@ -116,7 +131,7 @@ export const useResultsStore = defineStore('results', () => {
         lastUpdated.value = new Date();
     };
 
-    const getPartyById = (partyId) => parties.value.find(p => p.id === partyId);
+    const getPartyById = (partyId) => parties.value.find((p) => p.id === partyId);
 
     return {
         // State

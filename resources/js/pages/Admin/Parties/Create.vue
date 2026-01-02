@@ -3,10 +3,7 @@
         <div class="max-w-4xl mx-auto space-y-6">
             <!-- Header -->
             <div class="flex items-center gap-4">
-                <Link
-                    :href="route('admin.parties.index')"
-                    class="p-2 hover:bg-gray-100 rounded-lg"
-                >
+                <Link :href="route('admin.parties.index')" class="p-2 hover:bg-gray-100 rounded-lg">
                     <ArrowLeftIcon class="w-5 h-5" />
                 </Link>
                 <div>
@@ -31,8 +28,10 @@
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="พรรค..."
                                 required
-                            >
-                            <p v-if="form.errors.name_th" class="mt-1 text-sm text-red-600">{{ form.errors.name_th }}</p>
+                            />
+                            <p v-if="form.errors.name_th" class="mt-1 text-sm text-red-600">
+                                {{ form.errors.name_th }}
+                            </p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -44,8 +43,10 @@
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="Party Name"
                                 required
-                            >
-                            <p v-if="form.errors.name_en" class="mt-1 text-sm text-red-600">{{ form.errors.name_en }}</p>
+                            />
+                            <p v-if="form.errors.name_en" class="mt-1 text-sm text-red-600">
+                                {{ form.errors.name_en }}
+                            </p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -58,18 +59,22 @@
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="ชื่อย่อพรรค"
                                 required
-                            >
-                            <p v-if="form.errors.abbreviation" class="mt-1 text-sm text-red-600">{{ form.errors.abbreviation }}</p>
+                            />
+                            <p v-if="form.errors.abbreviation" class="mt-1 text-sm text-red-600">
+                                {{ form.errors.abbreviation }}
+                            </p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">หมายเลขพรรค</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >หมายเลขพรรค</label
+                            >
                             <input
                                 v-model="form.party_number"
                                 type="number"
                                 min="1"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="หมายเลขพรรค"
-                            >
+                            />
                         </div>
                     </div>
                 </div>
@@ -87,7 +92,7 @@
                                     v-model="form.color"
                                     type="color"
                                     class="w-12 h-12 rounded cursor-pointer"
-                                >
+                                />
                                 <input
                                     v-model="form.color"
                                     type="text"
@@ -95,35 +100,41 @@
                                     class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     placeholder="#FF0000"
                                     required
-                                >
+                                />
                             </div>
-                            <p v-if="form.errors.color" class="mt-1 text-sm text-red-600">{{ form.errors.color }}</p>
+                            <p v-if="form.errors.color" class="mt-1 text-sm text-red-600">
+                                {{ form.errors.color }}
+                            </p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">สีรอง</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >สีรอง</label
+                            >
                             <div class="flex items-center gap-3">
                                 <input
                                     v-model="form.secondary_color"
                                     type="color"
                                     class="w-12 h-12 rounded cursor-pointer"
-                                >
+                                />
                                 <input
                                     v-model="form.secondary_color"
                                     type="text"
                                     pattern="^#[0-9A-Fa-f]{6}$"
                                     class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     placeholder="#FF6666"
-                                >
+                                />
                             </div>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">โลโก้พรรค</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >โลโก้พรรค</label
+                            >
                             <div class="flex items-center gap-4">
                                 <div
                                     v-if="logoPreview"
                                     class="w-20 h-20 rounded-lg overflow-hidden bg-gray-100"
                                 >
-                                    <img :src="logoPreview" class="w-full h-full object-cover">
+                                    <img :src="logoPreview" class="w-full h-full object-cover" />
                                 </div>
                                 <div
                                     v-else
@@ -138,7 +149,7 @@
                                         accept="image/png,image/jpeg,image/svg+xml"
                                         class="hidden"
                                         @change="onLogoChange"
-                                    >
+                                    />
                                     <button
                                         type="button"
                                         class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
@@ -146,10 +157,14 @@
                                     >
                                         เลือกไฟล์
                                     </button>
-                                    <p class="mt-1 text-xs text-gray-500">PNG, JPG, SVG ขนาดไม่เกิน 2MB</p>
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        PNG, JPG, SVG ขนาดไม่เกิน 2MB
+                                    </p>
                                 </div>
                             </div>
-                            <p v-if="form.errors.logo" class="mt-1 text-sm text-red-600">{{ form.errors.logo }}</p>
+                            <p v-if="form.errors.logo" class="mt-1 text-sm text-red-600">
+                                {{ form.errors.logo }}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -159,16 +174,20 @@
                     <h2 class="text-lg font-medium text-gray-900 mb-4">ข้อมูลหัวหน้าพรรค</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อหัวหน้าพรรค</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >ชื่อหัวหน้าพรรค</label
+                            >
                             <input
                                 v-model="form.leader_name"
                                 type="text"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="ชื่อ-นามสกุล หัวหน้าพรรค"
-                            >
+                            />
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">ปีที่ก่อตั้ง</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >ปีที่ก่อตั้ง</label
+                            >
                             <input
                                 v-model="form.founded_year"
                                 type="number"
@@ -176,7 +195,7 @@
                                 :max="new Date().getFullYear()"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="2566"
-                            >
+                            />
                         </div>
                     </div>
                 </div>
@@ -186,40 +205,48 @@
                     <h2 class="text-lg font-medium text-gray-900 mb-4">ข้อมูลติดต่อ</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">เว็บไซต์</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >เว็บไซต์</label
+                            >
                             <input
                                 v-model="form.website"
                                 type="url"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="https://example.com"
-                            >
+                            />
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Facebook Page</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >Facebook Page</label
+                            >
                             <input
                                 v-model="form.facebook_page"
                                 type="text"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="PartyName"
-                            >
+                            />
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Twitter Handle</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >Twitter Handle</label
+                            >
                             <input
                                 v-model="form.twitter_handle"
                                 type="text"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="@partyname"
-                            >
+                            />
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">ที่ตั้งสำนักงานใหญ่</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >ที่ตั้งสำนักงานใหญ่</label
+                            >
                             <input
                                 v-model="form.headquarters"
                                 type="text"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="ที่อยู่สำนักงานใหญ่"
-                            >
+                            />
                         </div>
                     </div>
                 </div>
@@ -229,16 +256,20 @@
                     <h2 class="text-lg font-medium text-gray-900 mb-4">รายละเอียดเพิ่มเติม</h2>
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">สโลแกน</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >สโลแกน</label
+                            >
                             <input
                                 v-model="form.slogan"
                                 type="text"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="สโลแกนพรรค"
-                            >
+                            />
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">รายละเอียดพรรค</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >รายละเอียดพรรค</label
+                            >
                             <textarea
                                 v-model="form.description"
                                 rows="4"
@@ -257,7 +288,7 @@
                             v-model="form.is_active"
                             type="checkbox"
                             class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                        >
+                        />
                         <label for="is_active" class="text-sm font-medium text-gray-700">
                             เปิดใช้งานพรรค
                         </label>
@@ -290,8 +321,14 @@ import { ref } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 
-const ArrowLeftIcon = { template: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" /></svg>' };
-const PhotoIcon = { template: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg>' };
+const ArrowLeftIcon = {
+    template:
+        '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" /></svg>',
+};
+const PhotoIcon = {
+    template:
+        '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg>',
+};
 
 const form = useForm({
     name_th: '',

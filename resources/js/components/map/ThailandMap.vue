@@ -4,24 +4,42 @@
         <div class="absolute top-4 right-4 z-10 flex flex-col gap-2">
             <button class="btn-zoom" title="ซูมเข้า" @click="zoomIn">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 4v16m8-8H4"
+                    />
                 </svg>
             </button>
             <button class="btn-zoom" title="ซูมออก" @click="zoomOut">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M20 12H4"
+                    />
                 </svg>
             </button>
             <button class="btn-zoom" title="รีเซ็ต" @click="resetZoom">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                    />
                 </svg>
             </button>
         </div>
 
         <!-- Region filter -->
         <div class="absolute top-4 left-4 z-10">
-            <select v-model="selectedRegion" class="px-4 py-2 rounded-lg bg-white shadow-md border-0 focus:ring-2 focus:ring-primary text-sm">
+            <select
+                v-model="selectedRegion"
+                class="px-4 py-2 rounded-lg bg-white shadow-md border-0 focus:ring-2 focus:ring-primary text-sm"
+            >
                 <option value="">ทุกภาค</option>
                 <option v-for="(region, key) in regions" :key="key" :value="key">
                     {{ region.name_th }}
@@ -86,8 +104,11 @@
             >
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
-stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 5l7 7-7 7"/>
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 5l7 7-7 7"
+                    />
                 </svg>
             </button>
         </Transition>
@@ -110,11 +131,15 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
                     <div>
                         <span class="text-gray-500">เขตเลือกตั้ง:</span>
-                        <span class="font-semibold ml-1">{{ tooltip.province?.constituencies }}</span>
+                        <span class="font-semibold ml-1">{{
+                            tooltip.province?.constituencies
+                        }}</span>
                     </div>
                     <div>
                         <span class="text-gray-500">ประชากร:</span>
-                        <span class="font-semibold ml-1">{{ formatNumber(tooltip.province?.population) }}</span>
+                        <span class="font-semibold ml-1">{{
+                            formatNumber(tooltip.province?.population)
+                        }}</span>
                     </div>
                 </div>
                 <div v-if="tooltip.province?.results?.length" class="mt-2 space-y-1">
@@ -128,10 +153,15 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             :style="{ backgroundColor: result.party?.color }"
                         ></div>
                         <span class="text-sm">{{ result.party?.abbreviation }}</span>
-                        <span class="text-sm font-semibold ml-auto">{{ result.seats_won }} ที่นั่ง</span>
+                        <span class="text-sm font-semibold ml-auto"
+                            >{{ result.seats_won }} ที่นั่ง</span
+                        >
                     </div>
                 </div>
-                <div v-if="tooltip.province?.counting_progress !== undefined" class="mt-2 pt-2 border-t border-gray-100">
+                <div
+                    v-if="tooltip.province?.counting_progress !== undefined"
+                    class="mt-2 pt-2 border-t border-gray-100"
+                >
                     <div class="flex items-center justify-between text-sm">
                         <span class="text-gray-500">นับคะแนน</span>
                         <span class="font-semibold">{{ tooltip.province.counting_progress }}%</span>
@@ -150,17 +180,12 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
         <div class="absolute bottom-4 left-4 z-10 bg-white rounded-lg shadow-lg p-4 max-w-xs">
             <h5 class="font-semibold text-sm mb-2">พรรคที่นำ</h5>
             <div class="space-y-1 max-h-40 overflow-y-auto">
-                <div
-                    v-for="party in topParties"
-                    :key="party.id"
-                    class="flex items-center gap-2"
-                >
-                    <div
-                        class="w-4 h-4 rounded"
-                        :style="{ backgroundColor: party.color }"
-                    ></div>
+                <div v-for="party in topParties" :key="party.id" class="flex items-center gap-2">
+                    <div class="w-4 h-4 rounded" :style="{ backgroundColor: party.color }"></div>
                     <span class="text-sm">{{ party.name_th || party.abbreviation }}</span>
-                    <span class="text-xs text-gray-500 ml-auto">{{ party.provinces_won }} จังหวัด</span>
+                    <span class="text-xs text-gray-500 ml-auto"
+                        >{{ party.provinces_won }} จังหวัด</span
+                    >
                 </div>
             </div>
             <div class="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500">
@@ -174,7 +199,9 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 v-if="selectedProvince && showDetailPanel"
                 class="absolute top-0 right-0 h-full w-80 bg-white shadow-2xl z-20 overflow-y-auto"
             >
-                <div class="sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between">
+                <div
+                    class="sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between"
+                >
                     <div class="flex items-center gap-3">
                         <div
                             class="w-4 h-4 rounded"
@@ -184,7 +211,12 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     </div>
                     <button class="p-2 hover:bg-gray-100 rounded-full" @click="closeDetailPanel">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"
+                            />
                         </svg>
                     </button>
                 </div>
@@ -197,7 +229,9 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         </div>
                         <div class="bg-gray-50 rounded-lg p-3">
                             <p class="text-xs text-gray-500">ประชากร</p>
-                            <p class="text-xl font-bold">{{ formatCompactNumber(selectedProvince.population) }}</p>
+                            <p class="text-xl font-bold">
+                                {{ formatCompactNumber(selectedProvince.population) }}
+                            </p>
                         </div>
                     </div>
 
@@ -218,7 +252,9 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         >
                                             {{ result.party?.abbreviation?.charAt(0) }}
                                         </div>
-                                        <span class="font-medium text-sm">{{ result.party?.name_th }}</span>
+                                        <span class="font-medium text-sm">{{
+                                            result.party?.name_th
+                                        }}</span>
                                     </div>
                                     <span class="font-bold">{{ result.seats_won }} ที่นั่ง</span>
                                 </div>
@@ -227,7 +263,7 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         class="result-bar-fill"
                                         :style="{
                                             width: result.vote_percentage + '%',
-                                            backgroundColor: result.party?.color
+                                            backgroundColor: result.party?.color,
                                         }"
                                     ></div>
                                 </div>
@@ -241,7 +277,9 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
 
                     <!-- Constituency List -->
                     <div>
-                        <h4 class="font-semibold mb-3">รายเขตเลือกตั้ง ({{ selectedProvince.constituencies }} เขต)</h4>
+                        <h4 class="font-semibold mb-3">
+                            รายเขตเลือกตั้ง ({{ selectedProvince.constituencies }} เขต)
+                        </h4>
                         <div class="space-y-2">
                             <button
                                 v-for="constituency in provinceConstituencies"
@@ -254,7 +292,9 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     <div
                                         v-if="constituency.winner"
                                         class="px-2 py-1 rounded text-white text-xs"
-                                        :style="{ backgroundColor: constituency.winner?.party?.color }"
+                                        :style="{
+                                            backgroundColor: constituency.winner?.party?.color,
+                                        }"
                                     >
                                         {{ constituency.winner?.party?.abbreviation }}
                                     </div>
@@ -275,14 +315,19 @@ stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useResultsStore } from '@/stores/results';
-import { provinces as provinceData, provincePaths, regions, totalConstituencies } from '@/data/provinces';
+import {
+    provinces as provinceData,
+    provincePaths,
+    regions,
+    totalConstituencies,
+} from '@/data/provinces';
 import { getConstituenciesByProvinceId } from '@/data/constituencies';
 
 const props = defineProps({
     electionId: {
         type: Number,
-        required: true
-    }
+        required: true,
+    },
 });
 
 const emit = defineEmits(['provinceSelected', 'constituencySelected']);
@@ -311,23 +356,25 @@ const tooltip = ref({
     visible: false,
     x: 0,
     y: 0,
-    province: null
+    province: null,
 });
 
 // Computed
 const filteredProvinces = computed(() => {
-    const provinces = provinceData.map(p => ({
+    const provinces = provinceData.map((p) => ({
         ...p,
-        path: provincePaths[p.code]
+        path: provincePaths[p.code],
     }));
-    if (!selectedRegion.value) {return provinces;}
-    return provinces.filter(p => p.region === selectedRegion.value);
+    if (!selectedRegion.value) {
+        return provinces;
+    }
+    return provinces.filter((p) => p.region === selectedRegion.value);
 });
 
 const topParties = computed(() => {
     const partyWins = {};
 
-    provinceData.forEach(province => {
+    provinceData.forEach((province) => {
         const results = resultsStore.getProvinceResults(province.id);
         if (results.length) {
             const winner = results.sort((a, b) => b.seats_won - a.seats_won)[0];
@@ -335,7 +382,7 @@ const topParties = computed(() => {
                 if (!partyWins[winner.party.id]) {
                     partyWins[winner.party.id] = {
                         ...winner.party,
-                        provinces_won: 0
+                        provinces_won: 0,
                     };
                 }
                 partyWins[winner.party.id].provinces_won++;
@@ -349,17 +396,22 @@ const topParties = computed(() => {
 });
 
 const selectedProvinceResults = computed(() => {
-    if (!selectedProvince.value) {return [];}
-    return resultsStore.getProvinceResults(selectedProvince.value.id)
+    if (!selectedProvince.value) {
+        return [];
+    }
+    return resultsStore
+        .getProvinceResults(selectedProvince.value.id)
         .sort((a, b) => b.seats_won - a.seats_won);
 });
 
 const provinceConstituencies = computed(() => {
-    if (!selectedProvince.value) {return [];}
+    if (!selectedProvince.value) {
+        return [];
+    }
     const constituencies = getConstituenciesByProvinceId(selectedProvince.value.id);
-    return constituencies.map(c => ({
+    return constituencies.map((c) => ({
         ...c,
-        winner: resultsStore.constituencyResults.find(r => r.constituency_id === c.id)
+        winner: resultsStore.constituencyResults.find((r) => r.constituency_id === c.id),
     }));
 });
 
@@ -368,14 +420,19 @@ const getProvincePath = (code) => provincePaths[code] || '';
 
 const getProvinceCenter = (code) => {
     const path = provincePaths[code];
-    if (!path) {return { x: 0, y: 0 };}
+    if (!path) {
+        return { x: 0, y: 0 };
+    }
 
     // Simple center calculation from path
     const matches = path.match(/[ML]\s*(\d+),(\d+)/g);
-    if (!matches) {return { x: 0, y: 0 };}
+    if (!matches) {
+        return { x: 0, y: 0 };
+    }
 
-    let sumX = 0, sumY = 0;
-    matches.forEach(m => {
+    let sumX = 0,
+        sumY = 0;
+    matches.forEach((m) => {
         const coords = m.match(/(\d+),(\d+)/);
         if (coords) {
             sumX += parseInt(coords[1]);
@@ -385,7 +442,7 @@ const getProvinceCenter = (code) => {
 
     return {
         x: sumX / matches.length,
-        y: sumY / matches.length
+        y: sumY / matches.length,
     };
 };
 
@@ -401,9 +458,13 @@ const getProvinceColor = (province) => {
 };
 
 const getLeadingPartyColor = (province) => {
-    if (!province) {return '#E5E7EB';}
+    if (!province) {
+        return '#E5E7EB';
+    }
     const results = resultsStore.getProvinceResults(province.id);
-    if (!results.length) {return regions[province.region]?.color || '#E5E7EB';}
+    if (!results.length) {
+        return regions[province.region]?.color || '#E5E7EB';
+    }
 
     const winner = results.sort((a, b) => b.seats_won - a.seats_won)[0];
     return winner?.party?.color || '#E5E7EB';
@@ -437,8 +498,8 @@ const showTooltip = (event, province) => {
         province: {
             ...province,
             results: resultsStore.getProvinceResults(province.id),
-            counting_progress: resultsStore.getProvinceCountingProgress(province.id)
-        }
+            counting_progress: resultsStore.getProvinceCountingProgress(province.id),
+        },
     };
 };
 
@@ -473,7 +534,9 @@ const startPan = (event) => {
 };
 
 const pan = (event) => {
-    if (!isPanning.value) {return;}
+    if (!isPanning.value) {
+        return;
+    }
     panX.value = event.clientX - startX.value;
     panY.value = event.clientY - startY.value;
 };
@@ -519,17 +582,21 @@ const handleTouchEnd = () => {
 
 // Utilities
 const formatNumber = (num) => {
-    if (!num) {return '0';}
+    if (!num) {
+        return '0';
+    }
     return new Intl.NumberFormat('th-TH').format(num);
 };
 
 const formatCompactNumber = (num) => {
-    if (!num) {return '0';}
+    if (!num) {
+        return '0';
+    }
     if (num >= 1000000) {
-        return `${(num / 1000000).toFixed(1)  }M`;
+        return `${(num / 1000000).toFixed(1)}M`;
     }
     if (num >= 1000) {
-        return `${(num / 1000).toFixed(0)  }K`;
+        return `${(num / 1000).toFixed(0)}K`;
     }
     return num.toString();
 };
@@ -538,10 +605,9 @@ const formatCompactNumber = (num) => {
 onMounted(() => {
     // Subscribe to real-time updates
     if (window.Echo) {
-        window.Echo.channel(`election.${props.electionId}`)
-            .listen('ResultsUpdated', (event) => {
-                resultsStore.updateResults(event.results);
-            });
+        window.Echo.channel(`election.${props.electionId}`).listen('ResultsUpdated', (event) => {
+            resultsStore.updateResults(event.results);
+        });
     }
 });
 </script>
@@ -564,7 +630,7 @@ onMounted(() => {
 
 .province-path:hover {
     filter: brightness(1.1);
-    stroke: #1F2937;
+    stroke: #1f2937;
     stroke-width: 2;
 }
 

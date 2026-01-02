@@ -8,7 +8,7 @@ const generateConstituencies = () => {
     const constituencies = [];
     let globalId = 1;
 
-    provinces.forEach(province => {
+    provinces.forEach((province) => {
         for (let i = 1; i <= province.constituencies; i++) {
             constituencies.push({
                 id: globalId++,
@@ -19,7 +19,9 @@ const generateConstituencies = () => {
                 name_th: `เขต ${i}`,
                 name_en: `Constituency ${i}`,
                 // ข้อมูลโดยประมาณ (สามารถปรับเปลี่ยนได้ตามข้อมูลจริงจาก กกต.)
-                eligible_voters: Math.round(province.population / province.constituencies * (0.9 + Math.random() * 0.2)),
+                eligible_voters: Math.round(
+                    (province.population / province.constituencies) * (0.9 + Math.random() * 0.2)
+                ),
                 polling_stations: Math.floor(50 + Math.random() * 100),
             });
         }
@@ -117,13 +119,15 @@ export const khonkaenConstituencies = [
 ];
 
 // ฟังก์ชันหาเขตเลือกตั้งตาม province_code
-export const getConstituenciesByProvinceCode = (code) => constituencies.filter(c => c.province_code === code);
+export const getConstituenciesByProvinceCode = (code) =>
+    constituencies.filter((c) => c.province_code === code);
 
 // ฟังก์ชันหาเขตเลือกตั้งตาม province_id
-export const getConstituenciesByProvinceId = (provinceId) => constituencies.filter(c => c.province_id === provinceId);
+export const getConstituenciesByProvinceId = (provinceId) =>
+    constituencies.filter((c) => c.province_id === provinceId);
 
 // ฟังก์ชันหาเขตเลือกตั้งจาก id
-export const getConstituencyById = (id) => constituencies.find(c => c.id === id);
+export const getConstituencyById = (id) => constituencies.find((c) => c.id === id);
 
 // คำนวณจำนวนเขตทั้งหมด
 export const totalConstituencies = constituencies.length;

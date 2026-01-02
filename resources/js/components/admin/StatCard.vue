@@ -8,12 +8,7 @@
                     {{ change > 0 ? '+' : '' }}{{ change }}% จากเมื่อวาน
                 </p>
             </div>
-            <div
-                :class="[
-                    'w-12 h-12 rounded-xl flex items-center justify-center',
-                    bgColor
-                ]"
-            >
+            <div :class="['w-12 h-12 rounded-xl flex items-center justify-center', bgColor]">
                 <component :is="icon" class="w-6 h-6" :class="iconColor" />
             </div>
         </div>
@@ -77,7 +72,7 @@ const colorClasses = {
 const bgColor = computed(() => colorClasses[props.color]?.bg || colorClasses.blue.bg);
 const iconColor = computed(() => colorClasses[props.color]?.icon || colorClasses.blue.icon);
 const textColor = computed(() => colorClasses[props.color]?.text || 'text-gray-900');
-const changeColor = computed(() => props.change >= 0 ? 'text-green-600' : 'text-red-600');
+const changeColor = computed(() => (props.change >= 0 ? 'text-green-600' : 'text-red-600'));
 
 const formatValue = (val) => {
     if (typeof val === 'number') {

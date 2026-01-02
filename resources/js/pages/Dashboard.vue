@@ -15,7 +15,7 @@
             <div class="container mx-auto px-4 py-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-4">
-                        <img src="/images/logo.png" alt="ThaiVote" class="h-10">
+                        <img src="/images/logo.png" alt="ThaiVote" class="h-10" />
                         <div>
                             <h1 class="text-xl font-bold text-gray-900">ThaiVote</h1>
                             <p class="text-sm text-gray-500">{{ election?.name }}</p>
@@ -44,30 +44,53 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm text-gray-500">นับคะแนนแล้ว</p>
-                                <p class="text-3xl font-bold text-primary">{{ stats?.counting_progress?.toFixed(1) }}%</p>
+                                <p class="text-3xl font-bold text-primary">
+                                    {{ stats?.counting_progress?.toFixed(1) }}%
+                                </p>
                             </div>
                             <div class="w-16 h-16">
                                 <svg viewBox="0 0 36 36" class="circular-chart">
-                                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-                                    <path class="circle" :stroke-dasharray="`${stats?.counting_progress || 0}, 100`" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                    <path
+                                        class="circle-bg"
+                                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    />
+                                    <path
+                                        class="circle"
+                                        :stroke-dasharray="`${stats?.counting_progress || 0}, 100`"
+                                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    />
                                 </svg>
                             </div>
                         </div>
                     </div>
                     <div class="card p-6">
                         <p class="text-sm text-gray-500">ผู้มาใช้สิทธิ์</p>
-                        <p class="text-3xl font-bold">{{ formatNumber(stats?.total_votes_cast) }}</p>
+                        <p class="text-3xl font-bold">
+                            {{ formatNumber(stats?.total_votes_cast) }}
+                        </p>
                         <p class="text-sm text-gray-400">{{ stats?.voter_turnout?.toFixed(1) }}%</p>
                     </div>
                     <div class="card p-6">
                         <p class="text-sm text-gray-500">หน่วยเลือกตั้ง</p>
-                        <p class="text-3xl font-bold">{{ formatNumber(stats?.stations_counted) }}</p>
-                        <p class="text-sm text-gray-400">จาก {{ formatNumber(stats?.stations_total) }}</p>
+                        <p class="text-3xl font-bold">
+                            {{ formatNumber(stats?.stations_counted) }}
+                        </p>
+                        <p class="text-sm text-gray-400">
+                            จาก {{ formatNumber(stats?.stations_total) }}
+                        </p>
                     </div>
                     <div class="card p-6">
                         <p class="text-sm text-gray-500">บัตรเสีย</p>
-                        <p class="text-3xl font-bold text-red-500">{{ formatNumber(stats?.invalid_votes) }}</p>
-                        <p class="text-sm text-gray-400">{{ ((stats?.invalid_votes / stats?.total_votes_cast) * 100 || 0).toFixed(1) }}%</p>
+                        <p class="text-3xl font-bold text-red-500">
+                            {{ formatNumber(stats?.invalid_votes) }}
+                        </p>
+                        <p class="text-sm text-gray-400">
+                            {{
+                                (
+                                    (stats?.invalid_votes / stats?.total_votes_cast) * 100 || 0
+                                ).toFixed(1)
+                            }}%
+                        </p>
                     </div>
                 </div>
             </section>
@@ -82,13 +105,23 @@
                             <h2 class="text-xl font-bold">ผลคะแนนรายพรรค</h2>
                             <div class="flex items-center gap-2">
                                 <button
-                                    :class="['px-3 py-1 rounded-lg text-sm', resultView === 'seats' ? 'bg-primary text-white' : 'bg-gray-100']"
+                                    :class="[
+                                        'px-3 py-1 rounded-lg text-sm',
+                                        resultView === 'seats'
+                                            ? 'bg-primary text-white'
+                                            : 'bg-gray-100',
+                                    ]"
                                     @click="resultView = 'seats'"
                                 >
                                     ที่นั่ง
                                 </button>
                                 <button
-                                    :class="['px-3 py-1 rounded-lg text-sm', resultView === 'votes' ? 'bg-primary text-white' : 'bg-gray-100']"
+                                    :class="[
+                                        'px-3 py-1 rounded-lg text-sm',
+                                        resultView === 'votes'
+                                            ? 'bg-primary text-white'
+                                            : 'bg-gray-100',
+                                    ]"
                                     @click="resultView = 'votes'"
                                 >
                                     คะแนน
@@ -98,14 +131,16 @@
                         <div class="card-body">
                             <!-- Seats visualization -->
                             <div class="mb-6">
-                                <div class="flex items-center gap-1 h-12 rounded-xl overflow-hidden">
+                                <div
+                                    class="flex items-center gap-1 h-12 rounded-xl overflow-hidden"
+                                >
                                     <div
                                         v-for="result in sortedResults"
                                         :key="result.party_id"
                                         class="h-full transition-all duration-1000"
                                         :style="{
-                                            width: (result.total_seats / 500 * 100) + '%',
-                                            backgroundColor: result.party?.color
+                                            width: (result.total_seats / 500) * 100 + '%',
+                                            backgroundColor: result.party?.color,
                                         }"
                                         :title="`${result.party?.name_th}: ${result.total_seats} ที่นั่ง`"
                                     ></div>
@@ -125,7 +160,9 @@
                                     class="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors"
                                     :class="{ 'bg-yellow-50': index === 0 }"
                                 >
-                                    <div class="w-8 text-center font-bold text-gray-400">{{ index + 1 }}</div>
+                                    <div class="w-8 text-center font-bold text-gray-400">
+                                        {{ index + 1 }}
+                                    </div>
                                     <div
                                         class="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold"
                                         :style="{ backgroundColor: result.party?.color }"
@@ -134,15 +171,21 @@
                                     </div>
                                     <div class="flex-1">
                                         <h4 class="font-semibold">{{ result.party?.name_th }}</h4>
-                                        <p class="text-sm text-gray-500">{{ result.party?.leader_name }}</p>
+                                        <p class="text-sm text-gray-500">
+                                            {{ result.party?.leader_name }}
+                                        </p>
                                     </div>
                                     <div class="text-right">
                                         <p class="text-2xl font-bold">{{ result.total_seats }}</p>
                                         <p class="text-sm text-gray-500">ที่นั่ง</p>
                                     </div>
                                     <div class="text-right min-w-[100px]">
-                                        <p class="font-semibold">{{ formatNumber(result.total_votes) }}</p>
-                                        <p class="text-sm text-gray-500">{{ result.vote_percentage?.toFixed(2) }}%</p>
+                                        <p class="font-semibold">
+                                            {{ formatNumber(result.total_votes) }}
+                                        </p>
+                                        <p class="text-sm text-gray-500">
+                                            {{ result.vote_percentage?.toFixed(2) }}%
+                                        </p>
                                     </div>
                                     <div class="flex gap-2">
                                         <div
@@ -187,11 +230,15 @@
                                 :href="news.url"
                                 class="block p-4 hover:bg-gray-50 transition-colors"
                             >
-                                <p class="text-xs text-gray-400 mb-1">{{ formatTime(news.published_at) }}</p>
+                                <p class="text-xs text-gray-400 mb-1">
+                                    {{ formatTime(news.published_at) }}
+                                </p>
                                 <h4 class="font-medium line-clamp-2">{{ news.title }}</h4>
                                 <div class="flex items-center gap-2 mt-2">
-                                    <img :src="news.source?.logo" class="h-4">
-                                    <span class="text-xs text-gray-500">{{ news.source?.name }}</span>
+                                    <img :src="news.source?.logo" class="h-4" />
+                                    <span class="text-xs text-gray-500">{{
+                                        news.source?.name
+                                    }}</span>
                                 </div>
                             </a>
                         </div>
@@ -219,9 +266,16 @@
                                 </div>
                                 <div class="flex-1">
                                     <h4 class="font-medium text-sm">{{ party.name_th }}</h4>
-                                    <p class="text-xs text-gray-500">{{ formatNumber(party.mentions) }} mentions</p>
+                                    <p class="text-xs text-gray-500">
+                                        {{ formatNumber(party.mentions) }} mentions
+                                    </p>
                                 </div>
-                                <div :class="['text-sm font-semibold', party.trend > 0 ? 'text-green-500' : 'text-red-500']">
+                                <div
+                                    :class="[
+                                        'text-sm font-semibold',
+                                        party.trend > 0 ? 'text-green-500' : 'text-red-500',
+                                    ]"
+                                >
                                     {{ party.trend > 0 ? '+' : '' }}{{ party.trend }}%
                                 </div>
                             </div>
@@ -240,10 +294,14 @@
                                     :key="update.id"
                                     class="flex gap-3 pb-4 border-b border-gray-100 last:border-0"
                                 >
-                                    <div class="w-2 h-2 mt-2 rounded-full bg-primary flex-shrink-0"></div>
+                                    <div
+                                        class="w-2 h-2 mt-2 rounded-full bg-primary flex-shrink-0"
+                                    ></div>
                                     <div>
                                         <p class="text-sm">{{ update.message }}</p>
-                                        <p class="text-xs text-gray-400 mt-1">{{ formatTime(update.created_at) }}</p>
+                                        <p class="text-xs text-gray-400 mt-1">
+                                            {{ formatTime(update.created_at) }}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -267,14 +325,22 @@
                         <h4 class="font-semibold mb-4">ลิงก์</h4>
                         <ul class="space-y-2 text-gray-400 text-sm">
                             <li><a href="/about" class="hover:text-white">เกี่ยวกับเรา</a></li>
-                            <li><a href="/api-docs" class="hover:text-white">API Documentation</a></li>
-                            <li><a href="/privacy" class="hover:text-white">นโยบายความเป็นส่วนตัว</a></li>
+                            <li>
+                                <a href="/api-docs" class="hover:text-white">API Documentation</a>
+                            </li>
+                            <li>
+                                <a href="/privacy" class="hover:text-white"
+                                    >นโยบายความเป็นส่วนตัว</a
+                                >
+                            </li>
                         </ul>
                     </div>
                     <div>
                         <h4 class="font-semibold mb-4">สำหรับพรรค</h4>
                         <ul class="space-y-2 text-gray-400 text-sm">
-                            <li><a href="/party/register" class="hover:text-white">ลงทะเบียนพรรค</a></li>
+                            <li>
+                                <a href="/party/register" class="hover:text-white">ลงทะเบียนพรรค</a>
+                            </li>
                             <li><a href="/party/api" class="hover:text-white">เชื่อมต่อ API</a></li>
                             <li><a href="/party/support" class="hover:text-white">ช่วยเหลือ</a></li>
                         </ul>
@@ -303,8 +369,8 @@ import ThailandMap from '@/components/map/ThailandMap.vue';
 const props = defineProps({
     electionId: {
         type: Number,
-        default: 1
-    }
+        default: 1,
+    },
 });
 
 const resultsStore = useResultsStore();
@@ -321,25 +387,31 @@ const liveFeed = ref([]);
 const election = computed(() => resultsStore.election);
 const stats = computed(() => resultsStore.stats);
 
-const sortedResults = computed(() => [...resultsStore.nationalResults].sort((a, b) => {
+const sortedResults = computed(() =>
+    [...resultsStore.nationalResults].sort((a, b) => {
         if (resultView.value === 'seats') {
             return b.total_seats - a.total_seats;
         }
         return b.total_votes - a.total_votes;
-    }));
+    })
+);
 
 // Methods
 const formatNumber = (num) => {
-    if (!num) {return '0';}
+    if (!num) {
+        return '0';
+    }
     return new Intl.NumberFormat('th-TH').format(num);
 };
 
 const formatTime = (date) => {
-    if (!date) {return '';}
+    if (!date) {
+        return '';
+    }
     return new Intl.DateTimeFormat('th-TH', {
         hour: '2-digit',
         minute: '2-digit',
-        second: '2-digit'
+        second: '2-digit',
     }).format(new Date(date));
 };
 
@@ -428,7 +500,9 @@ onUnmounted(() => {
 }
 
 @keyframes progress {
-    0% { stroke-dasharray: 0 100; }
+    0% {
+        stroke-dasharray: 0 100;
+    }
 }
 
 .text-primary {

@@ -14,7 +14,7 @@ export const parties = [
         founded_date: '2020-03-08',
         logo: '/images/parties/move-forward.png',
         website: 'https://moveforwardparty.org',
-        policies: ['ปฏิรูปกองทัพ', 'กระจายอำนาจ', 'แก้ไขรัฐธรรมนูญ']
+        policies: ['ปฏิรูปกองทัพ', 'กระจายอำนาจ', 'แก้ไขรัฐธรรมนูญ'],
     },
     {
         id: 2,
@@ -28,7 +28,7 @@ export const parties = [
         founded_date: '2008-09-20',
         logo: '/images/parties/pheu-thai.png',
         website: 'https://ptp.or.th',
-        policies: ['เศรษฐกิจดิจิทัล', 'Digital Wallet', 'พลังงานสะอาด']
+        policies: ['เศรษฐกิจดิจิทัล', 'Digital Wallet', 'พลังงานสะอาด'],
     },
     {
         id: 3,
@@ -42,7 +42,7 @@ export const parties = [
         founded_date: '2008-11-05',
         logo: '/images/parties/bhumjaithai.png',
         website: 'https://www.bhumjaithai.com',
-        policies: ['กัญชาเสรี', 'ท่องเที่ยวเชิงสุขภาพ', 'พัฒนาชนบท']
+        policies: ['กัญชาเสรี', 'ท่องเที่ยวเชิงสุขภาพ', 'พัฒนาชนบท'],
     },
     {
         id: 4,
@@ -56,7 +56,7 @@ export const parties = [
         founded_date: '2018-03-02',
         logo: '/images/parties/pprp.png',
         website: 'https://www.pprp.or.th',
-        policies: ['สานต่อโครงการรัฐ', 'บัตรสวัสดิการแห่งรัฐ']
+        policies: ['สานต่อโครงการรัฐ', 'บัตรสวัสดิการแห่งรัฐ'],
     },
     {
         id: 5,
@@ -70,7 +70,7 @@ export const parties = [
         founded_date: '2021-03-26',
         logo: '/images/parties/utn.png',
         website: 'https://www.ruamthai.or.th',
-        policies: ['ความมั่นคง', 'สานต่อโครงสร้างพื้นฐาน']
+        policies: ['ความมั่นคง', 'สานต่อโครงสร้างพื้นฐาน'],
     },
     {
         id: 6,
@@ -84,7 +84,7 @@ export const parties = [
         founded_date: '1946-04-06',
         logo: '/images/parties/democrat.png',
         website: 'https://www.democrat.or.th',
-        policies: ['เสรีนิยม', 'กระจายอำนาจ', 'ประกันสังคม']
+        policies: ['เสรีนิยม', 'กระจายอำนาจ', 'ประกันสังคม'],
     },
     {
         id: 7,
@@ -98,7 +98,7 @@ export const parties = [
         founded_date: '2008-04-18',
         logo: '/images/parties/ctp.png',
         website: null,
-        policies: ['พัฒนาเกษตร', 'ท้องถิ่น']
+        policies: ['พัฒนาเกษตร', 'ท้องถิ่น'],
     },
     {
         id: 8,
@@ -112,7 +112,7 @@ export const parties = [
         founded_date: '2018-08-24',
         logo: '/images/parties/prachachat.png',
         website: null,
-        policies: ['มุสลิม', 'ชายแดนใต้']
+        policies: ['มุสลิม', 'ชายแดนใต้'],
     },
     {
         id: 9,
@@ -126,7 +126,7 @@ export const parties = [
         founded_date: '2021-10-01',
         logo: '/images/parties/tst.png',
         website: 'https://thaisangthai.org',
-        policies: ['พลังงานทดแทน', 'เกษตรยั่งยืน']
+        policies: ['พลังงานทดแทน', 'เกษตรยั่งยืน'],
     },
     {
         id: 10,
@@ -140,16 +140,16 @@ export const parties = [
         founded_date: '2018-08-10',
         logo: '/images/parties/tlp.png',
         website: null,
-        policies: ['ปราบคอร์รัปชัน', 'ปฏิรูปตำรวจ']
-    }
+        policies: ['ปราบคอร์รัปชัน', 'ปฏิรูปตำรวจ'],
+    },
 ];
 
 // ฟังก์ชันหาพรรคจาก id
-export const getPartyById = (id) => parties.find(p => p.id === id);
+export const getPartyById = (id) => parties.find((p) => p.id === id);
 
 // ฟังก์ชันหาพรรคจากชื่อย่อ
 export const getPartyByAbbreviation = (abbr) =>
-    parties.find(p => p.abbreviation === abbr || p.abbreviation_en === abbr);
+    parties.find((p) => p.abbreviation === abbr || p.abbreviation_en === abbr);
 
 // สี default สำหรับพรรคที่ไม่มีข้อมูล
 export const defaultPartyColor = '#9CA3AF';
@@ -162,5 +162,5 @@ export default {
     getPartyById,
     getPartyByAbbreviation,
     defaultPartyColor,
-    totalPartiesIn2023
+    totalPartiesIn2023,
 };

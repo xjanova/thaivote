@@ -26,7 +26,7 @@
                             placeholder="ค้นหาพรรค..."
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             @input="debouncedSearch"
-                        >
+                        />
                     </div>
                     <select
                         v-model="activeFilter"
@@ -45,12 +45,36 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">พรรค</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ย่อ</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">หัวหน้าพรรค</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">สี</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">สถานะ</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">จัดการ</th>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                            >
+                                พรรค
+                            </th>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                            >
+                                ย่อ
+                            </th>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                            >
+                                หัวหน้าพรรค
+                            </th>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                            >
+                                สี
+                            </th>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                            >
+                                สถานะ
+                            </th>
+                            <th
+                                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase"
+                            >
+                                จัดการ
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -62,8 +86,12 @@
                                         :src="`/storage/${party.logo}`"
                                         :alt="party.name_th"
                                         class="w-10 h-10 rounded-full object-cover"
+                                    />
+                                    <div
+                                        v-else
+                                        class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
+                                        :style="{ backgroundColor: party.color }"
                                     >
-                                    <div v-else class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" :style="{ backgroundColor: party.color }">
                                         {{ party.abbreviation.charAt(0) }}
                                     </div>
                                     <div>
@@ -80,7 +108,10 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center gap-2">
-                                    <div class="w-6 h-6 rounded" :style="{ backgroundColor: party.color }"></div>
+                                    <div
+                                        class="w-6 h-6 rounded"
+                                        :style="{ backgroundColor: party.color }"
+                                    ></div>
                                     <span class="text-sm text-gray-500">{{ party.color }}</span>
                                 </div>
                             </td>
@@ -88,7 +119,9 @@
                                 <button
                                     :class="[
                                         'px-2 py-1 text-xs font-medium rounded-full',
-                                        party.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                        party.is_active
+                                            ? 'bg-green-100 text-green-800'
+                                            : 'bg-gray-100 text-gray-800',
                                     ]"
                                     @click="toggleActive(party)"
                                 >
@@ -121,10 +154,14 @@
                 </table>
 
                 <!-- Pagination -->
-                <div v-if="parties.links && parties.links.length > 3" class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                <div
+                    v-if="parties.links && parties.links.length > 3"
+                    class="px-6 py-4 bg-gray-50 border-t border-gray-200"
+                >
                     <div class="flex items-center justify-between">
                         <p class="text-sm text-gray-500">
-                            แสดง {{ parties.from }} - {{ parties.to }} จาก {{ parties.total }} รายการ
+                            แสดง {{ parties.from }} - {{ parties.to }} จาก
+                            {{ parties.total }} รายการ
                         </p>
                         <div class="flex gap-1">
                             <Link
@@ -133,10 +170,13 @@
                                 :href="link.url || '#'"
                                 :class="[
                                     'px-3 py-1 text-sm rounded',
-                                    link.active ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100',
-                                    !link.url && 'opacity-50 cursor-not-allowed'
+                                    link.active
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-white text-gray-700 hover:bg-gray-100',
+                                    !link.url && 'opacity-50 cursor-not-allowed',
                                 ]"
-                            ><span v-html="link.label" /></Link>
+                                ><span v-html="link.label"
+                            /></Link>
                         </div>
                     </div>
                 </div>
@@ -146,7 +186,10 @@
         <!-- Delete Confirmation Modal -->
         <div v-if="showDeleteModal" class="fixed inset-0 z-50 overflow-y-auto">
             <div class="flex items-center justify-center min-h-screen px-4">
-                <div class="fixed inset-0 bg-black opacity-30" @click="showDeleteModal = false"></div>
+                <div
+                    class="fixed inset-0 bg-black opacity-30"
+                    @click="showDeleteModal = false"
+                ></div>
                 <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">ยืนยันการลบ</h3>
                     <p class="text-gray-600 mb-6">
@@ -189,7 +232,10 @@ const showDeleteModal = ref(false);
 const partyToDelete = ref(null);
 
 // Simple icon
-const PlusIcon = { template: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>' };
+const PlusIcon = {
+    template:
+        '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>',
+};
 
 let searchTimeout = null;
 const debouncedSearch = () => {
@@ -200,19 +246,27 @@ const debouncedSearch = () => {
 };
 
 const applyFilters = () => {
-    router.get(route('admin.parties.index'), {
-        search: search.value || undefined,
-        active: activeFilter.value || undefined,
-    }, {
-        preserveState: true,
-        replace: true,
-    });
+    router.get(
+        route('admin.parties.index'),
+        {
+            search: search.value || undefined,
+            active: activeFilter.value || undefined,
+        },
+        {
+            preserveState: true,
+            replace: true,
+        }
+    );
 };
 
 const toggleActive = (party) => {
-    router.post(route('admin.parties.toggle-active', party.id), {}, {
-        preserveState: true,
-    });
+    router.post(
+        route('admin.parties.toggle-active', party.id),
+        {},
+        {
+            preserveState: true,
+        }
+    );
 };
 
 const confirmDelete = (party) => {
