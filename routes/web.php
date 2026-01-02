@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminCandidateController;
+use App\Http\Controllers\Admin\AdminPartyController;
 use App\Http\Controllers\Install\InstallController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -88,34 +90,47 @@ Route::get('/api-docs', function () {
 })->name('api-docs');
 
 // Admin Routes (Protected)
-Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+    // Dashboard
     Route::get('/', function () {
         return Inertia::render('Admin/Dashboard');
-    })->name('admin.dashboard');
+    })->name('dashboard');
 
+    // พรรคการเมือง (CRUD)
+    Route::resource('parties', AdminPartyController::class);
+    Route::post('/parties/{party}/api-key', [AdminPartyController::class, 'generateApiKey'])->name('parties.api-key');
+    Route::post('/parties/{party}/toggle-active', [AdminPartyController::class, 'toggleActive'])->name('parties.toggle-active');
+
+    // ผู้สมัคร (CRUD)
+    Route::resource('candidates', AdminCandidateController::class);
+    Route::get('/candidates/constituencies/{province}', [AdminCandidateController::class, 'getConstituencies'])->name('candidates.constituencies');
+    Route::post('/candidates/import', [AdminCandidateController::class, 'import'])->name('candidates.import');
+    Route::get('/candidates/export', [AdminCandidateController::class, 'export'])->name('candidates.export');
+
+    // Elections (TODO: AdminElectionController)
     Route::get('/elections', function () {
         return Inertia::render('Admin/Elections/Index');
-    })->name('admin.elections');
+    })->name('elections.index');
 
-    Route::get('/parties', function () {
-        return Inertia::render('Admin/Parties/Index');
-    })->name('admin.parties');
-
+    // News (TODO: AdminNewsController)
     Route::get('/news', function () {
         return Inertia::render('Admin/News/Index');
-    })->name('admin.news');
+    })->name('news.index');
 
+    // Sources (TODO: AdminSourceController)
     Route::get('/sources', function () {
         return Inertia::render('Admin/Sources/Index');
-    })->name('admin.sources');
+    })->name('sources.index');
 
+    // Keywords (TODO: AdminKeywordController)
     Route::get('/keywords', function () {
         return Inertia::render('Admin/Keywords/Index');
-    })->name('admin.keywords');
+    })->name('keywords.index');
 
+    // Settings
     Route::get('/settings', function () {
         return Inertia::render('Admin/Settings');
-    })->name('admin.settings');
+    })->name('settings');
 });
 
 // Auth routes

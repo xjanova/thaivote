@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_admin',
+        'avatar',
     ];
 
     /**
@@ -43,6 +45,15 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
         ];
+    }
+
+    /**
+     * ตรวจสอบว่าผู้ใช้เป็น admin หรือไม่
+     */
+    public function isAdmin(): bool
+    {
+        return $this->is_admin === true;
     }
 }
