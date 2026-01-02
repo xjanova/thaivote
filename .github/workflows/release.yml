@@ -75,9 +75,10 @@ jobs:
             echo "Error: Version is empty"
             exit 1
           fi
-          echo "Creating archive for version: $VERSION"
-          # Create archive excluding dev files
-          tar -czvf "thaivote-${VERSION}.tar.gz" \
+          ARCHIVE_NAME="thaivote-${VERSION}.tar.gz"
+          echo "Creating archive: $ARCHIVE_NAME"
+          # Create archive excluding dev files and the archive itself
+          tar -czvf "../${ARCHIVE_NAME}" \
             --exclude='node_modules' \
             --exclude='.git' \
             --exclude='.github' \
@@ -85,12 +86,14 @@ jobs:
             --exclude='.env' \
             --exclude='.env.*' \
             --exclude='*.log' \
+            --exclude='*.tar.gz' \
             --exclude='coverage' \
             --exclude='storage/logs/*' \
             --exclude='storage/framework/cache/*' \
             --exclude='storage/framework/sessions/*' \
             --exclude='storage/framework/views/*' \
-            . || { echo "tar failed"; exit 1; }
+            .
+          mv "../${ARCHIVE_NAME}" .
 
       - name: Upload release archive
         uses: softprops/action-gh-release@v2
