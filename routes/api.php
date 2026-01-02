@@ -22,6 +22,8 @@ Route::prefix('elections')->group(function () {
     Route::get('/{election}/stats', [ElectionController::class, 'stats']);
     Route::get('/{election}/national-results', [ElectionController::class, 'nationalResults']);
     Route::get('/{election}/timeline', [ElectionController::class, 'timeline']);
+    Route::post('/{election}/snapshots', [ElectionController::class, 'createSnapshot'])
+        ->middleware('auth:sanctum');
 
     // Province results within election
     Route::get('/{electionId}/provinces/{province}/results', [ProvinceController::class, 'results']);

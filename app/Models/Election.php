@@ -59,6 +59,11 @@ class Election extends Model
         return $this->hasMany(ConstituencyResult::class);
     }
 
+    public function snapshots(): HasMany
+    {
+        return $this->hasMany(ResultSnapshot::class)->orderBy('snapshot_at');
+    }
+
     public function blockchainConfig(): HasOne
     {
         return $this->hasOne(BlockchainConfig::class);

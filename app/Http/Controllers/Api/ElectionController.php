@@ -7,6 +7,7 @@ use App\Models\Election;
 use App\Models\ElectionStats;
 use App\Models\NationalResult;
 use App\Models\Party;
+use App\Models\ResultSnapshot;
 use Illuminate\Http\JsonResponse;
 
 class ElectionController extends Controller
@@ -69,16 +70,40 @@ class ElectionController extends Controller
 
     public function timeline(Election $election): JsonResponse
     {
-        // Get historical snapshots of results
-        $timeline = cache()->remember(
-            "election.{$election->id}.timeline",
-            60,
-            function () {
-                // This would fetch from a timeline table if we had one
-                return [];
-            },
-        );
+        $snapshots = ResultSnapshot::where('election_id', $election->id)
+            ->orderBy('snapshot_at')
+            ->get()
+            ->map(fn ($snapshot) => [
+                'time' => $snapshot->snapshot_at->format('H:i'),
+                'timestamp' => $snapshot->snapshot_at->toIso8601String(),
+                'counting_progress' => (float) $snapshot->counting_progress,
+                'constituencies_counted' => $snapshot->constituencies_counted,
+                'stations_counted' => $snapshot->stations_counted,
+                'total_votes_cast' => $snapshot->total_votes_cast,
+                'leading_parties' => $snapshot->leading_parties,
+            ]);
 
-        return response()->json($timeline);
+        return response()->json([
+            'election_id' => $election->id,
+            'snapshots' => $snapshots,
+            'total_snapshots' => $snapshots->count(),
+        ]);
+    }
+
+    /**
+     * Create a new timeline snapshot for the election.
+     */
+    public function createSnapshot(Election $election): JsonResponse
+    {
+        $snapshot = ResultSnapshot::createFromElection($election);
+
+        return response()->json([
+            'message' => 'Snapshot created successfully',
+            'snapshot' => [
+                'id' => $snapshot->id,
+                'time' => $snapshot->snapshot_at->format('H:i'),
+                'counting_progress' => (float) $snapshot->counting_progress,
+            ],
+        ], 201);
     }
 }

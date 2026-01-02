@@ -8,8 +8,16 @@
                     <span class="text-sm text-gray-500"
                         >อัปเดตล่าสุด: {{ formatTime(lastUpdated) }}</span
                     >
-                    <button class="btn btn-primary text-sm" @click="refresh">
-                        <RefreshIcon class="w-4 h-4 mr-1" />
+                    <button
+                        class="btn btn-primary text-sm"
+                        :disabled="isLoading"
+                        @click="refreshAll"
+                    >
+                        <span
+                            class="w-4 h-4 mr-1 inline-block"
+                            :class="{ 'animate-spin': isLoading }"
+                            >↻</span
+                        >
                         รีเฟรช
                     </button>
                 </div>
@@ -61,7 +69,20 @@
                         <h3 class="font-semibold">สถานะแหล่งข้อมูล</h3>
                     </div>
                     <div class="card-body">
-                        <div class="space-y-3">
+                        <div v-if="sourcesLoading" class="space-y-3">
+                            <div
+                                v-for="i in 4"
+                                :key="i"
+                                class="h-12 bg-gray-100 rounded-lg animate-pulse"
+                            ></div>
+                        </div>
+                        <div
+                            v-else-if="sources.length === 0"
+                            class="text-center text-gray-500 py-4"
+                        >
+                            ยังไม่มีแหล่งข้อมูล
+                        </div>
+                        <div v-else class="space-y-3">
                             <div
                                 v-for="source in sources"
                                 :key="source.id"
@@ -73,10 +94,17 @@
                                             'w-3 h-3 rounded-full',
                                             source.status === 'active'
                                                 ? 'bg-green-500'
-                                                : 'bg-red-500',
+                                                : source.has_error
+                                                  ? 'bg-red-500'
+                                                  : 'bg-gray-400',
                                         ]"
                                     ></div>
-                                    <span>{{ source.name }}</span>
+                                    <div>
+                                        <span class="font-medium">{{ source.name }}</span>
+                                        <span class="text-xs text-gray-500 ml-2">{{
+                                            source.type
+                                        }}</span>
+                                    </div>
                                 </div>
                                 <div class="text-sm text-gray-500">
                                     {{ source.last_fetched }}
@@ -95,7 +123,16 @@
                         <h3 class="font-semibold">ข่าวล่าสุด</h3>
                         <a href="/admin/news" class="text-sm text-primary">ดูทั้งหมด</a>
                     </div>
-                    <div class="divide-y divide-gray-100">
+                    <div v-if="newsLoading" class="divide-y divide-gray-100">
+                        <div v-for="i in 3" :key="i" class="p-4">
+                            <div class="h-4 bg-gray-100 rounded animate-pulse mb-2"></div>
+                            <div class="h-3 bg-gray-100 rounded animate-pulse w-1/2"></div>
+                        </div>
+                    </div>
+                    <div v-else-if="recentNews.length === 0" class="p-4 text-center text-gray-500">
+                        ยังไม่มีข่าว
+                    </div>
+                    <div v-else class="divide-y divide-gray-100">
                         <div v-for="news in recentNews" :key="news.id" class="p-4 hover:bg-gray-50">
                             <p class="text-sm font-medium line-clamp-2">{{ news.title }}</p>
                             <p class="text-xs text-gray-500 mt-1">
@@ -109,11 +146,26 @@
                 <div class="card">
                     <div class="card-header flex items-center justify-between">
                         <h3 class="font-semibold">รอการอนุมัติ</h3>
-                        <span class="px-2 py-1 bg-red-100 text-red-600 text-xs rounded-full">
+                        <span
+                            v-if="pendingCount > 0"
+                            class="px-2 py-1 bg-red-100 text-red-600 text-xs rounded-full"
+                        >
                             {{ pendingCount }}
                         </span>
                     </div>
-                    <div class="divide-y divide-gray-100">
+                    <div v-if="pendingLoading" class="divide-y divide-gray-100">
+                        <div v-for="i in 2" :key="i" class="p-4">
+                            <div class="h-4 bg-gray-100 rounded animate-pulse mb-2"></div>
+                            <div class="h-3 bg-gray-100 rounded animate-pulse w-1/3"></div>
+                        </div>
+                    </div>
+                    <div
+                        v-else-if="pendingItems.length === 0"
+                        class="p-4 text-center text-gray-500"
+                    >
+                        ไม่มีรายการรอดำเนินการ
+                    </div>
+                    <div v-else class="divide-y divide-gray-100">
                         <div
                             v-for="item in pendingItems"
                             :key="item.id"
@@ -124,11 +176,19 @@
                                 <p class="text-xs text-gray-500">{{ item.type }}</p>
                             </div>
                             <div class="flex gap-2">
-                                <button class="p-1 text-green-600 hover:bg-green-50 rounded">
-                                    <CheckIcon class="w-5 h-5" />
+                                <button
+                                    class="p-1 text-green-600 hover:bg-green-50 rounded"
+                                    title="อนุมัติ"
+                                    @click="approveItem(item)"
+                                >
+                                    ✓
                                 </button>
-                                <button class="p-1 text-red-600 hover:bg-red-50 rounded">
-                                    <XIcon class="w-5 h-5" />
+                                <button
+                                    class="p-1 text-red-600 hover:bg-red-50 rounded"
+                                    title="ปฏิเสธ"
+                                    @click="rejectItem(item)"
+                                >
+                                    ✕
                                 </button>
                             </div>
                         </div>
@@ -141,7 +201,17 @@
                         <h3 class="font-semibold">ล็อกระบบ</h3>
                     </div>
                     <div class="card-body max-h-64 overflow-y-auto">
-                        <div class="space-y-2">
+                        <div v-if="logsLoading" class="space-y-2">
+                            <div
+                                v-for="i in 5"
+                                :key="i"
+                                class="h-8 bg-gray-100 rounded animate-pulse"
+                            ></div>
+                        </div>
+                        <div v-else-if="logs.length === 0" class="text-center text-gray-500">
+                            ไม่มีล็อก
+                        </div>
+                        <div v-else class="space-y-2">
                             <div
                                 v-for="log in logs"
                                 :key="log.id"
@@ -173,55 +243,40 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import StatCard from '@/components/admin/StatCard.vue';
 import Chart from 'chart.js/auto';
+import axios from 'axios';
 
 const lastUpdated = ref(new Date());
 const trafficChart = ref(null);
+const chartInstance = ref(null);
+const isLoading = ref(false);
 
+// Loading states
+const statsLoading = ref(true);
+const sourcesLoading = ref(true);
+const newsLoading = ref(true);
+const pendingLoading = ref(true);
+const logsLoading = ref(true);
+
+// Data
 const stats = ref({
-    activeElections: 1,
-    totalParties: 45,
-    todayNews: 156,
-    activeSources: 12,
+    activeElections: 0,
+    totalParties: 0,
+    todayNews: 0,
+    activeSources: 0,
 });
 
-const sources = ref([
-    { id: 1, name: 'กกต. Official', status: 'active', last_fetched: '2 นาทีที่แล้ว' },
-    { id: 2, name: 'Thai PBS', status: 'active', last_fetched: '5 นาทีที่แล้ว' },
-    { id: 3, name: 'ไทยรัฐ', status: 'active', last_fetched: '3 นาทีที่แล้ว' },
-    { id: 4, name: 'มติชน', status: 'error', last_fetched: '15 นาทีที่แล้ว' },
-]);
+const sources = ref([]);
+const recentNews = ref([]);
+const pendingCount = ref(0);
+const pendingItems = ref([]);
+const logs = ref([]);
 
-const recentNews = ref([
-    {
-        id: 1,
-        title: 'กกต.เปิดเผยผลคะแนนเลือกตั้งอย่างเป็นทางการ',
-        source: 'Thai PBS',
-        time: '5 นาทีที่แล้ว',
-    },
-    {
-        id: 2,
-        title: 'พรรคก้าวไกลประกาศชัยชนะในหลายจังหวัด',
-        source: 'มติชน',
-        time: '12 นาทีที่แล้ว',
-    },
-    { id: 3, title: 'ประชาชนแห่ออกมาใช้สิทธิ์คึกคัก', source: 'ไทยรัฐ', time: '20 นาทีที่แล้ว' },
-]);
-
-const pendingCount = ref(5);
-const pendingItems = ref([
-    { id: 1, title: 'ข่าวใหม่รอตรวจสอบ', type: 'News' },
-    { id: 2, title: 'พรรคใหม่ลงทะเบียน', type: 'Party' },
-]);
-
-const logs = ref([
-    { id: 1, level: 'info', message: 'Scraper completed successfully', time: '10:45:32' },
-    { id: 2, level: 'warning', message: 'Source มติชน response slow', time: '10:43:15' },
-    { id: 3, level: 'error', message: 'Failed to parse results from source #4', time: '10:40:00' },
-]);
+// Auto-refresh interval
+let refreshInterval = null;
 
 const formatTime = (date) =>
     new Intl.DateTimeFormat('th-TH', {
@@ -229,21 +284,95 @@ const formatTime = (date) =>
         minute: '2-digit',
     }).format(date);
 
-const refresh = () => {
-    lastUpdated.value = new Date();
+// API calls
+const fetchStats = async () => {
+    statsLoading.value = true;
+    try {
+        const response = await axios.get('/admin/api/dashboard/stats');
+        stats.value = response.data;
+    } catch (error) {
+        console.error('Failed to fetch stats:', error);
+    } finally {
+        statsLoading.value = false;
+    }
 };
 
-onMounted(() => {
-    // Initialize chart
+const fetchSources = async () => {
+    sourcesLoading.value = true;
+    try {
+        const response = await axios.get('/admin/api/dashboard/sources');
+        sources.value = response.data;
+    } catch (error) {
+        console.error('Failed to fetch sources:', error);
+    } finally {
+        sourcesLoading.value = false;
+    }
+};
+
+const fetchRecentNews = async () => {
+    newsLoading.value = true;
+    try {
+        const response = await axios.get('/admin/api/dashboard/recent-news');
+        recentNews.value = response.data;
+    } catch (error) {
+        console.error('Failed to fetch news:', error);
+    } finally {
+        newsLoading.value = false;
+    }
+};
+
+const fetchPending = async () => {
+    pendingLoading.value = true;
+    try {
+        const response = await axios.get('/admin/api/dashboard/pending');
+        pendingItems.value = response.data.items;
+        pendingCount.value = response.data.count;
+    } catch (error) {
+        console.error('Failed to fetch pending:', error);
+    } finally {
+        pendingLoading.value = false;
+    }
+};
+
+const fetchLogs = async () => {
+    logsLoading.value = true;
+    try {
+        const response = await axios.get('/admin/api/dashboard/logs');
+        logs.value = response.data;
+    } catch (error) {
+        console.error('Failed to fetch logs:', error);
+    } finally {
+        logsLoading.value = false;
+    }
+};
+
+const fetchTraffic = async () => {
+    try {
+        const response = await axios.get('/admin/api/dashboard/traffic');
+        updateChart(response.data);
+    } catch (error) {
+        console.error('Failed to fetch traffic:', error);
+    }
+};
+
+const updateChart = (data) => {
+    if (chartInstance.value) {
+        chartInstance.value.data.labels = data.labels;
+        chartInstance.value.data.datasets[0].data = data.data;
+        chartInstance.value.update();
+    }
+};
+
+const initChart = () => {
     if (trafficChart.value) {
-        new Chart(trafficChart.value, {
+        chartInstance.value = new Chart(trafficChart.value, {
             type: 'line',
             data: {
-                labels: ['10:00', '10:15', '10:30', '10:45', '11:00', '11:15'],
+                labels: [],
                 datasets: [
                     {
                         label: 'Users',
-                        data: [1200, 1900, 3000, 5000, 4200, 3500],
+                        data: [],
                         borderColor: '#FF6B35',
                         backgroundColor: 'rgba(255, 107, 53, 0.1)',
                         fill: true,
@@ -261,6 +390,59 @@ onMounted(() => {
                 },
             },
         });
+    }
+};
+
+const refreshAll = async () => {
+    isLoading.value = true;
+    await Promise.all([
+        fetchStats(),
+        fetchSources(),
+        fetchRecentNews(),
+        fetchPending(),
+        fetchLogs(),
+        fetchTraffic(),
+    ]);
+    lastUpdated.value = new Date();
+    isLoading.value = false;
+};
+
+const approveItem = async (item) => {
+    try {
+        await axios.post(`/admin/api/${item.entity_type}/${item.entity_id}/approve`);
+        await fetchPending();
+    } catch (error) {
+        console.error('Failed to approve:', error);
+        alert('ไม่สามารถอนุมัติได้');
+    }
+};
+
+const rejectItem = async (item) => {
+    try {
+        await axios.post(`/admin/api/${item.entity_type}/${item.entity_id}/reject`);
+        await fetchPending();
+    } catch (error) {
+        console.error('Failed to reject:', error);
+        alert('ไม่สามารถปฏิเสธได้');
+    }
+};
+
+onMounted(() => {
+    initChart();
+    refreshAll();
+
+    // Auto-refresh every 60 seconds
+    refreshInterval = setInterval(() => {
+        refreshAll();
+    }, 60000);
+});
+
+onUnmounted(() => {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+    if (chartInstance.value) {
+        chartInstance.value.destroy();
     }
 });
 </script>
