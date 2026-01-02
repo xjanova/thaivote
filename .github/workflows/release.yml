@@ -70,8 +70,14 @@ jobs:
 
       - name: Create release archive
         run: |
+          VERSION="${{ needs.release.outputs.version }}"
+          if [ -z "$VERSION" ]; then
+            echo "Error: Version is empty"
+            exit 1
+          fi
+          echo "Creating archive for version: $VERSION"
           # Create archive excluding dev files
-          tar -czvf thaivote-${{ needs.release.outputs.version }}.tar.gz \
+          tar -czvf "thaivote-${VERSION}.tar.gz" \
             --exclude='node_modules' \
             --exclude='.git' \
             --exclude='.github' \
@@ -79,11 +85,12 @@ jobs:
             --exclude='.env' \
             --exclude='.env.*' \
             --exclude='*.log' \
+            --exclude='coverage' \
             --exclude='storage/logs/*' \
             --exclude='storage/framework/cache/*' \
             --exclude='storage/framework/sessions/*' \
             --exclude='storage/framework/views/*' \
-            .
+            . || { echo "tar failed"; exit 1; }
 
       - name: Upload release archive
         uses: softprops/action-gh-release@v2
