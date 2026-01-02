@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.21.1](https://github.com/xjanova/thaivote/compare/v1.21.0...v1.21.1) (2026-01-02)
+
+
+### Bug Fixes
+
+* add error handling and coverage exclusion to release archive ([8b53b8b](https://github.com/xjanova/thaivote/commit/8b53b8b3a05b9ddfacd3ec8d121264aa0d734d82))
+* add error handling and coverage exclusion to release archive ([e20e9d4](https://github.com/xjanova/thaivote/commit/e20e9d42a2bbda6ac1bdfc4813cd06cb09812031))
+
 ## [1.21.0](https://github.com/xjanova/thaivote/compare/v1.20.0...v1.21.0) (2026-01-02)
 
 
