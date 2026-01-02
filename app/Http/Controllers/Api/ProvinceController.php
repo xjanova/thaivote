@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Province;
-use App\Models\ProvinceResult;
 use App\Models\Constituency;
 use App\Models\ConstituencyResult;
+use App\Models\Province;
+use App\Models\ProvinceResult;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class ProvinceController extends Controller
 {
@@ -72,6 +71,7 @@ class ProvinceController extends Controller
             'results' => $results,
             'constituencies' => $constituencies->map(function ($c) use ($constituencyResults) {
                 $results = $constituencyResults->get($c->id, collect());
+
                 return [
                     ...$c->toArray(),
                     'results' => $results,

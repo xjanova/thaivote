@@ -2,18 +2,18 @@
 
 namespace App\Services;
 
-use App\Models\ResultSource;
-use App\Models\ScrapedResult;
+use App\Events\ResultsUpdated;
 use App\Models\Election;
 use App\Models\NationalResult;
-use App\Models\ProvinceResult;
-use App\Models\ConstituencyResult;
 use App\Models\Party;
-use App\Models\Province;
-use App\Events\ResultsUpdated;
+use App\Models\ProvinceResult;
+use App\Models\ResultSource;
+use App\Models\ScrapedResult;
+use DOMDocument;
+use DOMXPath;
+use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 
 class ResultScraperService
 {
@@ -37,7 +37,7 @@ class ResultScraperService
                     default => [],
                 };
 
-                if (!empty($data)) {
+                if (! empty($data)) {
                     $this->storeScrapedData($source, $data);
                     $results[$source->name] = 'success';
                 }
@@ -49,7 +49,7 @@ class ResultScraperService
                         'timestamp' => now()->toIso8601String(),
                     ],
                 ]);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::error("Failed to scrape {$source->name}: {$e->getMessage()}");
                 $results[$source->name] = "Error: {$e->getMessage()}";
             }
@@ -62,14 +62,85 @@ class ResultScraperService
     }
 
     /**
+     * Process scraped data and update official results
+     */
+    public function processScrapedData(): void
+    {
+        $unprocessed = ScrapedResult::unprocessed()
+            ->where('election_id', $this->election->id)
+            ->with('source')
+            ->get()
+            ->groupBy(fn ($r) => $r->scope . '-' . ($r->scope_id ?? 'all'));
+
+        foreach ($unprocessed as $key => $results) {
+            // Get consensus from multiple sources
+            $consensus = $this->calculateConsensus($results);
+
+            if ($consensus['confidence'] >= 70) {
+                $this->updateResults($consensus);
+            }
+
+            // Mark as processed
+            ScrapedResult::whereIn('id', $results->pluck('id'))->update(['is_processed' => true]);
+        }
+
+        // Broadcast updates
+        event(new ResultsUpdated($this->election));
+    }
+
+    /**
+     * Get source accuracy report
+     */
+    public function getSourceAccuracyReport(Election $election): array
+    {
+        $sources = ResultSource::active()->get();
+        $report = [];
+
+        foreach ($sources as $source) {
+            $scraped = ScrapedResult::where('election_id', $election->id)
+                ->where('result_source_id', $source->id)
+                ->where('is_processed', true)
+                ->get();
+
+            // Compare with official results
+            $accurate = 0;
+            $total = $scraped->count();
+
+            foreach ($scraped as $result) {
+                $official = NationalResult::where('election_id', $election->id)
+                    ->where('party_id', $result->parsed_data['party_id'] ?? 0)
+                    ->first();
+
+                if ($official) {
+                    $voteDiff = abs($official->total_votes - ($result->parsed_data['votes'] ?? 0));
+                    $tolerance = $official->total_votes * 0.05; // 5% tolerance
+
+                    if ($voteDiff <= $tolerance) {
+                        $accurate++;
+                    }
+                }
+            }
+
+            $report[] = [
+                'source' => $source->name,
+                'total_records' => $total,
+                'accurate_records' => $accurate,
+                'accuracy_percentage' => $total > 0 ? round(($accurate / $total) * 100, 2) : 0,
+            ];
+        }
+
+        return $report;
+    }
+
+    /**
      * Scrape official ECT source
      */
     protected function scrapeOfficialSource(ResultSource $source): array
     {
         $response = Http::timeout(60)->get($source->api_endpoint ?? $source->website);
 
-        if (!$response->successful()) {
-            throw new \Exception("HTTP {$response->status()}");
+        if (! $response->successful()) {
+            throw new Exception("HTTP {$response->status()}");
         }
 
         $config = $source->scrape_config;
@@ -90,8 +161,8 @@ class ResultScraperService
     {
         $response = Http::timeout(30)->get($source->website);
 
-        if (!$response->successful()) {
-            throw new \Exception("HTTP {$response->status()}");
+        if (! $response->successful()) {
+            throw new Exception("HTTP {$response->status()}");
         }
 
         return $this->parseHtmlResults($response->body(), $source->scrape_config);
@@ -103,6 +174,7 @@ class ResultScraperService
     protected function fetchApiSource(ResultSource $source): array
     {
         $headers = [];
+
         if ($source->api_key) {
             $headers['Authorization'] = 'Bearer ' . $source->api_key;
         }
@@ -111,8 +183,8 @@ class ResultScraperService
             ->withHeaders($headers)
             ->get($source->api_endpoint);
 
-        if (!$response->successful()) {
-            throw new \Exception("API request failed: HTTP {$response->status()}");
+        if (! $response->successful()) {
+            throw new Exception("API request failed: HTTP {$response->status()}");
         }
 
         return $this->parseApiResponse($response->json(), $source->scrape_config);
@@ -150,9 +222,9 @@ class ResultScraperService
      */
     protected function parseHtmlResults(string $html, array $config): array
     {
-        $dom = new \DOMDocument();
+        $dom = new DOMDocument;
         @$dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
-        $xpath = new \DOMXPath($dom);
+        $xpath = new DOMXPath($dom);
 
         $results = [];
         $rows = $xpath->query($config['row_selector'] ?? '//tr[@class="result-row"]');
@@ -200,7 +272,8 @@ class ResultScraperService
     {
         // Try to match party by name if no ID
         $partyId = $item['party_id'] ?? null;
-        if (!$partyId && isset($item['party_name'])) {
+
+        if (! $partyId && isset($item['party_name'])) {
             $party = Party::where('name_th', 'like', '%' . $item['party_name'] . '%')
                 ->orWhere('name_en', 'like', '%' . $item['party_name'] . '%')
                 ->orWhere('abbreviation', $item['party_name'])
@@ -217,42 +290,17 @@ class ResultScraperService
     }
 
     /**
-     * Process scraped data and update official results
-     */
-    public function processScrapedData(): void
-    {
-        $unprocessed = ScrapedResult::unprocessed()
-            ->where('election_id', $this->election->id)
-            ->with('source')
-            ->get()
-            ->groupBy(fn($r) => $r->scope . '-' . ($r->scope_id ?? 'all'));
-
-        foreach ($unprocessed as $key => $results) {
-            // Get consensus from multiple sources
-            $consensus = $this->calculateConsensus($results);
-
-            if ($consensus['confidence'] >= 70) {
-                $this->updateResults($consensus);
-            }
-
-            // Mark as processed
-            ScrapedResult::whereIn('id', $results->pluck('id'))->update(['is_processed' => true]);
-        }
-
-        // Broadcast updates
-        event(new ResultsUpdated($this->election));
-    }
-
-    /**
      * Calculate consensus from multiple sources
      */
     protected function calculateConsensus($results): array
     {
-        $byParty = $results->groupBy(fn($r) => $r->parsed_data['party_id'] ?? 'unknown');
+        $byParty = $results->groupBy(fn ($r) => $r->parsed_data['party_id'] ?? 'unknown');
         $consensus = [];
 
         foreach ($byParty as $partyId => $partyResults) {
-            if ($partyId === 'unknown') continue;
+            if ($partyId === 'unknown') {
+                continue;
+            }
 
             $votes = $partyResults->pluck('parsed_data.votes')->filter();
             $seats = $partyResults->pluck('parsed_data.seats')->filter();
@@ -314,7 +362,7 @@ class ResultScraperService
                         'total_votes' => $partyResult['votes'],
                         'total_seats' => $partyResult['seats'],
                         'vote_percentage' => $this->calculatePercentage($partyResult['votes']),
-                    ]
+                    ],
                 );
             } elseif ($consensus['scope'] === 'province') {
                 ProvinceResult::updateOrCreate(
@@ -327,7 +375,7 @@ class ResultScraperService
                         'total_votes' => $partyResult['votes'],
                         'seats_won' => $partyResult['seats'],
                         'vote_percentage' => $partyResult['percentage'] ?? 0,
-                    ]
+                    ],
                 );
             }
         }
@@ -342,7 +390,8 @@ class ResultScraperService
     protected function updateElectionStats(): void
     {
         $stats = $this->election->stats;
-        if (!$stats) {
+
+        if (! $stats) {
             $stats = $this->election->stats()->create([]);
         }
 
@@ -363,6 +412,7 @@ class ResultScraperService
     protected function calculatePercentage(int $votes): float
     {
         $total = NationalResult::where('election_id', $this->election->id)->sum('total_votes');
+
         return $total > 0 ? round(($votes / $total) * 100, 2) : 0;
     }
 
@@ -372,49 +422,5 @@ class ResultScraperService
     protected function parseNumber(string $value): int
     {
         return (int) preg_replace('/[^0-9]/', '', $value);
-    }
-
-    /**
-     * Get source accuracy report
-     */
-    public function getSourceAccuracyReport(Election $election): array
-    {
-        $sources = ResultSource::active()->get();
-        $report = [];
-
-        foreach ($sources as $source) {
-            $scraped = ScrapedResult::where('election_id', $election->id)
-                ->where('result_source_id', $source->id)
-                ->where('is_processed', true)
-                ->get();
-
-            // Compare with official results
-            $accurate = 0;
-            $total = $scraped->count();
-
-            foreach ($scraped as $result) {
-                $official = NationalResult::where('election_id', $election->id)
-                    ->where('party_id', $result->parsed_data['party_id'] ?? 0)
-                    ->first();
-
-                if ($official) {
-                    $voteDiff = abs($official->total_votes - ($result->parsed_data['votes'] ?? 0));
-                    $tolerance = $official->total_votes * 0.05; // 5% tolerance
-
-                    if ($voteDiff <= $tolerance) {
-                        $accurate++;
-                    }
-                }
-            }
-
-            $report[] = [
-                'source' => $source->name,
-                'total_records' => $total,
-                'accurate_records' => $accurate,
-                'accuracy_percentage' => $total > 0 ? round(($accurate / $total) * 100, 2) : 0,
-            ];
-        }
-
-        return $report;
     }
 }

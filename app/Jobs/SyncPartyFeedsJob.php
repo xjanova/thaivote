@@ -2,9 +2,9 @@
 
 namespace App\Jobs;
 
-use App\Models\Party;
 use App\Models\PartyFeed;
 use App\Models\PartyPost;
+use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -18,6 +18,7 @@ class SyncPartyFeedsJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $backoff = 120;
 
     public function handle(): void
@@ -48,14 +49,14 @@ class SyncPartyFeedsJob implements ShouldQueue
                             'shares' => $post['shares'] ?? 0,
                             'comments' => $post['comments'] ?? 0,
                             'posted_at' => $post['posted_at'],
-                        ]
+                        ],
                     );
                 }
 
                 $feed->update(['last_synced_at' => now()]);
 
                 Log::info("Synced {$feed->platform} feed for party {$feed->party_id}");
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::error("Failed to sync feed {$feed->id}: {$e->getMessage()}");
             }
         }
@@ -63,7 +64,7 @@ class SyncPartyFeedsJob implements ShouldQueue
 
     protected function fetchFacebookPosts(PartyFeed $feed): array
     {
-        if (!$feed->access_token) {
+        if (! $feed->access_token) {
             return [];
         }
 
@@ -73,12 +74,12 @@ class SyncPartyFeedsJob implements ShouldQueue
             'limit' => 20,
         ]);
 
-        if (!$response->successful()) {
-            throw new \Exception('Facebook API error: ' . $response->body());
+        if (! $response->successful()) {
+            throw new Exception('Facebook API error: ' . $response->body());
         }
 
         return collect($response->json('data', []))
-            ->map(fn($post) => [
+            ->map(fn ($post) => [
                 'id' => $post['id'],
                 'content' => $post['message'] ?? '',
                 'url' => "https://facebook.com/{$post['id']}",

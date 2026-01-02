@@ -22,8 +22,8 @@ class AdminPartyController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name_th', 'like', "%{$search}%")
-                  ->orWhere('name_en', 'like', "%{$search}%")
-                  ->orWhere('abbreviation', 'like', "%{$search}%");
+                    ->orWhere('name_en', 'like', "%{$search}%")
+                    ->orWhere('abbreviation', 'like', "%{$search}%");
             });
         }
 
@@ -174,6 +174,7 @@ class AdminPartyController extends Controller
         if ($party->logo) {
             Storage::disk('public')->delete($party->logo);
         }
+
         if ($party->leader_photo) {
             Storage::disk('public')->delete($party->leader_photo);
         }

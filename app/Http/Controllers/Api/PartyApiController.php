@@ -15,7 +15,6 @@ class PartyApiController extends Controller
     /**
      * API endpoints for political parties to integrate with the system
      */
-
     public function authenticate(Request $request): JsonResponse
     {
         $request->validate([
@@ -25,7 +24,7 @@ class PartyApiController extends Controller
 
         $party = Party::where('api_key', $request->api_key)->first();
 
-        if (!$party || !Hash::check($request->api_secret, $party->api_secret)) {
+        if (! $party || ! Hash::check($request->api_secret, $party->api_secret)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
@@ -128,7 +127,7 @@ class PartyApiController extends Controller
             ->where('platform', $validated['platform'])
             ->first();
 
-        if (!$feed) {
+        if (! $feed) {
             return response()->json(['message' => 'Feed not found'], 404);
         }
 

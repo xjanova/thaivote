@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Install;
 
 use App\Http\Controllers\Controller;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -147,7 +148,7 @@ class InstallController extends Controller
 
         } catch (PDOException $e) {
             return back()->withErrors([
-                'db_connection' => 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้: ' . $e->getMessage()
+                'db_connection' => 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้: ' . $e->getMessage(),
             ])->withInput();
         }
 
@@ -221,9 +222,9 @@ class InstallController extends Controller
         // Run migrations
         try {
             Artisan::call('migrate', ['--force' => true]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return back()->withErrors([
-                'migration' => 'เกิดข้อผิดพลาดในการสร้างตาราง: ' . $e->getMessage()
+                'migration' => 'เกิดข้อผิดพลาดในการสร้างตาราง: ' . $e->getMessage(),
             ])->withInput();
         }
 
@@ -283,23 +284,24 @@ class InstallController extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // User might already exist or table structure different
             // Try alternative approach
             try {
                 $userClass = config('auth.providers.users.model', 'App\Models\User');
-                $user = new $userClass();
+                $user = new $userClass;
                 $user->name = $request->name;
                 $user->email = $request->email;
                 $user->password = Hash::make($request->password);
                 $user->email_verified_at = now();
+
                 if (in_array('is_admin', $user->getFillable())) {
                     $user->is_admin = true;
                 }
                 $user->save();
-            } catch (\Exception $e2) {
+            } catch (Exception $e2) {
                 return back()->withErrors([
-                    'user' => 'ไม่สามารถสร้างผู้ใช้งานได้: ' . $e2->getMessage()
+                    'user' => 'ไม่สามารถสร้างผู้ใช้งานได้: ' . $e2->getMessage(),
                 ])->withInput();
             }
         }
@@ -347,9 +349,9 @@ class InstallController extends Controller
      */
     protected function markAsInstalled(): void
     {
-        $content = "installed_at=" . now()->format('Y-m-d H:i:s') . "\n";
+        $content = 'installed_at=' . now()->format('Y-m-d H:i:s') . "\n";
         $content .= "installed_by=wizard\n";
-        $content .= "php_version=" . PHP_VERSION . "\n";
+        $content .= 'php_version=' . PHP_VERSION . "\n";
 
         File::put(storage_path('app/installed'), $content);
     }
@@ -405,10 +407,11 @@ class InstallController extends Controller
     protected function allRequirementsPassed(array $checks): bool
     {
         foreach ($checks as $check) {
-            if (!$check['passed']) {
+            if (! $check['passed']) {
                 return false;
             }
         }
+
         return true;
     }
 

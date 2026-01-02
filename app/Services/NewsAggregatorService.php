@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\NewsSource;
 use App\Models\NewsArticle;
 use App\Models\NewsKeyword;
-use App\Models\Party;
+use App\Models\NewsSource;
+use DOMDocument;
+use DOMXPath;
+use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -13,6 +15,7 @@ use Illuminate\Support\Str;
 class NewsAggregatorService
 {
     protected array $aiEndpoint;
+
     protected array $keywords = [];
 
     public function __construct()
@@ -44,7 +47,7 @@ class NewsAggregatorService
                 $results[$source->name] = count($processed);
 
                 $source->update(['last_fetched_at' => now()]);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::error("Failed to fetch from {$source->name}: {$e->getMessage()}");
                 $results[$source->name] = "Error: {$e->getMessage()}";
             }
@@ -60,8 +63,8 @@ class NewsAggregatorService
     {
         $response = Http::timeout(30)->get($source->rss_url);
 
-        if (!$response->successful()) {
-            throw new \Exception("Failed to fetch RSS: HTTP {$response->status()}");
+        if (! $response->successful()) {
+            throw new Exception("Failed to fetch RSS: HTTP {$response->status()}");
         }
 
         $xml = simplexml_load_string($response->body());
@@ -90,8 +93,8 @@ class NewsAggregatorService
             ->withHeaders($source->scrape_config['headers'] ?? [])
             ->get($source->api_endpoint);
 
-        if (!$response->successful()) {
-            throw new \Exception("API request failed: HTTP {$response->status()}");
+        if (! $response->successful()) {
+            throw new Exception("API request failed: HTTP {$response->status()}");
         }
 
         $data = $response->json();
@@ -120,17 +123,17 @@ class NewsAggregatorService
     {
         $response = Http::timeout(30)->get($source->website);
 
-        if (!$response->successful()) {
-            throw new \Exception("Failed to scrape: HTTP {$response->status()}");
+        if (! $response->successful()) {
+            throw new Exception("Failed to scrape: HTTP {$response->status()}");
         }
 
         $html = $response->body();
         $config = $source->scrape_config;
 
         // Use DOMDocument for parsing
-        $dom = new \DOMDocument();
+        $dom = new DOMDocument;
         @$dom->loadHTML($html);
-        $xpath = new \DOMXPath($dom);
+        $xpath = new DOMXPath($dom);
 
         $articles = [];
         $articleNodes = $xpath->query($config['article_selector'] ?? '//article');
@@ -172,7 +175,7 @@ class NewsAggregatorService
             // Check keyword relevance
             $matchedKeywords = $this->matchKeywords($article['title'] . ' ' . ($article['content'] ?? ''), $keywords);
 
-            if (empty($matchedKeywords) && !$this->isElectionRelated($article['title'])) {
+            if (empty($matchedKeywords) && ! $this->isElectionRelated($article['title'])) {
                 continue; // Skip non-relevant articles
             }
 
@@ -249,7 +252,7 @@ class NewsAggregatorService
         $electionKeywords = [
             'เลือกตั้ง', 'การเลือกตั้ง', 'ส.ส.', 'สมาชิกสภา', 'พรรค',
             'ลงคะแนน', 'หีบบัตร', 'กกต', 'เขตเลือกตั้ง', 'ผู้สมัคร',
-            'election', 'vote', 'ballot', 'candidate', 'constituency'
+            'election', 'vote', 'ballot', 'candidate', 'constituency',
         ];
 
         foreach ($electionKeywords as $keyword) {
@@ -266,7 +269,7 @@ class NewsAggregatorService
      */
     protected function analyzeArticle(array $article): array
     {
-        if (!$this->aiEndpoint['key']) {
+        if (! $this->aiEndpoint['key']) {
             return ['relevance_score' => 50, 'sentiment' => 'neutral', 'sentiment_score' => 0];
         }
 
@@ -281,12 +284,12 @@ class NewsAggregatorService
                     'messages' => [
                         [
                             'role' => 'system',
-                            'content' => 'You are an election news analyzer. Analyze the following Thai election news article and return JSON with: relevance_score (0-100 for election relevance), sentiment (positive/negative/neutral), sentiment_score (-1 to 1).'
+                            'content' => 'You are an election news analyzer. Analyze the following Thai election news article and return JSON with: relevance_score (0-100 for election relevance), sentiment (positive/negative/neutral), sentiment_score (-1 to 1).',
                         ],
                         [
                             'role' => 'user',
-                            'content' => "Title: {$article['title']}\n\nContent: " . Str::limit($article['content'] ?? '', 1000)
-                        ]
+                            'content' => "Title: {$article['title']}\n\nContent: " . Str::limit($article['content'] ?? '', 1000),
+                        ],
                     ],
                     'response_format' => ['type' => 'json_object'],
                 ]);
@@ -294,7 +297,7 @@ class NewsAggregatorService
             if ($response->successful()) {
                 return json_decode($response->json('choices.0.message.content'), true);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::warning("AI analysis failed: {$e->getMessage()}");
         }
 
@@ -312,7 +315,7 @@ class NewsAggregatorService
             ->unique()
             ->toArray();
 
-        if (!empty($partyIds)) {
+        if (! empty($partyIds)) {
             $article->parties()->sync($partyIds);
         }
     }
@@ -325,6 +328,7 @@ class NewsAggregatorService
         if (preg_match('/<img[^>]+src=["\']([^"\']+)["\']/', $html, $matches)) {
             return $matches[1];
         }
+
         return null;
     }
 
@@ -338,12 +342,15 @@ class NewsAggregatorService
         }
 
         $base = parse_url($baseUrl);
+
         if (str_starts_with($url, '//')) {
             return ($base['scheme'] ?? 'https') . ':' . $url;
         }
+
         if (str_starts_with($url, '/')) {
             return ($base['scheme'] ?? 'https') . '://' . $base['host'] . $url;
         }
+
         return rtrim($baseUrl, '/') . '/' . $url;
     }
 }
