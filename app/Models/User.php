@@ -36,6 +36,14 @@ class User extends Authenticatable
     ];
 
     /**
+     * ตรวจสอบว่าผู้ใช้เป็น admin หรือไม่
+     */
+    public function isAdmin(): bool
+    {
+        return $this->is_admin === true;
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -47,13 +55,5 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_admin' => 'boolean',
         ];
-    }
-
-    /**
-     * ตรวจสอบว่าผู้ใช้เป็น admin หรือไม่
-     */
-    public function isAdmin(): bool
-    {
-        return $this->is_admin === true;
     }
 }

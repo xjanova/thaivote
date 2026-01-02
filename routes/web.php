@@ -134,4 +134,4 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 });
 
 // Auth routes
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

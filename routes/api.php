@@ -1,12 +1,12 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\ElectionController;
-use App\Http\Controllers\Api\ProvinceController;
-use App\Http\Controllers\Api\PartyController;
-use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\ConstituencyController;
+use App\Http\Controllers\Api\ElectionController;
+use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\PartyApiController;
+use App\Http\Controllers\Api\PartyController;
+use App\Http\Controllers\Api\ProvinceController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------

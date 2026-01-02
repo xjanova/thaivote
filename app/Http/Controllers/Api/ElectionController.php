@@ -8,7 +8,6 @@ use App\Models\ElectionStats;
 use App\Models\NationalResult;
 use App\Models\Party;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class ElectionController extends Controller
 {
@@ -44,7 +43,7 @@ class ElectionController extends Controller
     {
         $election = Election::active()->with('stats')->first();
 
-        if (!$election) {
+        if (! $election) {
             return response()->json(['message' => 'No active election'], 404);
         }
 
@@ -74,10 +73,10 @@ class ElectionController extends Controller
         $timeline = cache()->remember(
             "election.{$election->id}.timeline",
             60,
-            function () use ($election) {
+            function () {
                 // This would fetch from a timeline table if we had one
                 return [];
-            }
+            },
         );
 
         return response()->json($timeline);

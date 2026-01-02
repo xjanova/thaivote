@@ -2,12 +2,13 @@
 
 namespace App\Services;
 
-use App\Models\Election;
 use App\Models\BlockchainConfig;
-use App\Models\BlockchainVoter;
-use App\Models\BlockchainVote;
 use App\Models\BlockchainTally;
+use App\Models\BlockchainVote;
+use App\Models\BlockchainVoter;
+use App\Models\Election;
 use App\Models\User;
+use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -22,6 +23,7 @@ class BlockchainVotingService
     public function forElection(Election $election): self
     {
         $this->config = $election->blockchainConfig;
+
         return $this;
     }
 
@@ -91,7 +93,7 @@ class BlockchainVotingService
      */
     public function connectWallet(BlockchainVoter $voter, string $walletAddress): array
     {
-        if (!$voter->is_verified) {
+        if (! $voter->is_verified) {
             return [
                 'success' => false,
                 'message' => 'Voter not verified',
@@ -112,11 +114,11 @@ class BlockchainVotingService
      */
     public function submitVote(BlockchainVoter $voter, int $candidateId): array
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             return ['success' => false, 'message' => 'Blockchain voting not enabled'];
         }
 
-        if (!$voter->is_verified) {
+        if (! $voter->is_verified) {
             return ['success' => false, 'message' => 'Voter not verified'];
         }
 
@@ -124,7 +126,7 @@ class BlockchainVotingService
             return ['success' => false, 'message' => 'Already voted'];
         }
 
-        if (!$voter->wallet_address) {
+        if (! $voter->wallet_address) {
             return ['success' => false, 'message' => 'Wallet not connected'];
         }
 
@@ -165,8 +167,9 @@ class BlockchainVotingService
                 'transaction_hash' => $txHash,
                 'message' => 'Vote submitted successfully',
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Vote submission failed: ' . $e->getMessage());
+
             return [
                 'success' => false,
                 'message' => 'Failed to submit vote: ' . $e->getMessage(),
@@ -181,7 +184,7 @@ class BlockchainVotingService
     {
         $vote = BlockchainVote::where('transaction_hash', $transactionHash)->first();
 
-        if (!$vote) {
+        if (! $vote) {
             return ['success' => false, 'message' => 'Vote not found'];
         }
 
@@ -209,7 +212,7 @@ class BlockchainVotingService
                 'status' => 'pending',
                 'message' => 'Transaction pending confirmation',
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'message' => 'Verification failed: ' . $e->getMessage(),
@@ -222,7 +225,7 @@ class BlockchainVotingService
      */
     public function tallyVotes(Election $election): array
     {
-        if (!$this->forElection($election)->isEnabled()) {
+        if (! $this->forElection($election)->isEnabled()) {
             return ['success' => false, 'message' => 'Blockchain voting not enabled'];
         }
 
@@ -232,6 +235,7 @@ class BlockchainVotingService
 
         // Decrypt and tally votes
         $tally = [];
+
         foreach ($confirmedVotes as $vote) {
             $candidateId = $this->decryptVote($vote->vote_commitment);
             $tally[$candidateId] = ($tally[$candidateId] ?? 0) + 1;
@@ -247,7 +251,7 @@ class BlockchainVotingService
                 [
                     'votes' => $votes,
                     'is_verified' => true,
-                ]
+                ],
             );
         }
 
@@ -316,7 +320,7 @@ class BlockchainVotingService
             'AES-256-CBC',
             $key,
             0,
-            $iv
+            $iv,
         );
 
         return base64_encode($encrypted);
@@ -339,8 +343,8 @@ class BlockchainVotingService
      */
     protected function submitToBlockchain(string $commitment, string $nullifier, string $wallet): string
     {
-        if (!$this->config) {
-            throw new \Exception('Blockchain not configured');
+        if (! $this->config) {
+            throw new Exception('Blockchain not configured');
         }
 
         // In production, this would:
@@ -368,8 +372,8 @@ class BlockchainVotingService
      */
     protected function getTransaction(string $txHash): array
     {
-        if (!$this->config) {
-            throw new \Exception('Blockchain not configured');
+        if (! $this->config) {
+            throw new Exception('Blockchain not configured');
         }
 
         // In production, this would query the blockchain
@@ -389,10 +393,11 @@ class BlockchainVotingService
             return hash('sha256', '');
         }
 
-        $hashes = array_map(fn($v) => hash('sha256', (string) $v), $values);
+        $hashes = array_map(fn ($v) => hash('sha256', (string) $v), $values);
 
         while (count($hashes) > 1) {
             $newHashes = [];
+
             for ($i = 0; $i < count($hashes); $i += 2) {
                 $left = $hashes[$i];
                 $right = $hashes[$i + 1] ?? $left;

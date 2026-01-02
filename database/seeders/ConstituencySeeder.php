@@ -19,6 +19,7 @@ class ConstituencySeeder extends Seeder
 
         if ($provinces->isEmpty()) {
             $this->command->error('No provinces found. Please run ProvinceSeeder first.');
+
             return;
         }
 
@@ -58,6 +59,7 @@ class ConstituencySeeder extends Seeder
     private function estimateVoters(int $provincePop, int $constituencies): int
     {
         $votersPerConstituency = ($provincePop / $constituencies) * 0.8;
+
         return (int) round($votersPerConstituency);
     }
 
@@ -67,6 +69,7 @@ class ConstituencySeeder extends Seeder
     private function estimatePollingStations(int $provincePop, int $constituencies): int
     {
         $votersPerConstituency = ($provincePop / $constituencies) * 0.8;
+
         return (int) ceil($votersPerConstituency / 900);
     }
 }

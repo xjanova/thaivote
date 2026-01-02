@@ -15,6 +15,7 @@ class ResultsUpdated implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public Election $election;
+
     public array $results;
 
     public function __construct(Election $election)

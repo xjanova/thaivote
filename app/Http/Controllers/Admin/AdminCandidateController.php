@@ -26,9 +26,9 @@ class AdminCandidateController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('nickname', 'like', "%{$search}%")
-                  ->orWhere('candidate_number', 'like', "%{$search}%");
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('nickname', 'like', "%{$search}%")
+                    ->orWhere('candidate_number', 'like', "%{$search}%");
             });
         }
 
@@ -73,6 +73,7 @@ class AdminCandidateController extends Controller
     public function create(Request $request)
     {
         $constituencies = [];
+
         if ($provinceId = $request->input('province_id')) {
             $constituencies = Constituency::where('province_id', $provinceId)
                 ->orderBy('number')
@@ -149,6 +150,7 @@ class AdminCandidateController extends Controller
         $candidate->load(['party', 'election', 'constituency.province']);
 
         $constituencies = [];
+
         if ($candidate->constituency) {
             $constituencies = Constituency::where('province_id', $candidate->constituency->province_id)
                 ->orderBy('number')

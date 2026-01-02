@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Party;
-use App\Models\NationalResult;
 use App\Models\Candidate;
+use App\Models\NationalResult;
+use App\Models\Party;
 use App\Models\PartyPost;
-use App\Models\NewsArticle;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class PartyController extends Controller
 {
@@ -54,6 +52,7 @@ class PartyController extends Controller
             ->map(function ($candidate) use ($electionId) {
                 $result = $candidate->constituencyResults
                     ->firstWhere('election_id', $electionId);
+
                 return [
                     ...$candidate->toArray(),
                     'votes' => $result?->votes ?? 0,

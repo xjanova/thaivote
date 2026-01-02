@@ -25,7 +25,7 @@ class NewsController extends Controller
         if ($request->has('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('title', 'like', "%{$request->search}%")
-                  ->orWhere('content', 'like', "%{$request->search}%");
+                    ->orWhere('content', 'like', "%{$request->search}%");
             });
         }
 

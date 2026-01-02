@@ -3,9 +3,11 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Schema;
 
 class CreateAdminUser extends Command
 {
@@ -40,23 +42,27 @@ class CreateAdminUser extends Command
 
         // Get name
         $name = $this->option('name');
+
         if (empty($name)) {
             $name = $this->ask('Enter admin name');
         }
 
         if (empty($name)) {
             $this->error('Name is required');
+
             return self::FAILURE;
         }
 
         // Get email
         $email = $this->option('email');
+
         if (empty($email)) {
             $email = $this->ask('Enter admin email');
         }
 
         if (empty($email)) {
             $this->error('Email is required');
+
             return self::FAILURE;
         }
 
@@ -67,6 +73,7 @@ class CreateAdminUser extends Command
 
         if ($validator->fails()) {
             $this->error('Invalid email format');
+
             return self::FAILURE;
         }
 
@@ -82,30 +89,36 @@ class CreateAdminUser extends Command
             $this->updateUserToAdmin($user);
             $this->info('');
             $this->info("User '{$name}' has been updated to admin!");
+
             return self::SUCCESS;
         }
 
         // Get password
         $password = $this->option('password');
+
         if (empty($password)) {
             $password = $this->secret('Enter admin password (min 8 characters)');
         }
 
         if (empty($password)) {
             $this->error('Password is required');
+
             return self::FAILURE;
         }
 
         if (strlen($password) < 8) {
             $this->error('Password must be at least 8 characters');
+
             return self::FAILURE;
         }
 
         // Confirm password if interactive
         if (empty($this->option('password')) && ! $this->option('force')) {
             $confirmPassword = $this->secret('Confirm password');
+
             if ($password !== $confirmPassword) {
                 $this->error('Passwords do not match');
+
                 return self::FAILURE;
             }
         }
@@ -140,13 +153,14 @@ class CreateAdminUser extends Command
                     ['Name', $name],
                     ['Email', $email],
                     ['Admin', 'Yes'],
-                ]
+                ],
             );
             $this->info('');
 
             return self::SUCCESS;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Failed to create admin user: ' . $e->getMessage());
+
             return self::FAILURE;
         }
     }
@@ -157,8 +171,8 @@ class CreateAdminUser extends Command
     private function hasAdminColumn(): bool
     {
         try {
-            return \Schema::hasColumn('users', 'is_admin');
-        } catch (\Exception $e) {
+            return Schema::hasColumn('users', 'is_admin');
+        } catch (Exception $e) {
             return false;
         }
     }
@@ -174,7 +188,7 @@ class CreateAdminUser extends Command
                 $user->assignRole($adminRole);
                 $this->info('Assigned "admin" role to user');
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Silently ignore if roles table doesn't exist
         }
     }

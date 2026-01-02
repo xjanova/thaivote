@@ -7,7 +7,6 @@ use App\Models\Constituency;
 use App\Models\ConstituencyResult;
 use App\Models\StationResult;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class ConstituencyController extends Controller
 {
