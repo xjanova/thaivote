@@ -16,7 +16,7 @@
             </div>
 
             <!-- Form -->
-            <form @submit.prevent="submit" class="bg-white rounded-lg shadow">
+            <form class="bg-white rounded-lg shadow" @submit.prevent="submit">
                 <!-- Basic Info -->
                 <div class="p-6 border-b border-gray-200">
                     <h2 class="text-lg font-medium text-gray-900 mb-4">ข้อมูลพื้นฐาน</h2>
@@ -123,16 +123,16 @@
                                 </div>
                                 <div class="flex-1">
                                     <input
+                                        ref="logoInput"
                                         type="file"
                                         accept="image/png,image/jpeg,image/svg+xml"
-                                        @change="onLogoChange"
                                         class="hidden"
-                                        ref="logoInput"
+                                        @change="onLogoChange"
                                     >
                                     <button
                                         type="button"
-                                        @click="$refs.logoInput.click()"
                                         class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                                        @click="$refs.logoInput.click()"
                                     >
                                         เปลี่ยนโลโก้
                                     </button>
@@ -234,9 +234,9 @@
                 <div class="p-6 border-b border-gray-200">
                     <div class="flex items-center gap-3">
                         <input
+                            id="is_active"
                             v-model="form.is_active"
                             type="checkbox"
-                            id="is_active"
                             class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                         >
                         <label for="is_active" class="text-sm font-medium text-gray-700">

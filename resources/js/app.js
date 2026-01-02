@@ -21,16 +21,12 @@ createInertiaApp({
         app.use(pinia);
 
         // Global properties
-        app.config.globalProperties.$formatNumber = (num) => {
-            return new Intl.NumberFormat('th-TH').format(num);
-        };
+        app.config.globalProperties.$formatNumber = (num) => new Intl.NumberFormat('th-TH').format(num);
 
-        app.config.globalProperties.$formatPercent = (num) => {
-            return new Intl.NumberFormat('th-TH', {
+        app.config.globalProperties.$formatPercent = (num) => new Intl.NumberFormat('th-TH', {
                 style: 'percent',
                 minimumFractionDigits: 2
             }).format(num / 100);
-        };
 
         app.mount(el);
     },

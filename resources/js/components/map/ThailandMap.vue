@@ -1,18 +1,18 @@
 <template>
-    <div class="thailand-map-container relative" ref="mapContainer">
+    <div ref="mapContainer" class="thailand-map-container relative">
         <!-- Zoom controls -->
         <div class="absolute top-4 right-4 z-10 flex flex-col gap-2">
-            <button @click="zoomIn" class="btn-zoom" title="ซูมเข้า">
+            <button class="btn-zoom" title="ซูมเข้า" @click="zoomIn">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
             </button>
-            <button @click="zoomOut" class="btn-zoom" title="ซูมออก">
+            <button class="btn-zoom" title="ซูมออก" @click="zoomOut">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
                 </svg>
             </button>
-            <button @click="resetZoom" class="btn-zoom" title="รีเซ็ต">
+            <button class="btn-zoom" title="รีเซ็ต" @click="resetZoom">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
                 </svg>
@@ -81,11 +81,12 @@
             <button
                 v-if="selectedProvince"
                 class="hexagon-button"
-                @click="openProvinceDetail(selectedProvince)"
                 title="ดูรายละเอียด"
+                @click="openProvinceDetail(selectedProvince)"
             >
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    <path
+stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M9 5l7 7-7 7"/>
                 </svg>
             </button>
@@ -116,7 +117,7 @@
                         <span class="font-semibold ml-1">{{ formatNumber(tooltip.province?.population) }}</span>
                     </div>
                 </div>
-                <div class="mt-2 space-y-1" v-if="tooltip.province?.results?.length">
+                <div v-if="tooltip.province?.results?.length" class="mt-2 space-y-1">
                     <div
                         v-for="result in tooltip.province.results.slice(0, 3)"
                         :key="result.party_id"
@@ -130,7 +131,7 @@
                         <span class="text-sm font-semibold ml-auto">{{ result.seats_won }} ที่นั่ง</span>
                     </div>
                 </div>
-                <div class="mt-2 pt-2 border-t border-gray-100" v-if="tooltip.province?.counting_progress !== undefined">
+                <div v-if="tooltip.province?.counting_progress !== undefined" class="mt-2 pt-2 border-t border-gray-100">
                     <div class="flex items-center justify-between text-sm">
                         <span class="text-gray-500">นับคะแนน</span>
                         <span class="font-semibold">{{ tooltip.province.counting_progress }}%</span>
@@ -181,7 +182,7 @@
                         ></div>
                         <h3 class="font-bold text-xl">{{ selectedProvince.name_th }}</h3>
                     </div>
-                    <button @click="closeDetailPanel" class="p-2 hover:bg-gray-100 rounded-full">
+                    <button class="p-2 hover:bg-gray-100 rounded-full" @click="closeDetailPanel">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -245,8 +246,8 @@
                             <button
                                 v-for="constituency in provinceConstituencies"
                                 :key="constituency.id"
-                                @click="selectConstituency(constituency)"
                                 class="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                @click="selectConstituency(constituency)"
                             >
                                 <div class="flex items-center justify-between">
                                     <span class="font-medium">เขต {{ constituency.number }}</span>
@@ -284,7 +285,7 @@ const props = defineProps({
     }
 });
 
-const emit = defineEmits(['province-selected', 'constituency-selected']);
+const emit = defineEmits(['provinceSelected', 'constituencySelected']);
 
 const resultsStore = useResultsStore();
 const mapContainer = ref(null);
@@ -319,7 +320,7 @@ const filteredProvinces = computed(() => {
         ...p,
         path: provincePaths[p.code]
     }));
-    if (!selectedRegion.value) return provinces;
+    if (!selectedRegion.value) {return provinces;}
     return provinces.filter(p => p.region === selectedRegion.value);
 });
 
@@ -348,13 +349,13 @@ const topParties = computed(() => {
 });
 
 const selectedProvinceResults = computed(() => {
-    if (!selectedProvince.value) return [];
+    if (!selectedProvince.value) {return [];}
     return resultsStore.getProvinceResults(selectedProvince.value.id)
         .sort((a, b) => b.seats_won - a.seats_won);
 });
 
 const provinceConstituencies = computed(() => {
-    if (!selectedProvince.value) return [];
+    if (!selectedProvince.value) {return [];}
     const constituencies = getConstituenciesByProvinceId(selectedProvince.value.id);
     return constituencies.map(c => ({
         ...c,
@@ -363,17 +364,15 @@ const provinceConstituencies = computed(() => {
 });
 
 // Methods
-const getProvincePath = (code) => {
-    return provincePaths[code] || '';
-};
+const getProvincePath = (code) => provincePaths[code] || '';
 
 const getProvinceCenter = (code) => {
     const path = provincePaths[code];
-    if (!path) return { x: 0, y: 0 };
+    if (!path) {return { x: 0, y: 0 };}
 
     // Simple center calculation from path
     const matches = path.match(/[ML]\s*(\d+),(\d+)/g);
-    if (!matches) return { x: 0, y: 0 };
+    if (!matches) {return { x: 0, y: 0 };}
 
     let sumX = 0, sumY = 0;
     matches.forEach(m => {
@@ -402,9 +401,9 @@ const getProvinceColor = (province) => {
 };
 
 const getLeadingPartyColor = (province) => {
-    if (!province) return '#E5E7EB';
+    if (!province) {return '#E5E7EB';}
     const results = resultsStore.getProvinceResults(province.id);
-    if (!results.length) return regions[province.region]?.color || '#E5E7EB';
+    if (!results.length) {return regions[province.region]?.color || '#E5E7EB';}
 
     const winner = results.sort((a, b) => b.seats_won - a.seats_won)[0];
     return winner?.party?.color || '#E5E7EB';
@@ -412,12 +411,12 @@ const getLeadingPartyColor = (province) => {
 
 const selectProvince = (province) => {
     selectedProvince.value = province;
-    emit('province-selected', province);
+    emit('provinceSelected', province);
 };
 
 const openProvinceDetail = (province) => {
     showDetailPanel.value = true;
-    emit('province-selected', province);
+    emit('provinceSelected', province);
 };
 
 const closeDetailPanel = () => {
@@ -426,7 +425,7 @@ const closeDetailPanel = () => {
 
 const selectConstituency = (constituency) => {
     selectedConstituency.value = constituency;
-    emit('constituency-selected', constituency);
+    emit('constituencySelected', constituency);
 };
 
 const showTooltip = (event, province) => {
@@ -474,7 +473,7 @@ const startPan = (event) => {
 };
 
 const pan = (event) => {
-    if (!isPanning.value) return;
+    if (!isPanning.value) {return;}
     panX.value = event.clientX - startX.value;
     panY.value = event.clientY - startY.value;
 };
@@ -520,17 +519,17 @@ const handleTouchEnd = () => {
 
 // Utilities
 const formatNumber = (num) => {
-    if (!num) return '0';
+    if (!num) {return '0';}
     return new Intl.NumberFormat('th-TH').format(num);
 };
 
 const formatCompactNumber = (num) => {
-    if (!num) return '0';
+    if (!num) {return '0';}
     if (num >= 1000000) {
-        return (num / 1000000).toFixed(1) + 'M';
+        return `${(num / 1000000).toFixed(1)  }M`;
     }
     if (num >= 1000) {
-        return (num / 1000).toFixed(0) + 'K';
+        return `${(num / 1000).toFixed(0)  }K`;
     }
     return num.toString();
 };

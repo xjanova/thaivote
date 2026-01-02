@@ -117,19 +117,13 @@ export const khonkaenConstituencies = [
 ];
 
 // ฟังก์ชันหาเขตเลือกตั้งตาม province_code
-export const getConstituenciesByProvinceCode = (code) => {
-    return constituencies.filter(c => c.province_code === code);
-};
+export const getConstituenciesByProvinceCode = (code) => constituencies.filter(c => c.province_code === code);
 
 // ฟังก์ชันหาเขตเลือกตั้งตาม province_id
-export const getConstituenciesByProvinceId = (provinceId) => {
-    return constituencies.filter(c => c.province_id === provinceId);
-};
+export const getConstituenciesByProvinceId = (provinceId) => constituencies.filter(c => c.province_id === provinceId);
 
 // ฟังก์ชันหาเขตเลือกตั้งจาก id
-export const getConstituencyById = (id) => {
-    return constituencies.find(c => c.id === id);
-};
+export const getConstituencyById = (id) => constituencies.find(c => c.id === id);
 
 // คำนวณจำนวนเขตทั้งหมด
 export const totalConstituencies = constituencies.length;

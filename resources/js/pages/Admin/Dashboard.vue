@@ -6,7 +6,7 @@
                 <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
                 <div class="flex items-center gap-2">
                     <span class="text-sm text-gray-500">อัปเดตล่าสุด: {{ formatTime(lastUpdated) }}</span>
-                    <button @click="refresh" class="btn btn-primary text-sm">
+                    <button class="btn btn-primary text-sm" @click="refresh">
                         <RefreshIcon class="w-4 h-4 mr-1" />
                         รีเฟรช
                     </button>
@@ -209,12 +209,10 @@ const logs = ref([
     { id: 3, level: 'error', message: 'Failed to parse results from source #4', time: '10:40:00' },
 ]);
 
-const formatTime = (date) => {
-    return new Intl.DateTimeFormat('th-TH', {
+const formatTime = (date) => new Intl.DateTimeFormat('th-TH', {
         hour: '2-digit',
         minute: '2-digit',
     }).format(date);
-};
 
 const refresh = () => {
     lastUpdated.value = new Date();

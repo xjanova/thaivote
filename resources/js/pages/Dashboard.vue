@@ -82,14 +82,14 @@
                             <h2 class="text-xl font-bold">ผลคะแนนรายพรรค</h2>
                             <div class="flex items-center gap-2">
                                 <button
-                                    @click="resultView = 'seats'"
                                     :class="['px-3 py-1 rounded-lg text-sm', resultView === 'seats' ? 'bg-primary text-white' : 'bg-gray-100']"
+                                    @click="resultView = 'seats'"
                                 >
                                     ที่นั่ง
                                 </button>
                                 <button
-                                    @click="resultView = 'votes'"
                                     :class="['px-3 py-1 rounded-lg text-sm', resultView === 'votes' ? 'bg-primary text-white' : 'bg-gray-100']"
+                                    @click="resultView = 'votes'"
                                 >
                                     คะแนน
                                 </button>
@@ -321,23 +321,21 @@ const liveFeed = ref([]);
 const election = computed(() => resultsStore.election);
 const stats = computed(() => resultsStore.stats);
 
-const sortedResults = computed(() => {
-    return [...resultsStore.nationalResults].sort((a, b) => {
+const sortedResults = computed(() => [...resultsStore.nationalResults].sort((a, b) => {
         if (resultView.value === 'seats') {
             return b.total_seats - a.total_seats;
         }
         return b.total_votes - a.total_votes;
-    });
-});
+    }));
 
 // Methods
 const formatNumber = (num) => {
-    if (!num) return '0';
+    if (!num) {return '0';}
     return new Intl.NumberFormat('th-TH').format(num);
 };
 
 const formatTime = (date) => {
-    if (!date) return '';
+    if (!date) {return '';}
     return new Intl.DateTimeFormat('th-TH', {
         hour: '2-digit',
         minute: '2-digit',
