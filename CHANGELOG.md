@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.22.0](https://github.com/xjanova/thaivote/compare/v1.21.2...v1.22.0) (2026-01-02)
+
+
+### Features
+
+* add production-ready admin pages and timeline feature ([174d52d](https://github.com/xjanova/thaivote/commit/174d52decbe9b26af9bebfb5922da0b6417b375a))
+* upgrade admin system to production ([328c655](https://github.com/xjanova/thaivote/commit/328c655185e418a16fd625075b90aa9723f394cb))
+
 ## [1.21.2](https://github.com/xjanova/thaivote/compare/v1.21.1...v1.21.2) (2026-01-02)
 
 
