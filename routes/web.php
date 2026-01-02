@@ -1,7 +1,11 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminCandidateController;
+use App\Http\Controllers\Admin\AdminElectionController;
+use App\Http\Controllers\Admin\AdminNewsController;
 use App\Http\Controllers\Admin\AdminPartyController;
+use App\Http\Controllers\Admin\AdminSourceController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Install\InstallController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -96,6 +100,16 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         return Inertia::render('Admin/Dashboard');
     })->name('dashboard');
 
+    // Dashboard API
+    Route::prefix('api/dashboard')->name('dashboard.')->group(function () {
+        Route::get('/stats', [DashboardController::class, 'stats'])->name('stats');
+        Route::get('/sources', [DashboardController::class, 'sources'])->name('sources');
+        Route::get('/recent-news', [DashboardController::class, 'recentNews'])->name('recent-news');
+        Route::get('/pending', [DashboardController::class, 'pending'])->name('pending');
+        Route::get('/logs', [DashboardController::class, 'logs'])->name('logs');
+        Route::get('/traffic', [DashboardController::class, 'traffic'])->name('traffic');
+    });
+
     // พรรคการเมือง (CRUD)
     Route::resource('parties', AdminPartyController::class);
     Route::post('/parties/{party}/api-key', [AdminPartyController::class, 'generateApiKey'])->name('parties.api-key');
@@ -107,25 +121,21 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::post('/candidates/import', [AdminCandidateController::class, 'import'])->name('candidates.import');
     Route::get('/candidates/export', [AdminCandidateController::class, 'export'])->name('candidates.export');
 
-    // Elections (TODO: AdminElectionController)
-    Route::get('/elections', function () {
-        return Inertia::render('Admin/Elections/Index');
-    })->name('elections.index');
+    // การเลือกตั้ง (CRUD)
+    Route::resource('elections', AdminElectionController::class);
+    Route::post('/elections/{election}/toggle-active', [AdminElectionController::class, 'toggleActive'])->name('elections.toggle-active');
+    Route::post('/elections/{election}/status', [AdminElectionController::class, 'updateStatus'])->name('elections.status');
+    Route::post('/elections/{election}/duplicate', [AdminElectionController::class, 'duplicate'])->name('elections.duplicate');
 
-    // News (TODO: AdminNewsController)
-    Route::get('/news', function () {
-        return Inertia::render('Admin/News/Index');
-    })->name('news.index');
+    // ข่าว (CRUD)
+    Route::resource('news', AdminNewsController::class);
+    Route::post('/news/{news}/publish', [AdminNewsController::class, 'publish'])->name('news.publish');
+    Route::post('/news/{news}/unpublish', [AdminNewsController::class, 'unpublish'])->name('news.unpublish');
 
-    // Sources (TODO: AdminSourceController)
-    Route::get('/sources', function () {
-        return Inertia::render('Admin/Sources/Index');
-    })->name('sources.index');
-
-    // Keywords (TODO: AdminKeywordController)
-    Route::get('/keywords', function () {
-        return Inertia::render('Admin/Keywords/Index');
-    })->name('keywords.index');
+    // แหล่งข้อมูล (CRUD)
+    Route::resource('sources', AdminSourceController::class);
+    Route::post('/sources/{source}/toggle-active', [AdminSourceController::class, 'toggleActive'])->name('sources.toggle-active');
+    Route::post('/sources/{source}/fetch', [AdminSourceController::class, 'fetch'])->name('sources.fetch');
 
     // Settings
     Route::get('/settings', function () {
