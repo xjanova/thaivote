@@ -13,9 +13,37 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
+/**
+ * Blockchain Voting Service
+ *
+ * @experimental This service is experimental and not production-ready.
+ * It provides a proof-of-concept implementation for blockchain-based voting.
+ *
+ * WARNING: This implementation uses simplified cryptography and simulated
+ * blockchain transactions. For production use, this would require:
+ * - Real ZK-proof implementation for voter eligibility
+ * - Proper homomorphic encryption (ElGamal/Paillier) for vote privacy
+ * - Actual smart contract integration
+ * - Formal security audits
+ *
+ * Do NOT use this in production elections without proper security review.
+ */
 class BlockchainVotingService
 {
+    /**
+     * Whether this service is production-ready
+     */
+    public const IS_EXPERIMENTAL = true;
+
     protected ?BlockchainConfig $config = null;
+
+    /**
+     * Check if blockchain voting feature is experimental
+     */
+    public static function isExperimental(): bool
+    {
+        return self::IS_EXPERIMENTAL;
+    }
 
     /**
      * Initialize service for an election

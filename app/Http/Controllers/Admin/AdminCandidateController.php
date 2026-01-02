@@ -8,6 +8,7 @@ use App\Models\Constituency;
 use App\Models\Election;
 use App\Models\Party;
 use App\Models\Province;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -249,9 +250,61 @@ class AdminCandidateController extends Controller
             'election_id' => 'required|exists:elections,id',
         ]);
 
-        // TODO: Implement CSV import logic
+        $file = $request->file('file');
+        $electionId = $request->input('election_id');
 
-        return back()->with('success', 'นำเข้าข้อมูลผู้สมัครเรียบร้อยแล้ว');
+        $handle = fopen($file->getPathname(), 'r');
+        $header = fgetcsv($handle);
+
+        // Expected columns: party_name, candidate_number, title, first_name, last_name, nickname, type, constituency_id, party_list_order, is_pm_candidate
+        $imported = 0;
+        $errors = [];
+        $row = 1;
+
+        while (($data = fgetcsv($handle)) !== false) {
+            $row++;
+
+            try {
+                $rowData = array_combine($header, $data);
+
+                // Find party by name
+                $party = null;
+
+                if (! empty($rowData['party_name'])) {
+                    $party = Party::where('name_th', $rowData['party_name'])
+                        ->orWhere('name_en', $rowData['party_name'])
+                        ->first();
+                }
+
+                Candidate::create([
+                    'election_id' => $electionId,
+                    'party_id' => $party?->id,
+                    'constituency_id' => ! empty($rowData['constituency_id']) ? $rowData['constituency_id'] : null,
+                    'candidate_number' => $rowData['candidate_number'] ?? '',
+                    'title' => $rowData['title'] ?? '',
+                    'first_name' => $rowData['first_name'] ?? '',
+                    'last_name' => $rowData['last_name'] ?? '',
+                    'nickname' => $rowData['nickname'] ?? null,
+                    'type' => $rowData['type'] ?? 'constituency',
+                    'party_list_order' => ! empty($rowData['party_list_order']) ? (int) $rowData['party_list_order'] : null,
+                    'is_pm_candidate' => ! empty($rowData['is_pm_candidate']) && strtolower($rowData['is_pm_candidate']) === 'yes',
+                ]);
+
+                $imported++;
+            } catch (Exception $e) {
+                $errors[] = "Row {$row}: " . $e->getMessage();
+            }
+        }
+
+        fclose($handle);
+
+        $message = "นำเข้าผู้สมัคร {$imported} รายการสำเร็จ";
+
+        if (count($errors) > 0) {
+            $message .= ' (มีข้อผิดพลาด ' . count($errors) . ' รายการ)';
+        }
+
+        return back()->with('success', $message);
     }
 
     /**
@@ -259,9 +312,72 @@ class AdminCandidateController extends Controller
      */
     public function export(Request $request)
     {
-        // TODO: Implement CSV export logic
+        $query = Candidate::with(['party', 'constituency.province', 'election']);
 
-        return response()->download('candidates.csv');
+        // Apply filters
+        if ($electionId = $request->input('election_id')) {
+            $query->where('election_id', $electionId);
+        }
+
+        if ($partyId = $request->input('party_id')) {
+            $query->where('party_id', $partyId);
+        }
+
+        if ($type = $request->input('type')) {
+            $query->where('type', $type);
+        }
+
+        $candidates = $query->orderBy('candidate_number')->get();
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="candidates_' . date('Y-m-d') . '.csv"',
+        ];
+
+        $callback = function () use ($candidates) {
+            $file = fopen('php://output', 'w');
+
+            // Add BOM for UTF-8
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            // Header row
+            fputcsv($file, [
+                'candidate_number',
+                'title',
+                'first_name',
+                'last_name',
+                'nickname',
+                'party_name',
+                'type',
+                'constituency_id',
+                'province',
+                'party_list_order',
+                'is_pm_candidate',
+                'election',
+            ]);
+
+            // Data rows
+            foreach ($candidates as $candidate) {
+                fputcsv($file, [
+                    $candidate->candidate_number,
+                    $candidate->title,
+                    $candidate->first_name,
+                    $candidate->last_name,
+                    $candidate->nickname,
+                    $candidate->party?->name_th,
+                    $candidate->type,
+                    $candidate->constituency_id,
+                    $candidate->constituency?->province?->name_th,
+                    $candidate->party_list_order,
+                    $candidate->is_pm_candidate ? 'Yes' : 'No',
+                    $candidate->election?->name,
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     /**

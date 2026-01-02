@@ -129,18 +129,11 @@
                             <div class="h-3 bg-gray-100 rounded animate-pulse w-1/2"></div>
                         </div>
                     </div>
-                    <div
-                        v-else-if="recentNews.length === 0"
-                        class="p-4 text-center text-gray-500"
-                    >
+                    <div v-else-if="recentNews.length === 0" class="p-4 text-center text-gray-500">
                         ยังไม่มีข่าว
                     </div>
                     <div v-else class="divide-y divide-gray-100">
-                        <div
-                            v-for="news in recentNews"
-                            :key="news.id"
-                            class="p-4 hover:bg-gray-50"
-                        >
+                        <div v-for="news in recentNews" :key="news.id" class="p-4 hover:bg-gray-50">
                             <p class="text-sm font-medium line-clamp-2">{{ news.title }}</p>
                             <p class="text-xs text-gray-500 mt-1">
                                 {{ news.source }} • {{ news.time }}
