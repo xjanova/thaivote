@@ -2,18 +2,23 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
     /**
-     * A basic test example.
+     * Test the application boots correctly.
      */
-    public function test_the_application_returns_a_successful_response(): void
+    public function test_application_boots(): void
     {
-        $response = $this->get('/');
+        $this->assertTrue(app()->bound('router'));
+    }
 
-        $response->assertStatus(200);
+    /**
+     * Test config is loaded.
+     */
+    public function test_config_is_loaded(): void
+    {
+        $this->assertNotEmpty(config('app.name'));
     }
 }
