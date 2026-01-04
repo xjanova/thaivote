@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.25.0](https://github.com/xjanova/thaivote/compare/v1.24.0...v1.25.0) (2026-01-04)
+
+
+### Features
+
+* add Inertia.js setup with root blade template ([2c206b2](https://github.com/xjanova/thaivote/commit/2c206b28845429bd3e8ef7e11db42c88e684b7e4))
+* add Inertia.js setup with root blade template ([4532c78](https://github.com/xjanova/thaivote/commit/4532c7834ac7d6d01968b614449a9efe0350de8c))
+
 ## [1.24.0](https://github.com/xjanova/thaivote/compare/v1.23.0...v1.24.0) (2026-01-04)
 
 
