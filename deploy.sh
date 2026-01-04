@@ -51,6 +51,7 @@ FORCE_SEED=false
 CREATE_ADMIN=false
 VERBOSE=false
 FIRST_INSTALL=false
+DB_AVAILABLE=true  # Will be set by check_database_availability
 
 # Create necessary directories
 mkdir -p "${BACKUP_DIR}"
@@ -349,6 +350,84 @@ backup_database() {
 # Database Setup
 #===============================================================================
 
+# Update .env variable safely (same as install.sh)
+update_env_var() {
+    local key="$1"
+    local value="$2"
+    local env_file="${APP_DIR}/.env"
+
+    local needs_quoting=false
+    if [[ "$value" == *" "* ]] || [[ "$value" == *"	"* ]]; then needs_quoting=true; fi
+    if [[ "$value" == *'$'* ]]; then needs_quoting=true; fi
+    if [[ "$value" == *'"'* ]]; then needs_quoting=true; fi
+    if [[ "$value" == *"'"* ]]; then needs_quoting=true; fi
+    if [[ "$value" == *'`'* ]]; then needs_quoting=true; fi
+    if [[ "$value" == *'\'* ]]; then needs_quoting=true; fi
+    if [[ "$value" == *'@'* ]]; then needs_quoting=true; fi
+
+    if [ "$needs_quoting" = true ]; then
+        value="${value//\\/\\\\}"
+        value="${value//\"/\\\"}"
+        value="${value//\$/\\\$}"
+        value="${value//\`/\\\`}"
+        value="\"$value\""
+    fi
+
+    local new_line="${key}=${value}"
+
+    if grep -qE "^#?\s*${key}=" "$env_file" 2>/dev/null; then
+        local temp_file=$(mktemp)
+        grep -vE "^#?\s*${key}=" "$env_file" > "$temp_file"
+        echo "$new_line" >> "$temp_file"
+        mv "$temp_file" "$env_file"
+    else
+        echo "$new_line" >> "$env_file"
+    fi
+}
+
+# Check if database is available and configure fallback drivers
+check_database_availability() {
+    cd "${APP_DIR}"
+
+    local DB_CONNECTION=$(grep "^DB_CONNECTION=" .env 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'" || echo "sqlite")
+    local db_available=false
+
+    if [ "${DB_CONNECTION}" = "sqlite" ]; then
+        # Check if pdo_sqlite is available
+        if php -m 2>/dev/null | grep -qi "pdo_sqlite"; then
+            db_available=true
+        else
+            log_warning "pdo_sqlite driver not available"
+        fi
+    elif [ "${DB_CONNECTION}" = "mysql" ]; then
+        # Check if we can connect to MySQL
+        set +e
+        local DB_CHECK=$(php artisan tinker --execute="try { \DB::connection()->getPdo(); echo 'ok'; } catch(\Exception \$e) { echo 'fail'; }" 2>/dev/null | tail -1)
+        set -e
+        if [ "$DB_CHECK" = "ok" ]; then
+            db_available=true
+        else
+            log_warning "MySQL connection not available"
+        fi
+    fi
+
+    if [ "$db_available" = false ]; then
+        log_warning "Database not available - switching to file-based drivers"
+        log_info "SESSION_DRIVER → file"
+        log_info "CACHE_STORE → file"
+        log_info "QUEUE_CONNECTION → sync"
+
+        update_env_var "SESSION_DRIVER" "file"
+        update_env_var "CACHE_STORE" "file"
+        update_env_var "QUEUE_CONNECTION" "sync"
+
+        DB_AVAILABLE=false
+    else
+        DB_AVAILABLE=true
+        log "Database connection available ✓"
+    fi
+}
+
 setup_database() {
     log_step "3" "Setting Up Database"
 
@@ -368,6 +447,9 @@ setup_database() {
     elif [ "${DB_CONNECTION}" = "mysql" ]; then
         log "Database: MySQL"
     fi
+
+    # Check database availability and configure fallback if needed
+    check_database_availability
 
     # Generate APP_KEY if not set
     local APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
@@ -581,6 +663,13 @@ run_migrations() {
 
     cd "${APP_DIR}"
 
+    # Skip if database not available
+    if [ "$DB_AVAILABLE" = false ]; then
+        log_warning "Database not available - skipping migrations"
+        log_info "App will work with limited functionality (no database)"
+        return 0
+    fi
+
     # Clear config cache first
     php artisan config:clear 2>/dev/null || true
 
@@ -651,6 +740,12 @@ run_migrations() {
 
 run_seeders() {
     cd "${APP_DIR}"
+
+    # Skip if database not available
+    if [ "$DB_AVAILABLE" = false ]; then
+        log_info "Database not available - skipping seeders"
+        return 0
+    fi
 
     # Check if core data already exists
     local province_count=0
