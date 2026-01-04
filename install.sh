@@ -199,6 +199,56 @@ prompt_input() {
     eval "$var_name=\"${value:-$default}\""
 }
 
+# Update .env variable safely (handles all special characters including |, /, \, $, etc.)
+# Adopted from xmanstudio install.sh with improved regex
+update_env_var() {
+    local key="$1"
+    local value="$2"
+    local env_file=".env"
+
+    # Check if value contains special characters that need quoting
+    # Using simpler pattern matching that works in bash
+    local needs_quoting=false
+
+    # Check for common special characters
+    if [[ "$value" == *" "* ]] || [[ "$value" == *"	"* ]]; then needs_quoting=true; fi  # space or tab
+    if [[ "$value" == *'$'* ]]; then needs_quoting=true; fi
+    if [[ "$value" == *'"'* ]]; then needs_quoting=true; fi
+    if [[ "$value" == *"'"* ]]; then needs_quoting=true; fi
+    if [[ "$value" == *'`'* ]]; then needs_quoting=true; fi
+    if [[ "$value" == *'\'* ]]; then needs_quoting=true; fi
+    if [[ "$value" == *'!'* ]]; then needs_quoting=true; fi
+    if [[ "$value" == *'#'* ]]; then needs_quoting=true; fi
+    if [[ "$value" == *'&'* ]]; then needs_quoting=true; fi
+    if [[ "$value" == *'|'* ]]; then needs_quoting=true; fi
+    if [[ "$value" == *';'* ]]; then needs_quoting=true; fi
+    if [[ "$value" == *'@'* ]]; then needs_quoting=true; fi
+
+    if [ "$needs_quoting" = true ]; then
+        # Escape backslashes first, then double quotes, then dollar signs, then backticks
+        value="${value//\\/\\\\}"
+        value="${value//\"/\\\"}"
+        value="${value//\$/\\\$}"
+        value="${value//\`/\\\`}"
+        value="\"$value\""
+    fi
+
+    # Create the new line
+    local new_line="${key}=${value}"
+
+    # Check if key exists in file (including commented out versions)
+    if grep -qE "^#?\s*${key}=" "$env_file" 2>/dev/null; then
+        # Key exists - create temp file without the old line, then add new line
+        local temp_file=$(mktemp)
+        grep -vE "^#?\s*${key}=" "$env_file" > "$temp_file"
+        echo "$new_line" >> "$temp_file"
+        mv "$temp_file" "$env_file"
+    else
+        # Key doesn't exist - just append
+        echo "$new_line" >> "$env_file"
+    fi
+}
+
 #===============================================================================
 # Parse Arguments
 #===============================================================================
@@ -511,14 +561,14 @@ configure_sqlite() {
     mkdir -p "${APP_DIR}/database"
     touch "${APP_DIR}/database/database.sqlite"
 
-    # Update .env
-    sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env
-    # Comment out MySQL settings
-    sed -i 's/^DB_HOST=.*/#DB_HOST=127.0.0.1/' .env
-    sed -i 's/^DB_PORT=.*/#DB_PORT=3306/' .env
-    sed -i 's/^DB_DATABASE=.*/#DB_DATABASE=thaivote/' .env
-    sed -i 's/^DB_USERNAME=.*/#DB_USERNAME=root/' .env
-    sed -i 's/^DB_PASSWORD=.*/#DB_PASSWORD=/' .env
+    # Update .env using safe update function
+    update_env_var "DB_CONNECTION" "sqlite"
+
+    # Remove MySQL settings (they're not needed for SQLite)
+    # Create temp file without DB_HOST, DB_PORT, etc.
+    local temp_file=$(mktemp)
+    grep -vE "^#?\s*(DB_HOST|DB_PORT|DB_DATABASE|DB_USERNAME|DB_PASSWORD)=" .env > "$temp_file" 2>/dev/null || true
+    mv "$temp_file" .env
 
     log "SQLite database configured"
 }
@@ -533,38 +583,14 @@ configure_mysql() {
     prompt_input "Database username" "$DB_USER" "DB_USER"
     prompt_input "Database password" "$DB_PASS" "DB_PASS" true
 
-    # Update .env file - handle special characters in password
-    # Use temp file approach for safety
-    local TEMP_ENV=$(mktemp)
-
-    while IFS= read -r line || [[ -n "$line" ]]; do
-        case "$line" in
-            DB_CONNECTION=*|"#DB_CONNECTION="*|"# DB_CONNECTION="*)
-                echo "DB_CONNECTION=mysql" >> "$TEMP_ENV"
-                ;;
-            DB_HOST=*|"#DB_HOST="*|"# DB_HOST="*)
-                echo "DB_HOST=${DB_HOST}" >> "$TEMP_ENV"
-                ;;
-            DB_PORT=*|"#DB_PORT="*|"# DB_PORT="*)
-                echo "DB_PORT=${DB_PORT}" >> "$TEMP_ENV"
-                ;;
-            DB_DATABASE=*|"#DB_DATABASE="*|"# DB_DATABASE="*)
-                echo "DB_DATABASE=${DB_NAME}" >> "$TEMP_ENV"
-                ;;
-            DB_USERNAME=*|"#DB_USERNAME="*|"# DB_USERNAME="*)
-                echo "DB_USERNAME=${DB_USER}" >> "$TEMP_ENV"
-                ;;
-            DB_PASSWORD=*|"#DB_PASSWORD="*|"# DB_PASSWORD="*)
-                # Quote password to handle special characters
-                echo "DB_PASSWORD=\"${DB_PASS}\"" >> "$TEMP_ENV"
-                ;;
-            *)
-                echo "$line" >> "$TEMP_ENV"
-                ;;
-        esac
-    done < .env
-
-    mv "$TEMP_ENV" .env
+    # Update .env file using safe update function
+    # This properly handles special characters in passwords (|, $, \, ", etc.)
+    update_env_var "DB_CONNECTION" "mysql"
+    update_env_var "DB_HOST" "$DB_HOST"
+    update_env_var "DB_PORT" "$DB_PORT"
+    update_env_var "DB_DATABASE" "$DB_NAME"
+    update_env_var "DB_USERNAME" "$DB_USER"
+    update_env_var "DB_PASSWORD" "$DB_PASS"
 
     log "MySQL configuration saved"
 }
@@ -630,15 +656,15 @@ configure_application() {
     prompt_input "App URL" "$APP_URL" "APP_URL"
     prompt_input "Environment (local/production)" "$APP_ENV" "APP_ENV"
 
-    # Update .env
-    sed -i "s|^APP_URL=.*|APP_URL=${APP_URL}|" .env
-    sed -i "s/^APP_ENV=.*/APP_ENV=${APP_ENV}/" .env
-    sed -i "s/^APP_NAME=.*/APP_NAME=ThaiVote/" .env
+    # Update .env using safe update function
+    update_env_var "APP_NAME" "ThaiVote"
+    update_env_var "APP_URL" "$APP_URL"
+    update_env_var "APP_ENV" "$APP_ENV"
 
     if [ "${APP_ENV}" = "production" ]; then
-        sed -i "s/^APP_DEBUG=.*/APP_DEBUG=false/" .env
+        update_env_var "APP_DEBUG" "false"
     else
-        sed -i "s/^APP_DEBUG=.*/APP_DEBUG=true/" .env
+        update_env_var "APP_DEBUG" "true"
     fi
 
     log "Application configured"
@@ -1019,29 +1045,20 @@ configure_reverb() {
         REVERB_APP_KEY=$(openssl rand -hex 16 2>/dev/null || cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
         REVERB_APP_SECRET=$(openssl rand -hex 32 2>/dev/null || cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
 
-        # Check if Reverb settings exist in .env
-        if grep -q "^REVERB_APP_ID" .env; then
-            sed -i "s/^REVERB_APP_ID=.*/REVERB_APP_ID=${REVERB_APP_ID}/" .env
-            sed -i "s/^REVERB_APP_KEY=.*/REVERB_APP_KEY=${REVERB_APP_KEY}/" .env
-            sed -i "s/^REVERB_APP_SECRET=.*/REVERB_APP_SECRET=${REVERB_APP_SECRET}/" .env
-        else
-            # Add Reverb settings
-            cat >> .env << EOF
+        # Update Reverb settings using safe update function
+        update_env_var "REVERB_APP_ID" "$REVERB_APP_ID"
+        update_env_var "REVERB_APP_KEY" "$REVERB_APP_KEY"
+        update_env_var "REVERB_APP_SECRET" "$REVERB_APP_SECRET"
+        update_env_var "REVERB_HOST" "localhost"
+        update_env_var "REVERB_PORT" "8080"
+        update_env_var "REVERB_SCHEME" "http"
 
-# Laravel Reverb (WebSocket)
-REVERB_APP_ID=${REVERB_APP_ID}
-REVERB_APP_KEY=${REVERB_APP_KEY}
-REVERB_APP_SECRET=${REVERB_APP_SECRET}
-REVERB_HOST="localhost"
-REVERB_PORT=8080
-REVERB_SCHEME=http
+        # Vite variables (reference other env vars)
+        update_env_var "VITE_REVERB_APP_KEY" "\${REVERB_APP_KEY}"
+        update_env_var "VITE_REVERB_HOST" "\${REVERB_HOST}"
+        update_env_var "VITE_REVERB_PORT" "\${REVERB_PORT}"
+        update_env_var "VITE_REVERB_SCHEME" "\${REVERB_SCHEME}"
 
-VITE_REVERB_APP_KEY="\${REVERB_APP_KEY}"
-VITE_REVERB_HOST="\${REVERB_HOST}"
-VITE_REVERB_PORT="\${REVERB_PORT}"
-VITE_REVERB_SCHEME="\${REVERB_SCHEME}"
-EOF
-        fi
         log "Reverb WebSocket configured"
     else
         log "Reverb already configured"
@@ -1067,12 +1084,19 @@ finalize_installation() {
 
     # Create installed marker file
     mkdir -p "${APP_DIR}/storage/app"
+
+    # Determine database type correctly
+    local DB_TYPE="sqlite"
+    if [ "$USE_MYSQL" = true ]; then
+        DB_TYPE="mysql"
+    fi
+
     cat > "${APP_DIR}/storage/app/installed" << EOF
 installed_at=$(date '+%Y-%m-%d %H:%M:%S')
 installed_by=cli
 version=${VERSION}
 php_version=$(php -r "echo PHP_VERSION;")
-database=${USE_MYSQL:+mysql}${USE_MYSQL:-sqlite}
+database=${DB_TYPE}
 EOF
 
     # Remove installer flag if exists
