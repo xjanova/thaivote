@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.28.0](https://github.com/xjanova/thaivote/compare/v1.27.1...v1.28.0) (2026-01-04)
+
+
+### Features
+
+* auto-install Composer and Node.js in deploy.sh v3.2 ([739b5fe](https://github.com/xjanova/thaivote/commit/739b5fe23746062dd9eb564799749046313e7724))
+* auto-install Composer and Node.js in deploy.sh v3.2 ([60ea873](https://github.com/xjanova/thaivote/commit/60ea87367a4dc140a3ac81f082b990dc3c136a16))
+
 ## [1.27.1](https://github.com/xjanova/thaivote/compare/v1.27.0...v1.27.1) (2026-01-04)
 
 
