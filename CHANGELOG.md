@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.24.0](https://github.com/xjanova/thaivote/compare/v1.23.0...v1.24.0) (2026-01-04)
+
+
+### Features
+
+* add database availability check with automatic fallback ([59d0269](https://github.com/xjanova/thaivote/commit/59d026998183b6e6960185e9e67072316f990728))
+* add database availability check with automatic fallback ([00b3471](https://github.com/xjanova/thaivote/commit/00b34718041846b781d35974937058412161331c))
+
 ## [1.23.0](https://github.com/xjanova/thaivote/compare/v1.22.0...v1.23.0) (2026-01-04)
 
 
