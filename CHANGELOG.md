@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.28.4](https://github.com/xjanova/thaivote/compare/v1.28.3...v1.28.4) (2026-01-04)
+
+
+### Bug Fixes
+
+* prevent 500 error on uninstalled app by redirecting to install w… ([f868f4f](https://github.com/xjanova/thaivote/commit/f868f4f1182c1265c731844dcf62b0e4b0d5a484))
+* prevent 500 error on uninstalled app by redirecting to install wizard ([2ad61a4](https://github.com/xjanova/thaivote/commit/2ad61a41085e7bef81866718f9106d027e72cc8c))
+
 ## [1.28.3](https://github.com/xjanova/thaivote/compare/v1.28.2...v1.28.3) (2026-01-04)
 
 
