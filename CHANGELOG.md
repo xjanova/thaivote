@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.28.3](https://github.com/xjanova/thaivote/compare/v1.28.2...v1.28.3) (2026-01-04)
+
+
+### Bug Fixes
+
+* add platform constraint for PHP 8.3 compatibility ([1bd11ea](https://github.com/xjanova/thaivote/commit/1bd11eabda6eb3a33454fb65949af7cdf2f9ed67))
+* add platform constraint for PHP 8.3 compatibility ([16f4153](https://github.com/xjanova/thaivote/commit/16f415360d56124533e69c0ee5324c130dbb8ace))
+
 ## [1.28.2](https://github.com/xjanova/thaivote/compare/v1.28.1...v1.28.2) (2026-01-04)
 
 
