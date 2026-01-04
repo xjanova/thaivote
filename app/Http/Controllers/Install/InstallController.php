@@ -228,6 +228,13 @@ class InstallController extends Controller
             ])->withInput();
         }
 
+        // Update to database-backed drivers now that tables exist
+        $this->updateEnv([
+            'SESSION_DRIVER' => 'database',
+            'CACHE_STORE' => 'database',
+            'QUEUE_CONNECTION' => 'database',
+        ]);
+
         // Create storage link
         Artisan::call('storage:link');
 
