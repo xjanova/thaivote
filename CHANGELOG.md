@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.27.1](https://github.com/xjanova/thaivote/compare/v1.27.0...v1.27.1) (2026-01-04)
+
+
+### Bug Fixes
+
+* track composer.lock for consistent package versions ([6e62d76](https://github.com/xjanova/thaivote/commit/6e62d76d3ea94fe0e45b0cde8a0199612c5b9355))
+* track composer.lock for consistent package versions ([5e1629d](https://github.com/xjanova/thaivote/commit/5e1629d444924d1224a92d8bb814469a03f77782))
+
 ## [1.27.0](https://github.com/xjanova/thaivote/compare/v1.26.0...v1.27.0) (2026-01-04)
 
 
