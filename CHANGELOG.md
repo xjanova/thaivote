@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.28.4](https://github.com/xjanova/thaivote/compare/v1.28.3...v1.28.4) (2026-01-04)
+
+
+### Bug Fixes
+
+* prevent 500 error on uninstalled app by redirecting to install w… ([f868f4f](https://github.com/xjanova/thaivote/commit/f868f4f1182c1265c731844dcf62b0e4b0d5a484))
+* prevent 500 error on uninstalled app by redirecting to install wizard ([2ad61a4](https://github.com/xjanova/thaivote/commit/2ad61a41085e7bef81866718f9106d027e72cc8c))
+
+## [1.28.3](https://github.com/xjanova/thaivote/compare/v1.28.2...v1.28.3) (2026-01-04)
+
+
+### Bug Fixes
+
+* add platform constraint for PHP 8.3 compatibility ([1bd11ea](https://github.com/xjanova/thaivote/commit/1bd11eabda6eb3a33454fb65949af7cdf2f9ed67))
+* add platform constraint for PHP 8.3 compatibility ([16f4153](https://github.com/xjanova/thaivote/commit/16f415360d56124533e69c0ee5324c130dbb8ace))
+
+## [1.28.2](https://github.com/xjanova/thaivote/compare/v1.28.1...v1.28.2) (2026-01-04)
+
+
+### Bug Fixes
+
+* clear bootstrap cache immediately after composer install v3.3 ([7f5c4fd](https://github.com/xjanova/thaivote/commit/7f5c4fd791e32086f8b5b149f866de795dc9ff2d))
+* clear bootstrap cache immediately after composer install v3.3 ([25e2853](https://github.com/xjanova/thaivote/commit/25e2853748c6a3b292f2db26540cd2dbbc1a0a12))
+* track composer.lock to ensure consistent package versions ([4cc30af](https://github.com/xjanova/thaivote/commit/4cc30afb24771fb18c120830fcf3f041b34fc216))
+* track composer.lock to ensure consistent package versions ([d899b37](https://github.com/xjanova/thaivote/commit/d899b370bcadf82249775fa85646414f41e6f101))
+
 ## [1.28.1](https://github.com/xjanova/thaivote/compare/v1.28.0...v1.28.1) (2026-01-04)
 
 
