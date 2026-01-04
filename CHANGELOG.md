@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.26.0](https://github.com/xjanova/thaivote/compare/v1.25.0...v1.26.0) (2026-01-04)
+
+
+### Features
+
+* include Vite build assets for production deployment ([fbf5160](https://github.com/xjanova/thaivote/commit/fbf5160674b92c818f3580f5450932e6fc016513))
+
 ## [1.25.0](https://github.com/xjanova/thaivote/compare/v1.24.0...v1.25.0) (2026-01-04)
 
 
