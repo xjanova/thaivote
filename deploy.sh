@@ -21,7 +21,7 @@
 set -e
 
 # Script version
-VERSION="3.1"
+VERSION="3.2"
 
 # Colors for output
 RED='\033[0;31m'
@@ -212,6 +212,122 @@ check_composer_lock_compatibility() {
 }
 
 #===============================================================================
+# Helper Functions for Tools
+#===============================================================================
+
+# Get composer command (supports local composer.phar)
+get_composer_cmd() {
+    if command -v composer &> /dev/null; then
+        echo "composer"
+    elif [ -f "${APP_DIR}/composer.phar" ]; then
+        echo "php ${APP_DIR}/composer.phar"
+    else
+        echo "composer"
+    fi
+}
+
+# Run composer with auto-detection
+run_composer() {
+    local COMPOSER_CMD=$(get_composer_cmd)
+    $COMPOSER_CMD "$@"
+}
+
+#===============================================================================
+# Auto-install Missing Tools
+#===============================================================================
+
+install_composer() {
+    log_info "Composer not found. Installing Composer..."
+
+    cd "${APP_DIR}"
+
+    # Download composer installer
+    local EXPECTED_CHECKSUM="$(php -r 'copy("https://composer.github.io/installer.sig", "php://stdout");')"
+    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+    local ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
+
+    if [ "$EXPECTED_CHECKSUM" != "$ACTUAL_CHECKSUM" ]; then
+        log_warning "Composer installer checksum mismatch, trying alternative method..."
+        rm -f composer-setup.php
+
+        # Alternative: download composer.phar directly
+        curl -sS https://getcomposer.org/composer-stable.phar -o composer.phar 2>/dev/null || \
+        wget -q https://getcomposer.org/composer-stable.phar -O composer.phar 2>/dev/null
+
+        if [ -f "composer.phar" ]; then
+            chmod +x composer.phar
+            # Try to move to global location
+            if [ -w "/usr/local/bin" ]; then
+                mv composer.phar /usr/local/bin/composer
+                log "Composer installed globally ✓"
+            else
+                # Keep local
+                log "Composer installed locally as composer.phar ✓"
+                # Create wrapper function
+                alias composer="php ${APP_DIR}/composer.phar"
+            fi
+        else
+            log_error "Failed to download Composer"
+            return 1
+        fi
+    else
+        php composer-setup.php --quiet
+        rm composer-setup.php
+
+        if [ -f "composer.phar" ]; then
+            chmod +x composer.phar
+            if [ -w "/usr/local/bin" ]; then
+                mv composer.phar /usr/local/bin/composer
+                log "Composer installed globally ✓"
+            else
+                log "Composer installed locally as composer.phar ✓"
+            fi
+        fi
+    fi
+
+    return 0
+}
+
+install_node_npm() {
+    log_info "Node.js/npm not found. Attempting to install..."
+
+    # Check if we can use package manager
+    if command -v apt-get &> /dev/null; then
+        log_info "Installing Node.js via apt..."
+        sudo apt-get update -qq 2>/dev/null || true
+        sudo apt-get install -y nodejs npm 2>/dev/null || {
+            # Try NodeSource repository
+            curl -fsSL https://deb.nodesource.com/setup_20.x 2>/dev/null | sudo -E bash - 2>/dev/null || true
+            sudo apt-get install -y nodejs 2>/dev/null || {
+                log_warning "Could not install Node.js automatically"
+                return 1
+            }
+        }
+        log "Node.js installed ✓"
+        return 0
+    elif command -v yum &> /dev/null; then
+        log_info "Installing Node.js via yum..."
+        sudo yum install -y nodejs npm 2>/dev/null || {
+            log_warning "Could not install Node.js automatically"
+            return 1
+        }
+        log "Node.js installed ✓"
+        return 0
+    elif command -v dnf &> /dev/null; then
+        log_info "Installing Node.js via dnf..."
+        sudo dnf install -y nodejs npm 2>/dev/null || {
+            log_warning "Could not install Node.js automatically"
+            return 1
+        }
+        log "Node.js installed ✓"
+        return 0
+    fi
+
+    log_warning "No package manager found. Please install Node.js manually."
+    return 1
+}
+
+#===============================================================================
 # Pre-flight Checks
 #===============================================================================
 
@@ -246,25 +362,49 @@ preflight_checks() {
     fi
     log "PHP $(get_php_version) ✓"
 
-    # Check Composer
+    # Check Composer (install if missing)
     if ! command -v composer &> /dev/null; then
-        log_error "Composer is not installed"
-        exit 1
+        # Check for local composer.phar
+        if [ -f "${APP_DIR}/composer.phar" ]; then
+            log "Composer (local) ✓"
+            # Create function to use local composer
+            composer() {
+                php "${APP_DIR}/composer.phar" "$@"
+            }
+            export -f composer
+        else
+            install_composer || {
+                log_error "Composer is required but could not be installed"
+                exit 1
+            }
+        fi
+    else
+        log "Composer ✓"
     fi
-    log "Composer ✓"
 
-    # Check Node.js
+    # Check Node.js (try to install if missing)
     if command -v node &> /dev/null; then
         log "Node.js $(node --version) ✓"
     else
         log_warning "Node.js not installed (required for frontend)"
-        SKIP_NPM=true
+        install_node_npm || {
+            log_warning "Will skip frontend build"
+            SKIP_NPM=true
+        }
+        # Re-check after install attempt
+        if command -v node &> /dev/null; then
+            log "Node.js $(node --version) ✓"
+            SKIP_NPM=false
+        fi
     fi
 
     # Check npm
     if command -v npm &> /dev/null; then
         log "npm $(npm --version) ✓"
     else
+        if [ "$SKIP_NPM" = false ]; then
+            log_warning "npm not found, will skip frontend build"
+        fi
         SKIP_NPM=true
     fi
 
@@ -640,6 +780,9 @@ install_composer_dependencies() {
     local APP_ENV=$(grep "^APP_ENV=" .env | cut -d '=' -f2 | tr -d '"' | tr -d "'")
     APP_ENV=${APP_ENV:-production}
 
+    # Log which composer we're using
+    log_info "Using: $(get_composer_cmd)"
+
     if [ "$FRESH_COMPOSER" = true ]; then
         log_warning "Regenerating composer.lock for PHP $(get_php_version)..."
         rm -f composer.lock
@@ -647,9 +790,9 @@ install_composer_dependencies() {
         set +e
         local COMPOSER_OUTPUT
         if [ "${APP_ENV}" = "production" ]; then
-            COMPOSER_OUTPUT=$(composer update --no-dev --optimize-autoloader --no-interaction 2>&1)
+            COMPOSER_OUTPUT=$(run_composer update --no-dev --optimize-autoloader --no-interaction 2>&1)
         else
-            COMPOSER_OUTPUT=$(composer update --optimize-autoloader --no-interaction 2>&1)
+            COMPOSER_OUTPUT=$(run_composer update --optimize-autoloader --no-interaction 2>&1)
         fi
         local COMPOSER_EXIT=$?
         set -e
@@ -664,9 +807,9 @@ install_composer_dependencies() {
         set +e
         local COMPOSER_OUTPUT
         if [ "${APP_ENV}" = "production" ]; then
-            COMPOSER_OUTPUT=$(composer install --no-dev --optimize-autoloader --no-interaction 2>&1)
+            COMPOSER_OUTPUT=$(run_composer install --no-dev --optimize-autoloader --no-interaction 2>&1)
         else
-            COMPOSER_OUTPUT=$(composer install --optimize-autoloader --no-interaction 2>&1)
+            COMPOSER_OUTPUT=$(run_composer install --optimize-autoloader --no-interaction 2>&1)
         fi
         local COMPOSER_EXIT=$?
         set -e
@@ -675,13 +818,13 @@ install_composer_dependencies() {
             log_warning "composer install failed, trying update..."
             rm -f composer.lock
             if [ "${APP_ENV}" = "production" ]; then
-                composer update --no-dev --optimize-autoloader --no-interaction || {
+                run_composer update --no-dev --optimize-autoloader --no-interaction || {
                     log_error "Composer update also failed"
                     generate_error_report "install_composer" "Composer failed" "$COMPOSER_OUTPUT"
                     exit 1
                 }
             else
-                composer update --optimize-autoloader --no-interaction
+                run_composer update --optimize-autoloader --no-interaction
             fi
         fi
     fi
@@ -984,7 +1127,7 @@ optimize_application() {
         php artisan event:cache 2>/dev/null || log_warning "event:cache had issues"
         set -e
 
-        composer dump-autoload --optimize 2>&1
+        run_composer dump-autoload --optimize 2>&1
 
         log "Application optimized for production ✓"
     else
@@ -1300,15 +1443,24 @@ quick_deploy() {
         git pull origin $(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main") 2>/dev/null || true
     fi
 
+    # Install Composer if missing
+    if ! command -v composer &> /dev/null && [ ! -f "composer.phar" ]; then
+        echo -e "${BLUE}[i]${NC} Installing Composer..."
+        install_composer || {
+            echo -e "${RED}[✗]${NC} Failed to install Composer"
+            exit 1
+        }
+    fi
+
     # Composer
     echo -e "${BLUE}[i]${NC} Installing Composer dependencies..."
     if [ "$FRESH_COMPOSER" = true ]; then
         rm -f composer.lock
-        composer update --no-dev --optimize-autoloader --no-interaction
+        run_composer update --no-dev --optimize-autoloader --no-interaction
     else
-        composer install --no-dev --optimize-autoloader --no-interaction 2>/dev/null || {
+        run_composer install --no-dev --optimize-autoloader --no-interaction 2>/dev/null || {
             rm -f composer.lock
-            composer update --no-dev --optimize-autoloader --no-interaction
+            run_composer update --no-dev --optimize-autoloader --no-interaction
         }
     fi
 
