@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.23.0](https://github.com/xjanova/thaivote/compare/v1.22.0...v1.23.0) (2026-01-04)
+
+
+### Features
+
+* upgrade deploy.sh to v3.0 with smart features ([bd53292](https://github.com/xjanova/thaivote/commit/bd53292c59717417fa30f1ba4736498e37bccd1b))
+
+
+### Bug Fixes
+
+* improve ENV variable handling in install.sh for MySQL passwords ([5c18c9b](https://github.com/xjanova/thaivote/commit/5c18c9bf226a6592c9bdf55a2e6b7d312ebd6fdd))
+
 ## [1.22.0](https://github.com/xjanova/thaivote/compare/v1.21.2...v1.22.0) (2026-01-02)
 
 
