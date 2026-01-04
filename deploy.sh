@@ -21,7 +21,7 @@
 set -e
 
 # Script version
-VERSION="3.2"
+VERSION="3.3"
 
 # Colors for output
 RED='\033[0;31m'
@@ -831,6 +831,16 @@ install_composer_dependencies() {
 
     log "Composer dependencies installed ✓"
 
+    # CRITICAL: Clear bootstrap cache IMMEDIATELY after composer install
+    # This prevents "Class not found" errors from stale cached routes
+    log_info "Clearing bootstrap cache (prevent stale class references)..."
+    rm -f "${APP_DIR}/bootstrap/cache/config.php" 2>/dev/null || true
+    rm -f "${APP_DIR}/bootstrap/cache/routes-v7.php" 2>/dev/null || true
+    rm -f "${APP_DIR}/bootstrap/cache/services.php" 2>/dev/null || true
+    rm -f "${APP_DIR}/bootstrap/cache/packages.php" 2>/dev/null || true
+    rm -f "${APP_DIR}/bootstrap/cache/events.php" 2>/dev/null || true
+    log "Bootstrap cache cleared ✓"
+
     # Generate APP_KEY if not set (after composer install, artisan is available)
     local APP_KEY=$(grep "^APP_KEY=" .env 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'")
     if [ -z "${APP_KEY}" ] || [ "${APP_KEY}" = "" ] || [ "${APP_KEY}" = "base64:" ]; then
@@ -1463,6 +1473,14 @@ quick_deploy() {
             run_composer update --no-dev --optimize-autoloader --no-interaction
         }
     fi
+
+    # CRITICAL: Clear bootstrap cache immediately after composer install
+    echo -e "${BLUE}[i]${NC} Clearing bootstrap cache..."
+    rm -f bootstrap/cache/config.php 2>/dev/null || true
+    rm -f bootstrap/cache/routes-v7.php 2>/dev/null || true
+    rm -f bootstrap/cache/services.php 2>/dev/null || true
+    rm -f bootstrap/cache/packages.php 2>/dev/null || true
+    rm -f bootstrap/cache/events.php 2>/dev/null || true
 
     # Generate APP_KEY after composer install
     local APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
