@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.28.1](https://github.com/xjanova/thaivote/compare/v1.28.0...v1.28.1) (2026-01-04)
+
+
+### Bug Fixes
+
+* remove composer.lock from tracking ([3ad59a3](https://github.com/xjanova/thaivote/commit/3ad59a3a5826e238afa62d7d25c735bf7f112f15))
+* remove composer.lock from tracking ([a1a8312](https://github.com/xjanova/thaivote/commit/a1a8312f99fde3b6f70bc2a8ff4eb1ed54e1a364))
+
 ## [1.28.0](https://github.com/xjanova/thaivote/compare/v1.27.1...v1.28.0) (2026-01-04)
 
 
