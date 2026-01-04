@@ -21,7 +21,7 @@
 set -e
 
 # Script version
-VERSION="3.0"
+VERSION="3.1"
 
 # Colors for output
 RED='\033[0;31m'
@@ -272,6 +272,108 @@ preflight_checks() {
     check_composer_lock_compatibility
 
     log "All pre-flight checks passed ✓"
+}
+
+#===============================================================================
+# Laravel Bootstrap (First-time Setup)
+#===============================================================================
+
+bootstrap_laravel() {
+    log_step "1.5" "Bootstrapping Laravel Application"
+
+    cd "${APP_DIR}"
+
+    # Create all required directories
+    log_info "Creating Laravel directories..."
+
+    # Storage directories
+    mkdir -p storage/app/public/images
+    mkdir -p storage/app/public/uploads
+    mkdir -p storage/framework/cache/data
+    mkdir -p storage/framework/sessions
+    mkdir -p storage/framework/testing
+    mkdir -p storage/framework/views
+    mkdir -p storage/logs
+
+    # Bootstrap cache directory
+    mkdir -p bootstrap/cache
+
+    # Database directory (for SQLite)
+    mkdir -p database
+
+    # Public directories
+    mkdir -p public_html/build
+
+    log "Laravel directories created ✓"
+
+    # Check PHP extensions
+    log_info "Checking PHP extensions..."
+    local MISSING_EXT=""
+
+    for ext in pdo mbstring openssl tokenizer xml ctype json bcmath fileinfo; do
+        if ! php -m 2>/dev/null | grep -qi "^${ext}$"; then
+            MISSING_EXT="${MISSING_EXT} ${ext}"
+        fi
+    done
+
+    if [ -n "$MISSING_EXT" ]; then
+        log_warning "Missing PHP extensions:${MISSING_EXT}"
+        log_info "Install with: sudo apt install php-{pdo,mbstring,xml,bcmath,fileinfo}"
+    else
+        log "All required PHP extensions installed ✓"
+    fi
+
+    # Create .env if not exists
+    if [ ! -f ".env" ]; then
+        if [ -f ".env.example" ]; then
+            log_info "Creating .env from .env.example..."
+            cp .env.example .env
+            FIRST_INSTALL=true
+            log ".env file created ✓"
+        else
+            log_error ".env.example not found!"
+            exit 1
+        fi
+    fi
+
+    # Set basic APP settings
+    local APP_KEY=$(grep "^APP_KEY=" .env 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+    if [ -z "${APP_KEY}" ] || [ "${APP_KEY}" = "" ] || [ "${APP_KEY}" = "base64:" ]; then
+        log_info "Generating application key..."
+        php artisan key:generate --force 2>/dev/null || {
+            # If artisan fails (no vendor), we'll generate key after composer install
+            log_info "Will generate APP_KEY after composer install"
+        }
+    fi
+
+    # Set file permissions
+    log_info "Setting file permissions..."
+    chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+    chmod 644 .env 2>/dev/null || true
+
+    # Set ownership if www-data exists
+    if id "www-data" &>/dev/null; then
+        chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
+    fi
+
+    # Create .gitignore for storage if not exists
+    if [ ! -f "storage/.gitignore" ]; then
+        echo "*
+!public/
+!.gitignore" > storage/.gitignore
+    fi
+
+    if [ ! -f "storage/app/.gitignore" ]; then
+        echo "*
+!public/
+!.gitignore" > storage/app/.gitignore
+    fi
+
+    # Create log file placeholder
+    touch storage/logs/laravel.log 2>/dev/null || true
+    chmod 664 storage/logs/laravel.log 2>/dev/null || true
+
+    log "Laravel bootstrap completed ✓"
 }
 
 #===============================================================================
@@ -585,6 +687,14 @@ install_composer_dependencies() {
     fi
 
     log "Composer dependencies installed ✓"
+
+    # Generate APP_KEY if not set (after composer install, artisan is available)
+    local APP_KEY=$(grep "^APP_KEY=" .env 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+    if [ -z "${APP_KEY}" ] || [ "${APP_KEY}" = "" ] || [ "${APP_KEY}" = "base64:" ]; then
+        log_info "Generating APP_KEY..."
+        php artisan key:generate --force
+        log "APP_KEY generated ✓"
+    fi
 }
 
 #===============================================================================
@@ -1099,6 +1209,7 @@ deploy() {
     trap on_error ERR
 
     preflight_checks
+    bootstrap_laravel
     check_environment
     backup_database
     setup_database
@@ -1148,31 +1259,49 @@ quick_deploy() {
 
     check_composer_lock_compatibility
 
-    # Setup database
-    local DB_CONNECTION=$(grep "^DB_CONNECTION=" .env 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'" || echo "sqlite")
-    if [ "${DB_CONNECTION}" = "sqlite" ]; then
-        mkdir -p database
-        if [ ! -f "database/database.sqlite" ]; then
-            touch "database/database.sqlite"
-            chmod 664 "database/database.sqlite"
-            echo "Created SQLite database"
+    # Bootstrap Laravel directories
+    echo -e "${BLUE}[i]${NC} Creating Laravel directories..."
+    mkdir -p storage/app/public/images
+    mkdir -p storage/app/public/uploads
+    mkdir -p storage/framework/cache/data
+    mkdir -p storage/framework/sessions
+    mkdir -p storage/framework/testing
+    mkdir -p storage/framework/views
+    mkdir -p storage/logs
+    mkdir -p bootstrap/cache
+    mkdir -p database
+    mkdir -p public_html/build
+    chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+
+    # Create .env if not exists
+    if [ ! -f ".env" ]; then
+        if [ -f ".env.example" ]; then
+            echo -e "${BLUE}[i]${NC} Creating .env from .env.example..."
+            cp .env.example .env
+            FIRST_INSTALL=true
         fi
     fi
 
-    # Generate APP_KEY
-    local APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
-    if [ -z "${APP_KEY}" ] || [ "${APP_KEY}" = "" ] || [ "${APP_KEY}" = "base64:" ]; then
-        php artisan key:generate --force
+    # Setup database
+    local DB_CONNECTION=$(grep "^DB_CONNECTION=" .env 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'" || echo "sqlite")
+    if [ "${DB_CONNECTION}" = "sqlite" ]; then
+        if [ ! -f "database/database.sqlite" ]; then
+            touch "database/database.sqlite"
+            chmod 664 "database/database.sqlite"
+            echo -e "${GREEN}[✓]${NC} Created SQLite database"
+        fi
     fi
 
     php artisan down --retry=60 2>/dev/null || true
 
     # Pull if git repo
     if [ -d ".git" ]; then
+        echo -e "${BLUE}[i]${NC} Pulling latest code..."
         git pull origin $(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main") 2>/dev/null || true
     fi
 
     # Composer
+    echo -e "${BLUE}[i]${NC} Installing Composer dependencies..."
     if [ "$FRESH_COMPOSER" = true ]; then
         rm -f composer.lock
         composer update --no-dev --optimize-autoloader --no-interaction
@@ -1183,8 +1312,28 @@ quick_deploy() {
         }
     fi
 
+    # Generate APP_KEY after composer install
+    local APP_KEY=$(grep "^APP_KEY=" .env | cut -d '=' -f2)
+    if [ -z "${APP_KEY}" ] || [ "${APP_KEY}" = "" ] || [ "${APP_KEY}" = "base64:" ]; then
+        echo -e "${BLUE}[i]${NC} Generating APP_KEY..."
+        php artisan key:generate --force
+    fi
+
+    # NPM & Build (if node available)
+    if command -v npm &> /dev/null; then
+        echo -e "${BLUE}[i]${NC} Installing NPM dependencies..."
+        npm ci 2>/dev/null || npm install 2>/dev/null || true
+        echo -e "${BLUE}[i]${NC} Building frontend assets..."
+        npm run build 2>/dev/null || true
+    fi
+
+    echo -e "${BLUE}[i]${NC} Running migrations..."
     php artisan migrate --force 2>/dev/null || true
+
+    echo -e "${BLUE}[i]${NC} Setting up storage links..."
     php artisan storage:link 2>/dev/null || true
+
+    echo -e "${BLUE}[i]${NC} Clearing and optimizing caches..."
     php artisan cache:clear 2>/dev/null || true
     php artisan config:cache 2>/dev/null || true
     php artisan route:cache 2>/dev/null || true
@@ -1194,12 +1343,15 @@ quick_deploy() {
     # Seed if no data
     local province_count=$(php artisan tinker --execute="echo App\Models\Province::count();" 2>/dev/null | grep -E "^[0-9]+$" | head -1 || echo "0")
     if [ "$province_count" -eq 0 ]; then
+        echo -e "${BLUE}[i]${NC} Seeding database with initial data..."
         php artisan db:seed --force 2>/dev/null || true
     fi
 
     php artisan up
 
-    echo -e "\n${GREEN}Quick deployment completed!${NC}"
+    echo -e "\n${GREEN}╔════════════════════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${GREEN}║${NC}   ${GREEN}✅ QUICK DEPLOYMENT COMPLETED!${NC}                                          ${GREEN}║${NC}"
+    echo -e "${GREEN}╚════════════════════════════════════════════════════════════════════════════╝${NC}\n"
 }
 
 #===============================================================================
