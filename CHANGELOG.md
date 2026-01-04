@@ -1,5 +1,40 @@
 # Changelog
 
+## [1.26.0](https://github.com/xjanova/thaivote/compare/v1.25.0...v1.26.0) (2026-01-04)
+
+
+### Features
+
+* include Vite build assets for production deployment ([fbf5160](https://github.com/xjanova/thaivote/commit/fbf5160674b92c818f3580f5450932e6fc016513))
+
+## [1.25.0](https://github.com/xjanova/thaivote/compare/v1.24.0...v1.25.0) (2026-01-04)
+
+
+### Features
+
+* add Inertia.js setup with root blade template ([2c206b2](https://github.com/xjanova/thaivote/commit/2c206b28845429bd3e8ef7e11db42c88e684b7e4))
+* add Inertia.js setup with root blade template ([4532c78](https://github.com/xjanova/thaivote/commit/4532c7834ac7d6d01968b614449a9efe0350de8c))
+
+## [1.24.0](https://github.com/xjanova/thaivote/compare/v1.23.0...v1.24.0) (2026-01-04)
+
+
+### Features
+
+* add database availability check with automatic fallback ([59d0269](https://github.com/xjanova/thaivote/commit/59d026998183b6e6960185e9e67072316f990728))
+* add database availability check with automatic fallback ([00b3471](https://github.com/xjanova/thaivote/commit/00b34718041846b781d35974937058412161331c))
+
+## [1.23.0](https://github.com/xjanova/thaivote/compare/v1.22.0...v1.23.0) (2026-01-04)
+
+
+### Features
+
+* upgrade deploy.sh to v3.0 with smart features ([bd53292](https://github.com/xjanova/thaivote/commit/bd53292c59717417fa30f1ba4736498e37bccd1b))
+
+
+### Bug Fixes
+
+* improve ENV variable handling in install.sh for MySQL passwords ([5c18c9b](https://github.com/xjanova/thaivote/commit/5c18c9bf226a6592c9bdf55a2e6b7d312ebd6fdd))
+
 ## [1.22.0](https://github.com/xjanova/thaivote/compare/v1.21.2...v1.22.0) (2026-01-02)
 
 
