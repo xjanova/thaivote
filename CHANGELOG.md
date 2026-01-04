@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.27.0](https://github.com/xjanova/thaivote/compare/v1.26.0...v1.27.0) (2026-01-04)
+
+
+### Features
+
+* add complete Laravel bootstrap to deploy.sh v3.1 ([cb3fc3d](https://github.com/xjanova/thaivote/commit/cb3fc3d4094442c24710b8661c1517f959793253))
+
 ## [1.26.0](https://github.com/xjanova/thaivote/compare/v1.25.0...v1.26.0) (2026-01-04)
 
 
