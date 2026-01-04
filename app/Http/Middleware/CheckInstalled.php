@@ -23,7 +23,7 @@ class CheckInstalled
         }
 
         // Check if installed marker file exists
-        if (!File::exists(storage_path('app/installed'))) {
+        if (! File::exists(storage_path('app/installed'))) {
             return redirect('/install');
         }
 

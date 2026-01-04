@@ -40,8 +40,14 @@ return Application::configure(basePath: dirname(__DIR__))
                 || str_contains($e->getMessage(), 'no such table')
                 || $e->getCode() === '42S02';
 
-            if ($tableNotExists && !File::exists(storage_path('app/installed'))) {
-                return redirect('/install');
+            if ($tableNotExists && ! File::exists(storage_path('app/installed'))) {
+                // Return simple HTML redirect (avoid middleware)
+                return response(
+                    '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=/install"></head>' .
+                    '<body><p>Redirecting to installer...</p></body></html>',
+                    200,
+                    ['Content-Type' => 'text/html'],
+                );
             }
         });
     })->create();
