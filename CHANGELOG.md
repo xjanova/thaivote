@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.28.8](https://github.com/xjanova/thaivote/compare/v1.28.7...v1.28.8) (2026-01-05)
+
+
+### Bug Fixes
+
+* update eslint config for eslint-plugin-vue v10 ([41831f4](https://github.com/xjanova/thaivote/commit/41831f4b1d410650470ce56491528390b1f4966e))
+* update eslint config for eslint-plugin-vue v10 ([31a4dde](https://github.com/xjanova/thaivote/commit/31a4dde8e6aa1c8ec34a7a458f6543db9ff33b43))
+
 ## [1.28.7](https://github.com/xjanova/thaivote/compare/v1.28.6...v1.28.7) (2026-01-05)
 
 
