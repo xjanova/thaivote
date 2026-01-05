@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.28.5](https://github.com/xjanova/thaivote/compare/v1.28.4...v1.28.5) (2026-01-04)
+
+
+### Bug Fixes
+
+* catch database errors and redirect to install wizard ([972d18d](https://github.com/xjanova/thaivote/commit/972d18d7066aff4257c196733f2a07eb3079400c))
+* catch database errors and redirect to install wizard ([9133b4e](https://github.com/xjanova/thaivote/commit/9133b4e0cc812741a0334ac0a853a44402f071a2))
+
 ## [1.28.4](https://github.com/xjanova/thaivote/compare/v1.28.3...v1.28.4) (2026-01-04)
 
 
