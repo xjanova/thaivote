@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.28.7](https://github.com/xjanova/thaivote/compare/v1.28.6...v1.28.7) (2026-01-05)
+
+
+### Bug Fixes
+
+* handle class not found errors for uninstalled app ([dac0926](https://github.com/xjanova/thaivote/commit/dac0926efcc1a1b78319bb0114a80748d47935a4))
+
 ## [1.28.6](https://github.com/xjanova/thaivote/compare/v1.28.5...v1.28.6) (2026-01-05)
 
 
