@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.28.10](https://github.com/xjanova/thaivote/compare/v1.28.9...v1.28.10) (2026-01-05)
+
+
+### Bug Fixes
+
+* improve deploy script git pull clarity and prevent confusion ([79ee615](https://github.com/xjanova/thaivote/commit/79ee6158f912a6317d4add979819873817ed02f9))
+* improve deploy script git pull clarity and prevent confusion ([dbae7d7](https://github.com/xjanova/thaivote/commit/dbae7d714960b7730a58413c599318eeb8c88d64))
+
 ## [1.28.9](https://github.com/xjanova/thaivote/compare/v1.28.8...v1.28.9) (2026-01-05)
 
 
