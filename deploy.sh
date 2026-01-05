@@ -757,7 +757,7 @@ pull_latest_code() {
     fi
 
     set +e
-    GIT_OUTPUT=$(git pull origin ${BRANCH} 2>&1)
+    GIT_OUTPUT=$(git pull origin main 2>&1)
     GIT_EXIT=$?
     set -e
 
@@ -1450,7 +1450,7 @@ quick_deploy() {
     # Pull if git repo
     if [ -d ".git" ]; then
         echo -e "${BLUE}[i]${NC} Pulling latest code..."
-        git pull origin $(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main") 2>/dev/null || true
+        git pull origin main 2>/dev/null || true
     fi
 
     # Install Composer if missing
