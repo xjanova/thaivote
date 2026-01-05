@@ -50,4 +50,19 @@ return Application::configure(basePath: dirname(__DIR__))
                 );
             }
         });
+
+        // Catch class not found errors (missing packages)
+        $exceptions->render(function (Throwable $e) {
+            $isClassNotFound = str_contains($e->getMessage(), 'Class')
+                && str_contains($e->getMessage(), 'not found');
+
+            if ($isClassNotFound && ! File::exists(storage_path('app/installed'))) {
+                return response(
+                    '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=/install"></head>' .
+                    '<body><p>Redirecting to installer...</p></body></html>',
+                    200,
+                    ['Content-Type' => 'text/html'],
+                );
+            }
+        });
     })->create();
