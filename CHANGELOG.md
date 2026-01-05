@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.28.6](https://github.com/xjanova/thaivote/compare/v1.28.5...v1.28.6) (2026-01-05)
+
+
+### Bug Fixes
+
+* catch database errors and redirect to install wizard ([09b6148](https://github.com/xjanova/thaivote/commit/09b61489c48d94b954f42d87cdd64ad67223ea70))
+* catch database errors and redirect to install wizard ([d9f5126](https://github.com/xjanova/thaivote/commit/d9f5126cd8aed95a566558867de894ac70068b38))
+* update package-lock.json for ESLint 8.x compatibility ([a330599](https://github.com/xjanova/thaivote/commit/a330599fc9d64bc49a299e495dd52fe6b58609bd))
+
 ## [1.28.5](https://github.com/xjanova/thaivote/compare/v1.28.4...v1.28.5) (2026-01-04)
 
 
