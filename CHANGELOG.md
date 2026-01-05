@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.28.9](https://github.com/xjanova/thaivote/compare/v1.28.8...v1.28.9) (2026-01-05)
+
+
+### Bug Fixes
+
+* change deploy.sh to pull from main branch ([26f5d13](https://github.com/xjanova/thaivote/commit/26f5d139198a4c599287a5a9563a1167516dda78))
+* change deploy.sh to pull from main branch ([3b4e900](https://github.com/xjanova/thaivote/commit/3b4e900d0b135465d2d6d50f05b6a1654d9ef46f))
+
 ## [1.28.8](https://github.com/xjanova/thaivote/compare/v1.28.7...v1.28.8) (2026-01-05)
 
 
