@@ -743,8 +743,13 @@ pull_latest_code() {
     fi
 
     local BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
-    log_info "Current branch: ${BRANCH}"
+    local BEFORE_COMMIT=$(git rev-parse --short HEAD 2>/dev/null)
+    local BEFORE_MESSAGE=$(git log -1 --pretty=format:"%s" 2>/dev/null)
 
+    log_info "📍 Current branch: ${CYAN}${BRANCH}${NC}"
+    log_info "📦 Current commit: ${CYAN}${BEFORE_COMMIT}${NC} - ${BEFORE_MESSAGE}"
+
+    # Fetch updates
     set +e
     local GIT_OUTPUT=$(git fetch origin 2>&1)
     local GIT_EXIT=$?
@@ -755,18 +760,64 @@ pull_latest_code() {
         log_error_detail "Git fetch output: $GIT_OUTPUT"
         return 0
     fi
+    log "Fetched updates from remote ✓"
 
+    # Check if remote branch exists
+    if git ls-remote --exit-code --heads origin "${BRANCH}" >/dev/null 2>&1; then
+        local REMOTE_BRANCH="origin/${BRANCH}"
+    else
+        log_warning "Remote branch '${BRANCH}' not found, using 'origin/main' instead"
+        local REMOTE_BRANCH="origin/main"
+    fi
+
+    # Check if there are updates
+    local BEHIND_COUNT=$(git rev-list --count HEAD..${REMOTE_BRANCH} 2>/dev/null || echo "0")
+
+    if [ "$BEHIND_COUNT" = "0" ]; then
+        log "Already up to date with ${REMOTE_BRANCH} ✓"
+        return 0
+    fi
+
+    log_info "🔄 Found ${BEHIND_COUNT} new commit(s) from ${REMOTE_BRANCH}"
+
+    # Pull updates
     set +e
-    GIT_OUTPUT=$(git pull origin main 2>&1)
+    GIT_OUTPUT=$(git pull origin "${BRANCH}" 2>&1)
     GIT_EXIT=$?
     set -e
 
     if [ $GIT_EXIT -ne 0 ]; then
         log_warning "Git pull had issues"
         log_error_detail "Git pull output: $GIT_OUTPUT"
-    else
-        log "Code updated to: $(git rev-parse --short HEAD)"
+        return 0
     fi
+
+    # Show what was pulled
+    local AFTER_COMMIT=$(git rev-parse --short HEAD 2>/dev/null)
+    local AFTER_MESSAGE=$(git log -1 --pretty=format:"%s" 2>/dev/null)
+
+    echo ""
+    log "✅ Code updated successfully!"
+    log_info "📦 New commit: ${CYAN}${AFTER_COMMIT}${NC} - ${AFTER_MESSAGE}"
+
+    # Show summary of changes
+    echo ""
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${PURPLE}📝 Changes pulled:${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+    # Show commit log
+    git log --oneline --decorate --graph "${BEFORE_COMMIT}..${AFTER_COMMIT}" 2>/dev/null | head -10 || true
+
+    # Show file changes summary
+    local CHANGED_FILES=$(git diff --stat "${BEFORE_COMMIT}..${AFTER_COMMIT}" 2>/dev/null | tail -1 || echo "")
+    if [ -n "$CHANGED_FILES" ]; then
+        echo ""
+        echo -e "${PURPLE}📊 Files changed:${NC}"
+        echo "$CHANGED_FILES"
+    fi
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
 }
 
 #===============================================================================
