@@ -4,6 +4,7 @@ namespace App\Events;
 
 use App\Models\Election;
 use App\Models\NationalResult;
+use App\Services\LiveResultsService;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -18,20 +19,26 @@ class ResultsUpdated implements ShouldBroadcast
 
     public array $results;
 
-    public function __construct(Election $election)
-    {
-        $this->election = $election;
+    public ?string $message;
 
-        // Get latest results
-        $this->results = [
-            'national' => NationalResult::with('party')
-                ->where('election_id', $election->id)
-                ->orderBy('total_seats', 'desc')
-                ->get()
-                ->toArray(),
-            'stats' => $election->stats?->toArray(),
-            'updated_at' => now()->toIso8601String(),
-        ];
+    public ?array $party;
+
+    public string $updateType;
+
+    public function __construct(
+        Election $election,
+        ?string $message = null,
+        ?array $party = null,
+        string $updateType = 'general'
+    ) {
+        $this->election = $election;
+        $this->message = $message;
+        $this->party = $party;
+        $this->updateType = $updateType;
+
+        // Get latest results using service
+        $resultsService = app(LiveResultsService::class);
+        $this->results = $resultsService->getLiveResults($election->id);
     }
 
     public function broadcastOn(): array
@@ -49,7 +56,12 @@ class ResultsUpdated implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
+            'election_id' => $this->election->id,
             'results' => $this->results,
+            'message' => $this->message,
+            'party' => $this->party,
+            'update_type' => $this->updateType,
+            'timestamp' => now()->toIso8601String(),
         ];
     }
 }
