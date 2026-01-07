@@ -8,7 +8,7 @@ const endpoints = [
     { method: 'GET', path: '/api/parties', description: 'รายการพรรคการเมืองทั้งหมด' },
     { method: 'GET', path: '/api/parties/{id}', description: 'รายละเอียดพรรคการเมือง' },
     { method: 'GET', path: '/api/news', description: 'ข่าวการเลือกตั้ง' },
-]
+];
 </script>
 
 <template>

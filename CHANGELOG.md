@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.29.1](https://github.com/xjanova/thaivote/compare/v1.29.0...v1.29.1) (2026-01-07)
+
+
+### Bug Fixes
+
+* add missing Vue pages and fix website loading issues ([cdf57a5](https://github.com/xjanova/thaivote/commit/cdf57a5329964f68795b7be8c814a5b0e9e397cf))
+* add missing Vue pages and fix website loading issues ([e0cd208](https://github.com/xjanova/thaivote/commit/e0cd20817aea876a59cf65acfc50eaa6c23778e3))
+
+## [1.29.0](https://github.com/xjanova/thaivote/compare/v1.28.10...v1.29.0) (2026-01-07)
+
+
+### Features
+
+* add Inertia middleware and missing Vue pages ([a30964f](https://github.com/xjanova/thaivote/commit/a30964f62d4eb852307ceb990af744d602fe9d6d))
+
 ## [1.28.10](https://github.com/xjanova/thaivote/compare/v1.28.9...v1.28.10) (2026-01-05)
 
 
