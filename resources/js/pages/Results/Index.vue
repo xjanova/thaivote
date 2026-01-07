@@ -1,21 +1,21 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue';
 
-const results = ref([])
-const loading = ref(true)
+const results = ref([]);
+const loading = ref(true);
 
 onMounted(async () => {
     try {
-        const response = await fetch('/api/results')
+        const response = await fetch('/api/results');
         if (response.ok) {
-            results.value = await response.json()
+            results.value = await response.json();
         }
     } catch (error) {
-        console.error('Failed to fetch results:', error)
+        console.error('Failed to fetch results:', error);
     } finally {
-        loading.value = false
+        loading.value = false;
     }
-})
+});
 </script>
 
 <template>
