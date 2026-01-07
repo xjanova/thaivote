@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.29.0](https://github.com/xjanova/thaivote/compare/v1.28.10...v1.29.0) (2026-01-07)
+
+
+### Features
+
+* add Inertia middleware and missing Vue pages ([a30964f](https://github.com/xjanova/thaivote/commit/a30964f62d4eb852307ceb990af744d602fe9d6d))
+
 ## [1.28.10](https://github.com/xjanova/thaivote/compare/v1.28.9...v1.28.10) (2026-01-05)
 
 
