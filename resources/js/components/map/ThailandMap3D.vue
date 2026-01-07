@@ -153,7 +153,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import gsap from 'gsap';
-import { provinces as provinceData, regions } from '@/data/provinces';
+import { provinces as provinceData, provincePaths, regions } from '@/data/provinces';
 
 const props = defineProps({
     electionId: { type: Number, required: true },
@@ -171,24 +171,20 @@ const selectedProvince = ref(null);
 
 // Three.js objects
 let scene, camera, renderer, controls;
-const provinceMeshes = {};
+let provinceMeshes = {};
 let raycaster, mouse;
 let animationId;
 
 // Province results
 const provinceResults = computed(() => {
-    if (!selectedProvince.value || !props.results.provinces) {
-        return [];
-    }
+    if (!selectedProvince.value || !props.results.provinces) return [];
     const provinceData = props.results.provinces[selectedProvince.value.id];
     return provinceData?.parties?.sort((a, b) => b.seats_won - a.seats_won) || [];
 });
 
 // Top parties
 const topParties = computed(() => {
-    if (!props.results.national) {
-        return [];
-    }
+    if (!props.results.national) return [];
     return props.results.national.parties?.slice(0, 8) || [];
 });
 
@@ -331,7 +327,7 @@ const createThailandMap = () => {
     scene.add(mapGroup);
 };
 
-const createProvinceGeometry = (province, _bounds, _scale, _centerX, _centerY) => {
+const createProvinceGeometry = (province, bounds, scale, centerX, centerY) => {
     // Create extruded shape based on constituency count
     const height = Math.max(2, province.constituencies * 0.5);
     const size = Math.sqrt(province.population / 100000) * 0.8 + 1;
@@ -345,11 +341,8 @@ const createProvinceGeometry = (province, _bounds, _scale, _centerX, _centerY) =
         const angle = (i / sides) * Math.PI * 2 - Math.PI / 2;
         const x = Math.cos(angle) * radius;
         const y = Math.sin(angle) * radius;
-        if (i === 0) {
-            shape.moveTo(x, y);
-        } else {
-            shape.lineTo(x, y);
-        }
+        if (i === 0) shape.moveTo(x, y);
+        else shape.lineTo(x, y);
     }
     shape.closePath();
 
@@ -365,7 +358,7 @@ const createProvinceGeometry = (province, _bounds, _scale, _centerX, _centerY) =
     return new THREE.ExtrudeGeometry(shape, extrudeSettings);
 };
 
-const getProvincePosition = (province, _bounds, _scale, _centerX, _centerY) => {
+const getProvincePosition = (province, bounds, scale, centerX, centerY) => {
     // Approximate positions based on region and index
     const regionPositions = {
         north: { baseX: -15, baseZ: -40, spread: 12 },
@@ -393,9 +386,7 @@ const getProvincePosition = (province, _bounds, _scale, _centerX, _centerY) => {
 const getProvinceColor = (province) => {
     if (props.results.provinces && props.results.provinces[province.id]) {
         const winner = props.results.provinces[province.id].parties?.[0];
-        if (winner?.party?.color) {
-            return winner.party.color;
-        }
+        if (winner?.party?.color) return winner.party.color;
     }
     return regions[province.region]?.color || '#6B7280';
 };
@@ -403,9 +394,7 @@ const getProvinceColor = (province) => {
 const getWinnerColor = (province) => {
     if (props.results.provinces && props.results.provinces[province.id]) {
         const winner = props.results.provinces[province.id].parties?.[0];
-        if (winner?.party?.color) {
-            return winner.party.color;
-        }
+        if (winner?.party?.color) return winner.party.color;
     }
     return regions[province.region]?.color || '#6B7280';
 };
@@ -615,15 +604,9 @@ const toggle2D3D = () => {
 };
 
 const formatNumber = (num) => {
-    if (!num) {
-        return '0';
-    }
-    if (num >= 1000000) {
-        return `${(num / 1000000).toFixed(1)}M`;
-    }
-    if (num >= 1000) {
-        return `${(num / 1000).toFixed(0)}K`;
-    }
+    if (!num) return '0';
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(0)}K`;
     return num.toLocaleString('th-TH');
 };
 
