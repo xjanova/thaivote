@@ -4,7 +4,10 @@
             <!-- Header -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <Link :href="route('admin.parties.index')" class="p-2 hover:bg-gray-100 rounded-lg">
+                    <Link
+                        :href="route('admin.parties.index')"
+                        class="p-2 hover:bg-gray-100 rounded-lg"
+                    >
                         <ArrowLeftIcon class="w-5 h-5" />
                     </Link>
                     <div>
@@ -92,15 +95,21 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="bg-white rounded-lg shadow p-6">
                     <p class="text-sm text-gray-500">ผู้สมัครทั้งหมด</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ party.candidates?.length || 0 }}</p>
+                    <p class="text-3xl font-bold text-gray-900">
+                        {{ party.candidates?.length || 0 }}
+                    </p>
                 </div>
                 <div class="bg-white rounded-lg shadow p-6">
                     <p class="text-sm text-gray-500">ผลคะแนนระดับชาติ</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ party.national_results?.length || 0 }}</p>
+                    <p class="text-3xl font-bold text-gray-900">
+                        {{ party.national_results?.length || 0 }}
+                    </p>
                 </div>
                 <div class="bg-white rounded-lg shadow p-6">
                     <p class="text-sm text-gray-500">ผลคะแนนระดับจังหวัด</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ party.province_results?.length || 0 }}</p>
+                    <p class="text-3xl font-bold text-gray-900">
+                        {{ party.province_results?.length || 0 }}
+                    </p>
                 </div>
             </div>
 
@@ -190,7 +199,10 @@
             </div>
 
             <!-- Candidates List -->
-            <div v-if="party.candidates && party.candidates.length > 0" class="bg-white rounded-lg shadow">
+            <div
+                v-if="party.candidates && party.candidates.length > 0"
+                class="bg-white rounded-lg shadow"
+            >
                 <div class="p-6 border-b border-gray-200">
                     <h3 class="text-lg font-medium text-gray-900">
                         ผู้สมัครในสังกัด ({{ party.candidates.length }} คน)
@@ -221,7 +233,11 @@
                                 </p>
                                 <p class="text-sm text-gray-500">
                                     หมายเลข {{ candidate.candidate_number }} -
-                                    {{ candidate.type === 'constituency' ? 'แบ่งเขต' : 'บัญชีรายชื่อ' }}
+                                    {{
+                                        candidate.type === 'constituency'
+                                            ? 'แบ่งเขต'
+                                            : 'บัญชีรายชื่อ'
+                                    }}
                                 </p>
                             </div>
                             <Link
