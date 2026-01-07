@@ -1,24 +1,24 @@
 <script setup>
-import { ref } from 'vue'
+import { ref } from 'vue';
 
 const settings = ref({
     siteName: 'ThaiVote',
     siteDescription: 'ระบบรายงานผลเลือกตั้งแบบเรียลไทม์',
     maintenanceMode: false,
-})
+});
 
-const saving = ref(false)
+const saving = ref(false);
 
 const saveSettings = async () => {
-    saving.value = true
+    saving.value = true;
     try {
         // TODO: Implement settings save
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        alert('บันทึกการตั้งค่าเรียบร้อยแล้ว')
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        alert('บันทึกการตั้งค่าเรียบร้อยแล้ว');
     } finally {
-        saving.value = false
+        saving.value = false;
     }
-}
+};
 </script>
 
 <template>

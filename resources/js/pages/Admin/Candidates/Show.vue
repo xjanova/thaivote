@@ -4,12 +4,16 @@
             <!-- Header -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <Link :href="route('admin.candidates.index')" class="p-2 hover:bg-gray-100 rounded-lg">
+                    <Link
+                        :href="route('admin.candidates.index')"
+                        class="p-2 hover:bg-gray-100 rounded-lg"
+                    >
                         <ArrowLeftIcon class="w-5 h-5" />
                     </Link>
                     <div>
                         <h1 class="text-2xl font-bold text-gray-900">
-                            {{ candidate.title }} {{ candidate.first_name }} {{ candidate.last_name }}
+                            {{ candidate.title }} {{ candidate.first_name }}
+                            {{ candidate.last_name }}
                         </h1>
                         <p class="text-gray-600">รายละเอียดผู้สมัคร</p>
                     </div>
@@ -50,7 +54,11 @@
                                             : 'bg-purple-100 text-purple-800',
                                     ]"
                                 >
-                                    {{ candidate.type === 'constituency' ? 'แบ่งเขต' : 'บัญชีรายชื่อ' }}
+                                    {{
+                                        candidate.type === 'constituency'
+                                            ? 'แบ่งเขต'
+                                            : 'บัญชีรายชื่อ'
+                                    }}
                                 </span>
                                 <span
                                     v-if="candidate.is_pm_candidate"
@@ -88,7 +96,8 @@
                             <dt class="text-sm text-gray-500">เขตเลือกตั้ง</dt>
                             <dd class="text-gray-900">
                                 <template v-if="candidate.constituency">
-                                    {{ candidate.constituency.province?.name_th }} เขต {{ candidate.constituency.number }}
+                                    {{ candidate.constituency.province?.name_th }} เขต
+                                    {{ candidate.constituency.number }}
                                 </template>
                                 <template v-else-if="candidate.party_list_order">
                                     บัญชีรายชื่อลำดับที่ {{ candidate.party_list_order }}
@@ -120,7 +129,10 @@
                     <p class="text-gray-700 whitespace-pre-line">{{ candidate.biography }}</p>
                 </div>
 
-                <div v-if="candidate.social_media && Object.keys(candidate.social_media).length > 0" class="p-6">
+                <div
+                    v-if="candidate.social_media && Object.keys(candidate.social_media).length > 0"
+                    class="p-6"
+                >
                     <h3 class="text-lg font-medium text-gray-900 mb-4">โซเชียลมีเดีย</h3>
                     <div class="flex flex-wrap gap-4">
                         <a

@@ -3,7 +3,10 @@
         <div class="max-w-4xl mx-auto space-y-6">
             <!-- Header -->
             <div class="flex items-center gap-4">
-                <Link :href="route('admin.candidates.index')" class="p-2 hover:bg-gray-100 rounded-lg">
+                <Link
+                    :href="route('admin.candidates.index')"
+                    class="p-2 hover:bg-gray-100 rounded-lg"
+                >
                     <ArrowLeftIcon class="w-5 h-5" />
                 </Link>
                 <div>
@@ -19,7 +22,9 @@
                     <h2 class="text-lg font-medium text-gray-900 mb-4">ข้อมูลพื้นฐาน</h2>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">คำนำหน้า</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >คำนำหน้า</label
+                            >
                             <input
                                 v-model="form.title"
                                 type="text"
@@ -56,7 +61,9 @@
                             </p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อเล่น</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >ชื่อเล่น</label
+                            >
                             <input
                                 v-model="form.nickname"
                                 type="text"
@@ -73,12 +80,17 @@
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 required
                             />
-                            <p v-if="form.errors.candidate_number" class="mt-1 text-sm text-red-600">
+                            <p
+                                v-if="form.errors.candidate_number"
+                                class="mt-1 text-sm text-red-600"
+                            >
                                 {{ form.errors.candidate_number }}
                             </p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">วันเกิด</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >วันเกิด</label
+                            >
                             <input
                                 v-model="form.birth_date"
                                 type="date"
@@ -102,7 +114,11 @@
                                 required
                             >
                                 <option value="">เลือกการเลือกตั้ง</option>
-                                <option v-for="election in elections" :key="election.id" :value="election.id">
+                                <option
+                                    v-for="election in elections"
+                                    :key="election.id"
+                                    :value="election.id"
+                                >
                                     {{ election.name }}
                                 </option>
                             </select>
@@ -111,7 +127,9 @@
                             </p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">พรรคการเมือง</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >พรรคการเมือง</label
+                            >
                             <select
                                 v-model="form.party_id"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -136,7 +154,9 @@
                             </select>
                         </div>
                         <div v-if="form.type === 'party_list'">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">ลำดับบัญชีรายชื่อ</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >ลำดับบัญชีรายชื่อ</label
+                            >
                             <input
                                 v-model="form.party_list_order"
                                 type="number"
@@ -152,20 +172,28 @@
                     <h2 class="text-lg font-medium text-gray-900 mb-4">เขตเลือกตั้ง</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">จังหวัด</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >จังหวัด</label
+                            >
                             <select
                                 v-model="selectedProvince"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                 @change="loadConstituencies"
                             >
                                 <option value="">เลือกจังหวัด</option>
-                                <option v-for="province in provinces" :key="province.id" :value="province.id">
+                                <option
+                                    v-for="province in provinces"
+                                    :key="province.id"
+                                    :value="province.id"
+                                >
                                     {{ province.name_th }}
                                 </option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">เขตเลือกตั้ง</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >เขตเลือกตั้ง</label
+                            >
                             <select
                                 v-model="form.constituency_id"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -221,7 +249,9 @@
                     <h2 class="text-lg font-medium text-gray-900 mb-4">ข้อมูลเพิ่มเติม</h2>
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">การศึกษา</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >การศึกษา</label
+                            >
                             <input
                                 v-model="form.education"
                                 type="text"
@@ -229,7 +259,9 @@
                             />
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">อาชีพ</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >อาชีพ</label
+                            >
                             <input
                                 v-model="form.occupation"
                                 type="text"
@@ -237,7 +269,9 @@
                             />
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">ประวัติ</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >ประวัติ</label
+                            >
                             <textarea
                                 v-model="form.biography"
                                 rows="4"
@@ -334,7 +368,9 @@ const loadConstituencies = async () => {
     }
 
     try {
-        const response = await fetch(route('admin.candidates.constituencies', selectedProvince.value));
+        const response = await fetch(
+            route('admin.candidates.constituencies', selectedProvince.value)
+        );
         const data = await response.json();
         localConstituencies.value = data.constituencies;
     } catch (error) {

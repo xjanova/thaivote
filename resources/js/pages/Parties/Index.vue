@@ -1,21 +1,21 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue';
 
-const parties = ref([])
-const loading = ref(true)
+const parties = ref([]);
+const loading = ref(true);
 
 onMounted(async () => {
     try {
-        const response = await fetch('/api/parties')
+        const response = await fetch('/api/parties');
         if (response.ok) {
-            parties.value = await response.json()
+            parties.value = await response.json();
         }
     } catch (error) {
-        console.error('Failed to fetch parties:', error)
+        console.error('Failed to fetch parties:', error);
     } finally {
-        loading.value = false
+        loading.value = false;
     }
-})
+});
 </script>
 
 <template>
@@ -32,7 +32,11 @@ onMounted(async () => {
             </div>
 
             <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div v-for="party in parties" :key="party.id" class="bg-white shadow rounded-lg p-6">
+                <div
+                    v-for="party in parties"
+                    :key="party.id"
+                    class="bg-white shadow rounded-lg p-6"
+                >
                     <div class="flex items-center space-x-4">
                         <div
                             class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold"

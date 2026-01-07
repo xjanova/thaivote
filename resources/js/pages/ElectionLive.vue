@@ -9,7 +9,9 @@
                         <h1 class="text-4xl lg:text-5xl font-bold text-white mb-2">
                             <span class="text-gradient">ผลเลือกตั้ง</span> 2569
                         </h1>
-                        <p class="text-white/70">การเลือกตั้งสมาชิกสภาผู้แทนราษฎร 8 กุมภาพันธ์ 2569</p>
+                        <p class="text-white/70">
+                            การเลือกตั้งสมาชิกสภาผู้แทนราษฎร 8 กุมภาพันธ์ 2569
+                        </p>
                     </div>
                     <div class="flex items-center gap-4">
                         <div class="live-badge">
@@ -17,7 +19,9 @@
                             <span class="text-sm font-semibold">ถ่ายทอดสด</span>
                         </div>
                         <div class="time-display">
-                            <span class="text-2xl font-mono font-bold text-white">{{ currentTime }}</span>
+                            <span class="text-2xl font-mono font-bold text-white">{{
+                                currentTime
+                            }}</span>
                         </div>
                     </div>
                 </div>
@@ -50,8 +54,18 @@
                     <div class="section-card">
                         <div class="section-header">
                             <h2 class="section-title">
-                                <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                                <svg
+                                    class="w-6 h-6 text-orange-500"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                                    />
                                 </svg>
                                 แผนที่ประเทศไทย
                             </h2>
@@ -60,13 +74,17 @@
                                 <div class="progress-ring">
                                     <svg viewBox="0 0 36 36" class="w-12 h-12">
                                         <circle
-                                            cx="18" cy="18" r="16"
+                                            cx="18"
+                                            cy="18"
+                                            r="16"
                                             fill="none"
                                             stroke="#e5e7eb"
                                             stroke-width="3"
                                         />
                                         <circle
-                                            cx="18" cy="18" r="16"
+                                            cx="18"
+                                            cy="18"
+                                            r="16"
                                             fill="none"
                                             stroke="url(#progress-gradient)"
                                             stroke-width="3"
@@ -75,7 +93,13 @@
                                             transform="rotate(-90 18 18)"
                                         />
                                         <defs>
-                                            <linearGradient id="progress-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                            <linearGradient
+                                                id="progress-gradient"
+                                                x1="0%"
+                                                y1="0%"
+                                                x2="100%"
+                                                y2="0%"
+                                            >
                                                 <stop offset="0%" stop-color="#f97316" />
                                                 <stop offset="100%" stop-color="#ef4444" />
                                             </linearGradient>
@@ -101,8 +125,18 @@
                     <div class="section-card">
                         <div class="section-header">
                             <h2 class="section-title">
-                                <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                <svg
+                                    class="w-6 h-6 text-orange-500"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                                    />
                                 </svg>
                                 อันดับพรรค
                             </h2>
@@ -130,7 +164,7 @@
                                                 class="party-bar-fill"
                                                 :style="{
                                                     width: `${(party.seats / 500) * 100}%`,
-                                                    backgroundColor: party.color
+                                                    backgroundColor: party.color,
                                                 }"
                                             ></div>
                                         </div>
@@ -148,9 +182,24 @@
                     <div class="section-card">
                         <div class="section-header">
                             <h2 class="section-title">
-                                <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                                <svg
+                                    class="w-6 h-6 text-orange-500"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"
+                                    />
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"
+                                    />
                                 </svg>
                                 ส.ส. แบ่งเขต vs บัญชีรายชื่อ
                             </h2>
@@ -183,8 +232,18 @@
                     <div class="section-card">
                         <div class="section-header">
                             <h2 class="section-title">
-                                <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                <svg
+                                    class="w-6 h-6 text-orange-500"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                                    />
                                 </svg>
                                 อัปเดตล่าสุด
                             </h2>
@@ -216,8 +275,18 @@
             <div class="section-card mt-8">
                 <div class="section-header">
                     <h2 class="section-title">
-                        <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <svg
+                            class="w-6 h-6 text-orange-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
                         </svg>
                         ผลคะแนนแยกภาค
                     </h2>
@@ -259,13 +328,15 @@
                 <div class="flex items-center justify-between flex-wrap gap-4">
                     <div class="flex items-center gap-2">
                         <span class="text-gray-500">ข้อมูลจาก</span>
-                        <a href="https://www.ect.go.th" target="_blank" class="text-orange-500 hover:underline">
+                        <a
+                            href="https://www.ect.go.th"
+                            target="_blank"
+                            class="text-orange-500 hover:underline"
+                        >
                             สำนักงานคณะกรรมการการเลือกตั้ง (กกต.)
                         </a>
                     </div>
-                    <div class="text-gray-500 text-sm">
-                        อัปเดตล่าสุด: {{ lastUpdate }}
-                    </div>
+                    <div class="text-gray-500 text-sm">อัปเดตล่าสุด: {{ lastUpdate }}</div>
                 </div>
             </div>
         </footer>
@@ -347,7 +418,12 @@ const regionalResults = computed(() => {
 
 const recentUpdates = ref([
     { id: 1, time: '19:45', message: 'กรุงเทพฯ นับเสร็จ 90%', party: { color: '#FF6B00' } },
-    { id: 2, time: '19:42', message: 'เชียงใหม่ ประกาศผลอย่างเป็นทางการ', party: { color: '#E31E25' } },
+    {
+        id: 2,
+        time: '19:42',
+        message: 'เชียงใหม่ ประกาศผลอย่างเป็นทางการ',
+        party: { color: '#E31E25' },
+    },
     { id: 3, time: '19:38', message: 'ขอนแก่น นับเสร็จ 100%', party: { color: '#0066B3' } },
 ]);
 
@@ -376,19 +452,24 @@ onMounted(() => {
 
     // Subscribe to real-time updates
     if (window.Echo) {
-        echoChannel = window.Echo.channel(`election.${electionId.value}`)
-            .listen('ResultsUpdated', (event) => {
+        echoChannel = window.Echo.channel(`election.${electionId.value}`).listen(
+            'ResultsUpdated',
+            (event) => {
                 results.value = event.results;
                 recentUpdates.value.unshift({
                     id: Date.now(),
-                    time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
+                    time: new Date().toLocaleTimeString('th-TH', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                    }),
                     message: event.message || 'อัปเดตผลคะแนน',
                     party: event.party,
                 });
                 if (recentUpdates.value.length > 10) {
                     recentUpdates.value.pop();
                 }
-            });
+            }
+        );
     }
 });
 
@@ -399,16 +480,20 @@ onUnmounted(() => {
 
 // Icon components
 const ChartIcon = {
-    template: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>'
+    template:
+        '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>',
 };
 const UsersIcon = {
-    template: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>'
+    template:
+        '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>',
 };
 const CheckIcon = {
-    template: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+    template:
+        '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
 };
 const XIcon = {
-    template: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+    template:
+        '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
 };
 
 // CountUp component
@@ -428,7 +513,7 @@ const CountUp = {
         });
         return { displayValue };
     },
-    template: '<span>{{ Math.floor(displayValue).toLocaleString("th-TH") }}</span>'
+    template: '<span>{{ Math.floor(displayValue).toLocaleString("th-TH") }}</span>',
 };
 </script>
 
@@ -546,9 +631,15 @@ const CountUp = {
     @apply w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm;
 }
 
-.rank-1 { @apply bg-yellow-400 text-yellow-900; }
-.rank-2 { @apply bg-gray-300 text-gray-700; }
-.rank-3 { @apply bg-orange-300 text-orange-800; }
+.rank-1 {
+    @apply bg-yellow-400 text-yellow-900;
+}
+.rank-2 {
+    @apply bg-gray-300 text-gray-700;
+}
+.rank-3 {
+    @apply bg-orange-300 text-orange-800;
+}
 .rank-badge:not(.rank-1):not(.rank-2):not(.rank-3) {
     @apply bg-gray-200 text-gray-600;
 }

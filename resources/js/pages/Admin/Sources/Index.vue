@@ -55,25 +55,39 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                            >
                                 แหล่งข่าว
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                            >
                                 ประเภท
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                            >
                                 จำนวนบทความ
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                            >
                                 สถานะ
                             </th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                            <th
+                                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase"
+                            >
                                 จัดการ
                             </th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        <tr v-for="source in sources.data" :key="source.id" class="hover:bg-gray-50">
+                        <tr
+                            v-for="source in sources.data"
+                            :key="source.id"
+                            class="hover:bg-gray-50"
+                        >
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center gap-3">
                                     <img
@@ -103,8 +117,8 @@
                                         source.type === 'rss'
                                             ? 'bg-orange-100 text-orange-800'
                                             : source.type === 'api'
-                                            ? 'bg-blue-100 text-blue-800'
-                                            : 'bg-purple-100 text-purple-800',
+                                              ? 'bg-blue-100 text-blue-800'
+                                              : 'bg-purple-100 text-purple-800',
                                     ]"
                                 >
                                     {{ source.type.toUpperCase() }}
@@ -271,15 +285,23 @@ const applyFilters = () => {
 };
 
 const toggleActive = (source) => {
-    router.post(route('admin.sources.toggle-active', source.id), {}, {
-        preserveState: true,
-    });
+    router.post(
+        route('admin.sources.toggle-active', source.id),
+        {},
+        {
+            preserveState: true,
+        }
+    );
 };
 
 const fetchSource = (source) => {
-    router.post(route('admin.sources.fetch', source.id), {}, {
-        preserveState: true,
-    });
+    router.post(
+        route('admin.sources.fetch', source.id),
+        {},
+        {
+            preserveState: true,
+        }
+    );
 };
 
 const confirmDelete = (source) => {

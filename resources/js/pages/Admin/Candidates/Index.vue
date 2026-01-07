@@ -44,7 +44,11 @@
                         @change="applyFilters"
                     >
                         <option value="">ทุกการเลือกตั้ง</option>
-                        <option v-for="election in elections" :key="election.id" :value="election.id">
+                        <option
+                            v-for="election in elections"
+                            :key="election.id"
+                            :value="election.id"
+                        >
                             {{ election.name }}
                         </option>
                     </select>
@@ -65,25 +69,39 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                            >
                                 ผู้สมัคร
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                            >
                                 พรรค
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                            >
                                 ประเภท
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                            >
                                 เขต/จังหวัด
                             </th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                            <th
+                                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase"
+                            >
                                 จัดการ
                             </th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        <tr v-for="candidate in candidates.data" :key="candidate.id" class="hover:bg-gray-50">
+                        <tr
+                            v-for="candidate in candidates.data"
+                            :key="candidate.id"
+                            class="hover:bg-gray-50"
+                        >
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center gap-3">
                                     <img
@@ -100,7 +118,8 @@
                                     </div>
                                     <div>
                                         <p class="font-medium text-gray-900">
-                                            {{ candidate.title }} {{ candidate.first_name }} {{ candidate.last_name }}
+                                            {{ candidate.title }} {{ candidate.first_name }}
+                                            {{ candidate.last_name }}
                                         </p>
                                         <p v-if="candidate.nickname" class="text-sm text-gray-500">
                                             ({{ candidate.nickname }})
@@ -114,7 +133,9 @@
                                         class="w-4 h-4 rounded-full"
                                         :style="{ backgroundColor: candidate.party.color }"
                                     ></div>
-                                    <span class="text-sm text-gray-900">{{ candidate.party.name_th }}</span>
+                                    <span class="text-sm text-gray-900">{{
+                                        candidate.party.name_th
+                                    }}</span>
                                 </div>
                                 <span v-else class="text-sm text-gray-500">อิสระ</span>
                             </td>
@@ -127,12 +148,17 @@
                                             : 'bg-purple-100 text-purple-800',
                                     ]"
                                 >
-                                    {{ candidate.type === 'constituency' ? 'แบ่งเขต' : 'บัญชีรายชื่อ' }}
+                                    {{
+                                        candidate.type === 'constituency'
+                                            ? 'แบ่งเขต'
+                                            : 'บัญชีรายชื่อ'
+                                    }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 <template v-if="candidate.constituency">
-                                    {{ candidate.constituency.province?.name_th }} เขต {{ candidate.constituency.number }}
+                                    {{ candidate.constituency.province?.name_th }} เขต
+                                    {{ candidate.constituency.number }}
                                 </template>
                                 <template v-else-if="candidate.party_list_order">
                                     ลำดับที่ {{ candidate.party_list_order }}
@@ -211,7 +237,10 @@
                     <h3 class="text-lg font-medium text-gray-900 mb-4">ยืนยันการลบ</h3>
                     <p class="text-gray-600 mb-6">
                         คุณต้องการลบผู้สมัคร
-                        <strong>{{ candidateToDelete?.first_name }} {{ candidateToDelete?.last_name }}</strong>
+                        <strong
+                            >{{ candidateToDelete?.first_name }}
+                            {{ candidateToDelete?.last_name }}</strong
+                        >
                         หรือไม่?
                     </p>
                     <div class="flex justify-end gap-3">

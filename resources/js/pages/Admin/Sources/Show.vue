@@ -4,7 +4,10 @@
             <!-- Header -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <Link :href="route('admin.sources.index')" class="p-2 hover:bg-gray-100 rounded-lg">
+                    <Link
+                        :href="route('admin.sources.index')"
+                        class="p-2 hover:bg-gray-100 rounded-lg"
+                    >
                         <ArrowLeftIcon class="w-5 h-5" />
                     </Link>
                     <div>
@@ -54,8 +57,8 @@
                                         source.type === 'rss'
                                             ? 'bg-orange-100 text-orange-800'
                                             : source.type === 'api'
-                                            ? 'bg-blue-100 text-blue-800'
-                                            : 'bg-purple-100 text-purple-800',
+                                              ? 'bg-blue-100 text-blue-800'
+                                              : 'bg-purple-100 text-purple-800',
                                     ]"
                                 >
                                     {{ source.type.toUpperCase() }}
@@ -71,7 +74,9 @@
                                     {{ source.is_active ? 'ใช้งาน' : 'ไม่ใช้งาน' }}
                                 </span>
                             </div>
-                            <h2 v-if="source.name_th" class="text-lg text-gray-700">{{ source.name_th }}</h2>
+                            <h2 v-if="source.name_th" class="text-lg text-gray-700">
+                                {{ source.name_th }}
+                            </h2>
                             <a
                                 v-if="source.website"
                                 :href="source.website"
@@ -137,11 +142,17 @@
                     <h3 class="text-lg font-medium text-gray-900">บทความล่าสุด</h3>
                 </div>
                 <ul class="divide-y divide-gray-200">
-                    <li v-for="article in recentArticles" :key="article.id" class="p-4 hover:bg-gray-50">
+                    <li
+                        v-for="article in recentArticles"
+                        :key="article.id"
+                        class="p-4 hover:bg-gray-50"
+                    >
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="font-medium text-gray-900">{{ article.title }}</p>
-                                <p class="text-sm text-gray-500">{{ formatDate(article.published_at) }}</p>
+                                <p class="text-sm text-gray-500">
+                                    {{ formatDate(article.published_at) }}
+                                </p>
                             </div>
                             <span
                                 :class="[

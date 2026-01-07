@@ -1,21 +1,21 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue';
 
-const news = ref([])
-const loading = ref(true)
+const news = ref([]);
+const loading = ref(true);
 
 onMounted(async () => {
     try {
-        const response = await fetch('/api/news')
+        const response = await fetch('/api/news');
         if (response.ok) {
-            news.value = await response.json()
+            news.value = await response.json();
         }
     } catch (error) {
-        console.error('Failed to fetch news:', error)
+        console.error('Failed to fetch news:', error);
     } finally {
-        loading.value = false
+        loading.value = false;
     }
-})
+});
 </script>
 
 <template>
@@ -32,7 +32,11 @@ onMounted(async () => {
             </div>
 
             <div v-else class="space-y-4">
-                <article v-for="article in news" :key="article.id" class="bg-white shadow rounded-lg p-6">
+                <article
+                    v-for="article in news"
+                    :key="article.id"
+                    class="bg-white shadow rounded-lg p-6"
+                >
                     <h2 class="text-xl font-semibold text-gray-900">{{ article.title }}</h2>
                     <p class="mt-2 text-gray-600">{{ article.excerpt }}</p>
                 </article>

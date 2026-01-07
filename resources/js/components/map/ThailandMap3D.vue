@@ -13,13 +13,29 @@
         <!-- Controls -->
         <div class="controls-panel">
             <button class="control-btn" title="หมุนอัตโนมัติ" @click="toggleAutoRotate">
-                <svg :class="{ 'animate-spin': autoRotate }" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                <svg
+                    :class="{ 'animate-spin': autoRotate }"
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
                 </svg>
             </button>
             <button class="control-btn" title="รีเซ็ตมุมมอง" @click="resetCamera">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                    />
                 </svg>
             </button>
             <button class="control-btn" title="โหมด 2D/3D" @click="toggle2D3D">
@@ -30,7 +46,10 @@
         <!-- Province Info Panel -->
         <Transition name="slide-up">
             <div v-if="selectedProvince" class="province-info-panel">
-                <div class="panel-header" :style="{ backgroundColor: getWinnerColor(selectedProvince) }">
+                <div
+                    class="panel-header"
+                    :style="{ backgroundColor: getWinnerColor(selectedProvince) }"
+                >
                     <h3 class="text-2xl font-bold text-white">{{ selectedProvince.name_th }}</h3>
                     <p class="text-white/80">{{ selectedProvince.name_en }}</p>
                 </div>
@@ -41,11 +60,15 @@
                             <span class="stat-label">เขต</span>
                         </div>
                         <div class="stat-box">
-                            <span class="stat-value">{{ formatNumber(selectedProvince.population) }}</span>
+                            <span class="stat-value">{{
+                                formatNumber(selectedProvince.population)
+                            }}</span>
                             <span class="stat-label">ประชากร</span>
                         </div>
                         <div class="stat-box">
-                            <span class="stat-value">{{ getCountingProgress(selectedProvince) }}%</span>
+                            <span class="stat-value"
+                                >{{ getCountingProgress(selectedProvince) }}%</span
+                            >
                             <span class="stat-label">นับแล้ว</span>
                         </div>
                     </div>
@@ -68,14 +91,16 @@
                                 <div class="flex-1">
                                     <div class="flex justify-between items-center mb-1">
                                         <span class="font-medium">{{ result.party?.name_th }}</span>
-                                        <span class="text-lg font-bold">{{ result.seats_won }}</span>
+                                        <span class="text-lg font-bold">{{
+                                            result.seats_won
+                                        }}</span>
                                     </div>
                                     <div class="progress-bar">
                                         <div
                                             class="progress-fill"
                                             :style="{
                                                 width: `${result.vote_percentage}%`,
-                                                backgroundColor: result.party?.color
+                                                backgroundColor: result.party?.color,
                                             }"
                                         ></div>
                                     </div>
@@ -128,7 +153,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import gsap from 'gsap';
-import { provinces as provinceData, provincePaths, regions } from '@/data/provinces';
+import { provinces as provinceData, regions } from '@/data/provinces';
 
 const props = defineProps({
     electionId: { type: Number, required: true },
@@ -146,20 +171,24 @@ const selectedProvince = ref(null);
 
 // Three.js objects
 let scene, camera, renderer, controls;
-let provinceMeshes = {};
+const provinceMeshes = {};
 let raycaster, mouse;
 let animationId;
 
 // Province results
 const provinceResults = computed(() => {
-    if (!selectedProvince.value || !props.results.provinces) return [];
+    if (!selectedProvince.value || !props.results.provinces) {
+        return [];
+    }
     const provinceData = props.results.provinces[selectedProvince.value.id];
     return provinceData?.parties?.sort((a, b) => b.seats_won - a.seats_won) || [];
 });
 
 // Top parties
 const topParties = computed(() => {
-    if (!props.results.national) return [];
+    if (!props.results.national) {
+        return [];
+    }
     return props.results.national.parties?.slice(0, 8) || [];
 });
 
@@ -185,7 +214,7 @@ const initScene = () => {
     renderer = new THREE.WebGLRenderer({
         antialias: true,
         alpha: true,
-        powerPreference: 'high-performance'
+        powerPreference: 'high-performance',
     });
     renderer.setSize(container.value.clientWidth, container.value.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -287,10 +316,12 @@ const createThailandMap = () => {
         // Animate entrance
         mesh.scale.set(0, 0, 0);
         gsap.to(mesh.scale, {
-            x: 1, y: 1, z: 1,
+            x: 1,
+            y: 1,
+            z: 1,
             duration: 0.5,
             delay: index * 0.02,
-            ease: 'back.out(1.5)'
+            ease: 'back.out(1.5)',
         });
 
         provinceMeshes[province.code] = mesh;
@@ -300,7 +331,7 @@ const createThailandMap = () => {
     scene.add(mapGroup);
 };
 
-const createProvinceGeometry = (province, bounds, scale, centerX, centerY) => {
+const createProvinceGeometry = (province, _bounds, _scale, _centerX, _centerY) => {
     // Create extruded shape based on constituency count
     const height = Math.max(2, province.constituencies * 0.5);
     const size = Math.sqrt(province.population / 100000) * 0.8 + 1;
@@ -314,8 +345,11 @@ const createProvinceGeometry = (province, bounds, scale, centerX, centerY) => {
         const angle = (i / sides) * Math.PI * 2 - Math.PI / 2;
         const x = Math.cos(angle) * radius;
         const y = Math.sin(angle) * radius;
-        if (i === 0) shape.moveTo(x, y);
-        else shape.lineTo(x, y);
+        if (i === 0) {
+            shape.moveTo(x, y);
+        } else {
+            shape.lineTo(x, y);
+        }
     }
     shape.closePath();
 
@@ -325,13 +359,13 @@ const createProvinceGeometry = (province, bounds, scale, centerX, centerY) => {
         bevelEnabled: true,
         bevelThickness: 0.2,
         bevelSize: 0.2,
-        bevelSegments: 2
+        bevelSegments: 2,
     };
 
     return new THREE.ExtrudeGeometry(shape, extrudeSettings);
 };
 
-const getProvincePosition = (province, bounds, scale, centerX, centerY) => {
+const getProvincePosition = (province, _bounds, _scale, _centerX, _centerY) => {
     // Approximate positions based on region and index
     const regionPositions = {
         north: { baseX: -15, baseZ: -40, spread: 12 },
@@ -339,12 +373,12 @@ const getProvincePosition = (province, bounds, scale, centerX, centerY) => {
         central: { baseX: 0, baseZ: 0, spread: 12 },
         east: { baseX: 30, baseZ: 15, spread: 10 },
         west: { baseX: -25, baseZ: 10, spread: 10 },
-        south: { baseX: 0, baseZ: 45, spread: 12 }
+        south: { baseX: 0, baseZ: 45, spread: 12 },
     };
 
     const regionData = regionPositions[province.region] || regionPositions.central;
-    const regionProvinces = provinceData.filter(p => p.region === province.region);
-    const indexInRegion = regionProvinces.findIndex(p => p.id === province.id);
+    const regionProvinces = provinceData.filter((p) => p.region === province.region);
+    const indexInRegion = regionProvinces.findIndex((p) => p.id === province.id);
 
     // Spiral layout within region
     const angle = (indexInRegion / regionProvinces.length) * Math.PI * 2;
@@ -352,14 +386,16 @@ const getProvincePosition = (province, bounds, scale, centerX, centerY) => {
 
     return {
         x: regionData.baseX + Math.cos(angle) * distance,
-        z: regionData.baseZ + Math.sin(angle) * distance
+        z: regionData.baseZ + Math.sin(angle) * distance,
     };
 };
 
 const getProvinceColor = (province) => {
     if (props.results.provinces && props.results.provinces[province.id]) {
         const winner = props.results.provinces[province.id].parties?.[0];
-        if (winner?.party?.color) return winner.party.color;
+        if (winner?.party?.color) {
+            return winner.party.color;
+        }
     }
     return regions[province.region]?.color || '#6B7280';
 };
@@ -367,7 +403,9 @@ const getProvinceColor = (province) => {
 const getWinnerColor = (province) => {
     if (props.results.provinces && props.results.provinces[province.id]) {
         const winner = props.results.provinces[province.id].parties?.[0];
-        if (winner?.party?.color) return winner.party.color;
+        if (winner?.party?.color) {
+            return winner.party.color;
+        }
     }
     return regions[province.region]?.color || '#6B7280';
 };
@@ -405,7 +443,7 @@ const addParticles = () => {
         vertexColors: true,
         transparent: true,
         opacity: 0.6,
-        blending: THREE.AdditiveBlending
+        blending: THREE.AdditiveBlending,
     });
 
     const particles = new THREE.Points(geometry, material);
@@ -416,7 +454,7 @@ const addParticles = () => {
         y: Math.PI * 2,
         duration: 100,
         repeat: -1,
-        ease: 'none'
+        ease: 'none',
     });
 };
 
@@ -455,7 +493,7 @@ const onMouseMove = (event) => {
     const intersects = raycaster.intersectObjects(Object.values(provinceMeshes));
 
     // Reset all
-    Object.values(provinceMeshes).forEach(mesh => {
+    Object.values(provinceMeshes).forEach((mesh) => {
         gsap.to(mesh.position, { y: 0, duration: 0.3 });
         mesh.material.emissive?.setHex(0x000000);
     });
@@ -484,22 +522,24 @@ const selectProvince = (province) => {
             y: 50,
             z: targetPos.z + 50,
             duration: 1,
-            ease: 'power2.out'
+            ease: 'power2.out',
         });
         gsap.to(controls.target, {
             x: targetPos.x,
             y: 5,
             z: targetPos.z,
             duration: 1,
-            ease: 'power2.out'
+            ease: 'power2.out',
         });
 
         // Pulse animation
         gsap.to(mesh.scale, {
-            x: 1.2, y: 1.2, z: 1.2,
+            x: 1.2,
+            y: 1.2,
+            z: 1.2,
             duration: 0.3,
             yoyo: true,
-            repeat: 1
+            repeat: 1,
         });
     }
 };
@@ -507,11 +547,12 @@ const selectProvince = (province) => {
 const highlightParty = (party) => {
     Object.entries(provinceMeshes).forEach(([code, mesh]) => {
         const province = mesh.userData.province;
-        const isPartyProvince = props.results.provinces?.[province.id]?.parties?.[0]?.party?.id === party.id;
+        const isPartyProvince =
+            props.results.provinces?.[province.id]?.parties?.[0]?.party?.id === party.id;
 
         gsap.to(mesh.material, {
             opacity: isPartyProvince ? 1 : 0.3,
-            duration: 0.5
+            duration: 0.5,
         });
 
         if (isPartyProvince) {
@@ -529,19 +570,23 @@ const toggleAutoRotate = () => {
 
 const resetCamera = () => {
     gsap.to(camera.position, {
-        x: 0, y: 80, z: 120,
+        x: 0,
+        y: 80,
+        z: 120,
         duration: 1,
-        ease: 'power2.out'
+        ease: 'power2.out',
     });
     gsap.to(controls.target, {
-        x: 0, y: 0, z: 0,
+        x: 0,
+        y: 0,
+        z: 0,
         duration: 1,
-        ease: 'power2.out'
+        ease: 'power2.out',
     });
     selectedProvince.value = null;
 
     // Reset all provinces
-    Object.values(provinceMeshes).forEach(mesh => {
+    Object.values(provinceMeshes).forEach((mesh) => {
         gsap.to(mesh.material, { opacity: 0.9, duration: 0.5 });
         gsap.to(mesh.position, { y: 0, duration: 0.5 });
     });
@@ -552,23 +597,33 @@ const toggle2D3D = () => {
 
     if (is3DMode.value) {
         gsap.to(camera.position, {
-            x: 0, y: 80, z: 120,
-            duration: 1
+            x: 0,
+            y: 80,
+            z: 120,
+            duration: 1,
         });
         controls.maxPolarAngle = Math.PI / 2.2;
     } else {
         gsap.to(camera.position, {
-            x: 0, y: 150, z: 0,
-            duration: 1
+            x: 0,
+            y: 150,
+            z: 0,
+            duration: 1,
         });
         controls.maxPolarAngle = 0;
     }
 };
 
 const formatNumber = (num) => {
-    if (!num) return '0';
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(0)}K`;
+    if (!num) {
+        return '0';
+    }
+    if (num >= 1000000) {
+        return `${(num / 1000000).toFixed(1)}M`;
+    }
+    if (num >= 1000) {
+        return `${(num / 1000).toFixed(0)}K`;
+    }
     return num.toLocaleString('th-TH');
 };
 
@@ -580,18 +635,22 @@ const animate = () => {
 };
 
 // Update colors when results change
-watch(() => props.results, () => {
-    Object.entries(provinceMeshes).forEach(([code, mesh]) => {
-        const province = mesh.userData.province;
-        const newColor = getProvinceColor(province);
-        gsap.to(mesh.material.color, {
-            r: new THREE.Color(newColor).r,
-            g: new THREE.Color(newColor).g,
-            b: new THREE.Color(newColor).b,
-            duration: 1
+watch(
+    () => props.results,
+    () => {
+        Object.entries(provinceMeshes).forEach(([code, mesh]) => {
+            const province = mesh.userData.province;
+            const newColor = getProvinceColor(province);
+            gsap.to(mesh.material.color, {
+                r: new THREE.Color(newColor).r,
+                g: new THREE.Color(newColor).g,
+                b: new THREE.Color(newColor).b,
+                duration: 1,
+            });
         });
-    });
-}, { deep: true });
+    },
+    { deep: true }
+);
 
 // Lifecycle
 onMounted(() => {
@@ -725,8 +784,14 @@ onUnmounted(() => {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateX(-20px); }
-    to { opacity: 1; transform: translateX(0); }
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 .animate-fadeIn {
