@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\ConstituencyController;
 use App\Http\Controllers\Api\ElectionController;
+use App\Http\Controllers\Api\LiveResultsController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\PartyApiController;
 use App\Http\Controllers\Api\PartyController;
@@ -77,6 +78,16 @@ Route::prefix('party-api')->group(function () {
         Route::post('/posts', [PartyApiController::class, 'submitPost']);
         Route::get('/analytics', [PartyApiController::class, 'getAnalytics']);
     });
+});
+
+// Live Results (Real-time Dashboard API)
+Route::prefix('live')->group(function () {
+    Route::get('/', [LiveResultsController::class, 'index']);
+    Route::get('/national', [LiveResultsController::class, 'national']);
+    Route::get('/regions', [LiveResultsController::class, 'regions']);
+    Route::get('/province/{province}', [LiveResultsController::class, 'province']);
+    Route::get('/constituency/{constituency}', [LiveResultsController::class, 'constituency']);
+    Route::get('/stream', [LiveResultsController::class, 'stream']); // Server-Sent Events
 });
 
 // Webhook for external data sources
