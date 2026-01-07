@@ -22,6 +22,8 @@ class DatabaseSeeder extends Seeder
             ProvinceSeeder::class,      // 77 จังหวัด
             ConstituencySeeder::class,  // 400 เขตเลือกตั้ง
             PartySeeder::class,         // พรรคการเมืองหลัก
+            Election2569Seeder::class,  // การเลือกตั้ง 2569 + พรรค 57 พรรค
+            Candidate2569Seeder::class, // ผู้สมัคร 2569 (แคนดิเดตนายกฯ + บัญชีรายชื่อ)
         ]);
 
         // Create test user only if it doesn't exist
