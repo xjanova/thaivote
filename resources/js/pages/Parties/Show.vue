@@ -1,28 +1,28 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue';
 
 const props = defineProps({
     partyId: {
         type: [String, Number],
-        required: true
-    }
-})
+        required: true,
+    },
+});
 
-const party = ref(null)
-const loading = ref(true)
+const party = ref(null);
+const loading = ref(true);
 
 onMounted(async () => {
     try {
-        const response = await fetch(`/api/parties/${props.partyId}`)
+        const response = await fetch(`/api/parties/${props.partyId}`);
         if (response.ok) {
-            party.value = await response.json()
+            party.value = await response.json();
         }
     } catch (error) {
-        console.error('Failed to fetch party:', error)
+        console.error('Failed to fetch party:', error);
     } finally {
-        loading.value = false
+        loading.value = false;
     }
-})
+});
 </script>
 
 <template>

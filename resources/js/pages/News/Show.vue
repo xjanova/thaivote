@@ -1,28 +1,28 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue';
 
 const props = defineProps({
     articleId: {
         type: [String, Number],
-        required: true
-    }
-})
+        required: true,
+    },
+});
 
-const article = ref(null)
-const loading = ref(true)
+const article = ref(null);
+const loading = ref(true);
 
 onMounted(async () => {
     try {
-        const response = await fetch(`/api/news/${props.articleId}`)
+        const response = await fetch(`/api/news/${props.articleId}`);
         if (response.ok) {
-            article.value = await response.json()
+            article.value = await response.json();
         }
     } catch (error) {
-        console.error('Failed to fetch article:', error)
+        console.error('Failed to fetch article:', error);
     } finally {
-        loading.value = false
+        loading.value = false;
     }
-})
+});
 </script>
 
 <template>
