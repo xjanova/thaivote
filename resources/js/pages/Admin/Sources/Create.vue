@@ -34,7 +34,9 @@
                             </p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อ (ไทย)</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >ชื่อ (ไทย)</label
+                            >
                             <input
                                 v-model="form.name_th"
                                 type="text"
@@ -43,7 +45,9 @@
                             />
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">เว็บไซต์</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >เว็บไซต์</label
+                            >
                             <input
                                 v-model="form.website"
                                 type="url"
@@ -52,7 +56,9 @@
                             />
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">URL โลโก้</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >URL โลโก้</label
+                            >
                             <input
                                 v-model="form.logo"
                                 type="url"
@@ -83,7 +89,9 @@
                         </div>
 
                         <div v-if="form.type === 'rss'">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">RSS URL</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >RSS URL</label
+                            >
                             <input
                                 v-model="form.rss_url"
                                 type="url"
@@ -93,7 +101,9 @@
                         </div>
 
                         <div v-if="form.type === 'api'">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">API Endpoint</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >API Endpoint</label
+                            >
                             <input
                                 v-model="form.api_endpoint"
                                 type="url"
@@ -124,7 +134,9 @@
                     <h2 class="text-lg font-medium text-gray-900 mb-4">การตั้งค่า</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">ลำดับความสำคัญ</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"
+                                >ลำดับความสำคัญ</label
+                            >
                             <input
                                 v-model="form.priority"
                                 type="number"

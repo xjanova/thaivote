@@ -32,7 +32,10 @@
                         </div>
 
                         <div>
-                            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label
+                                for="password"
+                                class="block text-sm font-medium text-gray-700 mb-1"
+                            >
                                 รหัสผ่าน
                             </label>
                             <input

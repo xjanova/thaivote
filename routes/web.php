@@ -37,6 +37,10 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+// Live Election Results (Real-time Dashboard)
+Route::get('/live', [App\Http\Controllers\ElectionLiveController::class, 'index'])->name('live');
+Route::get('/live/{election}', [App\Http\Controllers\ElectionLiveController::class, 'show'])->name('live.show');
+
 Route::get('/election/{election}', function ($election) {
     return Inertia::render('Dashboard', [
         'electionId' => $election,
