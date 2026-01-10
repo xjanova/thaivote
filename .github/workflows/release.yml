@@ -44,6 +44,9 @@ jobs:
       - name: Install Composer dependencies (production)
         run: composer install --no-dev --prefer-dist --optimize-autoloader
 
+      - name: Build production assets
+        run: npm run build
+
       - name: Semantic Release
         id: semantic
         uses: cycjimmy/semantic-release-action@v4
