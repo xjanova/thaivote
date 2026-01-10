@@ -1,3 +1,9 @@
+## [1.41.0](https://github.com/xjanova/thaivote/compare/v1.40.0...v1.41.0) (2026-01-10)
+
+### ✨ Features
+
+* Add standalone party data update script ([b531a2b](https://github.com/xjanova/thaivote/commit/b531a2bd3e58d702365ab4ce61be0eee60247c29))
+
 ## [1.40.0](https://github.com/xjanova/thaivote/compare/v1.39.1...v1.40.0) (2026-01-10)
 
 ### ✨ Features
