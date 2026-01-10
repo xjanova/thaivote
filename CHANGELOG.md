@@ -1,3 +1,62 @@
+## [1.33.0](https://github.com/xjanova/thaivote/compare/v1.32.0...v1.33.0) (2026-01-10)
+
+### ⚠ BREAKING CHANGES
+
+* เปลี่ยนระบบ release automation จาก release-please เป็น semantic-release
+
+Changes:
+- เพิ่ม .releaserc.json สำหรับ config semantic-release
+- ลบ auto-approve และ auto-merge jobs ออก (ไม่ต้องการแล้ว)
+- เปลี่ยน release workflow ให้ใช้ semantic-release action
+- ย้าย build assets ไปใน release job เดียวกัน
+- อัปเดต README.md อธิบาย semantic-release workflow
+
+Benefits:
+- ✅ ไม่สร้าง PR เลย - commit version bump ตรงไปที่ main
+- ✅ Release process เร็วกว่า (ไม่ต้องรอ approve/merge)
+- ✅ CHANGELOG สวยงามกว่า (มี emoji + categorized)
+- ✅ Config ยืดหยุ่นกว่า release-please
+
+Requirements:
+- ต้องตั้งค่า branch protection ให้ github-actions[bot] bypass ได้
+- หรือปิด "Require a pull request before merging"
+- ต้องเปิด "Read and write permissions" ใน Actions settings
+
+Related: ไม่ต้องการให้บอทสร้าง PR อีกต่อไป
+
+### ✨ Features
+
+* add admin setup check after deployment ([520e15a](https://github.com/xjanova/thaivote/commit/520e15a7951126027cf01af95fded3d61b45ff11))
+* add smart database analysis in deploy.sh ([1e0958d](https://github.com/xjanova/thaivote/commit/1e0958dc506901751950bb48c52d5f95b5528552))
+* **admin:** complete admin backend with settings, user management, and approvals ([e8469df](https://github.com/xjanova/thaivote/commit/e8469df3a8815d7f5fcf17988de1cba4e2b9c438))
+* **auth:** implement complete authentication system ([cf974cc](https://github.com/xjanova/thaivote/commit/cf974ccf821e0cc1dc888c1852a002dfa22d99b7))
+* enforce super admin setup when no admin exists ([eaa9f14](https://github.com/xjanova/thaivote/commit/eaa9f143717fee9eccf6b648616a247151d3a4e6))
+* improve authentication flow and navigation ([0ed481c](https://github.com/xjanova/thaivote/commit/0ed481c8b9b0e0bc7f8f86d87342dbd56c263a88))
+* **map:** upgrade Thailand map with accurate SVG paths ([8577544](https://github.com/xjanova/thaivote/commit/8577544f7055fbea78afe0d7b2dd92a09488ce60))
+* migrate from release-please to semantic-release ([d3d204e](https://github.com/xjanova/thaivote/commit/d3d204e543520e57038c66a73cf3a7e5b0ff5cf7))
+
+### 🐛 Bug Fixes
+
+* add installed marker file creation in deploy.sh ([2c67516](https://github.com/xjanova/thaivote/commit/2c67516cbf47db6d6b0d4f18db05b5a076e6137c))
+* add is_admin migration and validate English input ([1af9c09](https://github.com/xjanova/thaivote/commit/1af9c092e93b87270abcf2ca45eab1ea434dc59a))
+* add missing version field to package.json ([1d44e65](https://github.com/xjanova/thaivote/commit/1d44e65aa66e8a51610f6578b37606526b203b77))
+* apply Prettier formatting to provinces.js ([646fbcb](https://github.com/xjanova/thaivote/commit/646fbcb3954eba0047749e2ef10d6e72412ef2ed))
+* force admin setup before accessing any page ([24011ea](https://github.com/xjanova/thaivote/commit/24011ea9c90fa97bc3106b8eb1c0496625e66e24))
+* remove unused variables and parameters in map components ([bc5f74d](https://github.com/xjanova/thaivote/commit/bc5f74d95658f5e2f48509d137bf979467481a21))
+* replace route() with direct URLs in auth pages ([acdca37](https://github.com/xjanova/thaivote/commit/acdca371caf300c4f48f9804c9fd8bd9b604f883))
+* resolve blank admin pages by fixing StatCard icon handling ([d749af5](https://github.com/xjanova/thaivote/commit/d749af55ce62b6e9500d5146a872f5741f53c87a))
+* resolve ESLint errors in Vue components ([35ada5a](https://github.com/xjanova/thaivote/commit/35ada5ab46eaa318898cb229da734b8a83a75af7))
+* resolve Laravel Pint style issues ([98af5f5](https://github.com/xjanova/thaivote/commit/98af5f5b873084df3ef7ba31590b2e2119c88e7b))
+* resolve Laravel Pint style issues ([d76282e](https://github.com/xjanova/thaivote/commit/d76282ea9643af57340100ee0ad999f46d7c4079))
+* resolve release workflow failures and improve semantic-release flow ([f7ef8c2](https://github.com/xjanova/thaivote/commit/f7ef8c224dad15a17e036fa1ddb40aee79e8571b))
+* resolve tar command failure in semantic-release ([f4e851e](https://github.com/xjanova/thaivote/commit/f4e851e50b95a0b174b221ece65ae05ccbfd3275))
+* resolve tar file-changed error in release workflow ([16ec6a0](https://github.com/xjanova/thaivote/commit/16ec6a0c9063874ac8b3e5f8dcb1f12988c1ea00))
+* use integer 1 instead of boolean true for is_admin check ([e2c849c](https://github.com/xjanova/thaivote/commit/e2c849ce70765fa60ab7bc27b954c439d5f68875))
+
+### 📝 Documentation
+
+* add setup scripts and guide for semantic-release ([937c313](https://github.com/xjanova/thaivote/commit/937c313d7c3fa03cea624e682d80937c27ccf39b))
+
 # Changelog
 
 ## [1.33.0](https://github.com/xjanova/thaivote/compare/v1.32.0...v1.33.0) (2026-01-10)
