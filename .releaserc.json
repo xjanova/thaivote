@@ -75,7 +75,10 @@
             "path": "thaivote-*.tar.gz",
             "label": "Production Release Archive"
           }
-        ]
+        ],
+        "successComment": false,
+        "failComment": false,
+        "releasedLabels": false
       }
     ]
   ]
