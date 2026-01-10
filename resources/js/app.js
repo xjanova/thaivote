@@ -4,6 +4,7 @@ import '../css/app.css';
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { createPinia } from 'pinia';
+import { ZiggyVue } from 'ziggy-js';
 
 // Create Pinia store
 const pinia = createPinia();
@@ -19,6 +20,7 @@ createInertiaApp({
 
         app.use(plugin);
         app.use(pinia);
+        app.use(ZiggyVue);
 
         // Global properties
         app.config.globalProperties.$formatNumber = (num) =>
