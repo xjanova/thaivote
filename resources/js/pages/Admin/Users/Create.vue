@@ -99,9 +99,7 @@ const submit = () => {
                         type="checkbox"
                         class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
-                    <label for="is_admin" class="text-sm text-gray-700">
-                        กำหนดให้เป็นแอดมิน
-                    </label>
+                    <label for="is_admin" class="text-sm text-gray-700"> กำหนดให้เป็นแอดมิน </label>
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4 border-t">
