@@ -153,7 +153,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import gsap from 'gsap';
-import { provinces as provinceData, provincePaths, regions } from '@/data/provinces';
+import { provinces as provinceData, regions } from '@/data/provinces';
 
 const props = defineProps({
     electionId: { type: Number, required: true },
@@ -331,7 +331,7 @@ const createThailandMap = () => {
     scene.add(mapGroup);
 };
 
-const createProvinceGeometry = (province, bounds, scale, centerX, centerY) => {
+const createProvinceGeometry = (province, _bounds, _scale, _centerX, _centerY) => {
     // Create extruded shape based on constituency count
     const height = Math.max(2, province.constituencies * 0.5);
     const size = Math.sqrt(province.population / 100000) * 0.8 + 1;
@@ -365,7 +365,7 @@ const createProvinceGeometry = (province, bounds, scale, centerX, centerY) => {
     return new THREE.ExtrudeGeometry(shape, extrudeSettings);
 };
 
-const getProvincePosition = (province, bounds, scale, centerX, centerY) => {
+const getProvincePosition = (province, _bounds, _scale, _centerX, _centerY) => {
     // Approximate positions based on region and index
     const regionPositions = {
         north: { baseX: -15, baseZ: -40, spread: 12 },
@@ -545,7 +545,7 @@ const selectProvince = (province) => {
 };
 
 const highlightParty = (party) => {
-    Object.entries(provinceMeshes).forEach(([code, mesh]) => {
+    Object.entries(provinceMeshes).forEach(([_code, mesh]) => {
         const province = mesh.userData.province;
         const isPartyProvince =
             props.results.provinces?.[province.id]?.parties?.[0]?.party?.id === party.id;
@@ -638,7 +638,7 @@ const animate = () => {
 watch(
     () => props.results,
     () => {
-        Object.entries(provinceMeshes).forEach(([code, mesh]) => {
+        Object.entries(provinceMeshes).forEach(([_code, mesh]) => {
             const province = mesh.userData.province;
             const newColor = getProvinceColor(province);
             gsap.to(mesh.material.color, {

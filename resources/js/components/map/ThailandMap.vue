@@ -313,7 +313,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useResultsStore } from '@/stores/results';
 import {
     provinces as provinceData,
