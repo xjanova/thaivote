@@ -155,8 +155,8 @@ class DashboardController extends Controller
      */
     public function traffic(): JsonResponse
     {
-        // In production, this would come from analytics service
-        // For now, return real page view counts if available
+        // Real traffic data from cache/database
+        // Note: Implement page view tracking middleware to populate this data
         $labels = [];
         $data = [];
 
@@ -166,9 +166,11 @@ class DashboardController extends Controller
             $time = $now->copy()->subMinutes($i * 15);
             $labels[] = $time->format('H:i');
 
-            // Try to get real traffic data from cache or database
+            // Get real traffic data from cache
+            // Key format: traffic.2024-01-10-14-30
             $cacheKey = 'traffic.' . $time->format('Y-m-d-H-i');
-            $data[] = Cache::get($cacheKey, rand(100, 500)); // Fallback to random for demo
+            $views = Cache::get($cacheKey, 0);
+            $data[] = $views;
         }
 
         return response()->json([

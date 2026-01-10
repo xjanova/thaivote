@@ -30,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
             App\Http\Middleware\HandleInertiaRequests::class,
             App\Http\Middleware\CheckInstalled::class,
             App\Http\Middleware\EnsureSuperAdminExists::class,
+            App\Http\Middleware\TrackPageViews::class,
         ]);
 
         $middleware->alias([

@@ -1,22 +1,61 @@
 <template>
-    <div class="card p-6">
+    <div
+        class="card p-6 transition-all duration-200 hover:shadow-lg hover:-translate-y-1 group"
+        :class="{ 'animate-pulse': loading }"
+    >
         <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm text-gray-500">{{ title }}</p>
-                <p class="text-3xl font-bold mt-1" :class="textColor">{{ formatValue(value) }}</p>
-                <p v-if="change" class="text-sm mt-1" :class="changeColor">
-                    {{ change > 0 ? '+' : '' }}{{ change }}% จากเมื่อวาน
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">
+                    {{ title }}
                 </p>
+
+                <!-- Value with loading skeleton -->
+                <div v-if="loading" class="h-10 bg-gray-200 rounded w-32 mt-2 animate-pulse"></div>
+                <p v-else class="text-3xl font-bold mt-2 transition-all duration-500" :class="textColor">
+                    {{ displayValue }}
+                </p>
+
+                <!-- Trend Indicator -->
+                <div v-if="!loading && change !== null" class="flex items-center gap-1 mt-2">
+                    <component
+                        :is="change >= 0 ? ArrowUpIcon : ArrowDownIcon"
+                        :class="[
+                            'w-4 h-4 transition-transform group-hover:scale-110',
+                            change >= 0 ? 'text-green-600' : 'text-red-600',
+                        ]"
+                    />
+                    <span class="text-sm font-medium" :class="changeColor">
+                        {{ Math.abs(change) }}%
+                    </span>
+                    <span class="text-xs text-gray-500">จากเมื่อวาน</span>
+                </div>
             </div>
-            <div :class="['w-12 h-12 rounded-xl flex items-center justify-center', bgColor]">
-                <component :is="resolvedIcon" class="w-6 h-6" :class="iconColor" />
+
+            <!-- Icon with gradient background -->
+            <div
+                :class="[
+                    'w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300',
+                    'group-hover:scale-110 group-hover:rotate-3',
+                    bgGradient,
+                ]"
+            >
+                <component :is="resolvedIcon" class="w-7 h-7 text-white" />
             </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { computed, h } from 'vue';
+import { computed, h, ref, watch, onMounted } from 'vue';
+
+// Arrow icons for trend
+const ArrowUpIcon = {
+    template: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 17a.75.75 0 0 1-.75-.75V5.612L5.29 9.77a.75.75 0 0 1-1.08-1.04l5.25-5.5a.75.75 0 0 1 1.08 0l5.25 5.5a.75.75 0 1 1-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0 1 10 17Z" clip-rule="evenodd" /></svg>`,
+};
+
+const ArrowDownIcon = {
+    template: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a.75.75 0 0 1 .75.75v10.638l3.96-4.158a.75.75 0 1 1 1.08 1.04l-5.25 5.5a.75.75 0 0 1-1.08 0l-5.25-5.5a.75.75 0 1 1 1.08-1.04l3.96 4.158V3.75A.75.75 0 0 1 10 3Z" clip-rule="evenodd" /></svg>`,
+};
 
 // Define icons as simple SVG components
 const icons = {
@@ -58,6 +97,45 @@ const props = defineProps({
         type: Number,
         default: null,
     },
+    loading: {
+        type: Boolean,
+        default: false,
+    },
+});
+
+// Animated value display
+const displayValue = ref(0);
+const animateValue = (target) => {
+    if (typeof target !== 'number') {
+        displayValue.value = target;
+        return;
+    }
+
+    const duration = 1000;
+    const start = displayValue.value || 0;
+    const increment = (target - start) / (duration / 16);
+    let current = start;
+
+    const timer = setInterval(() => {
+        current += increment;
+        if ((increment > 0 && current >= target) || (increment < 0 && current <= target)) {
+            current = target;
+            clearInterval(timer);
+        }
+        displayValue.value = formatValue(Math.round(current));
+    }, 16);
+};
+
+watch(() => props.value, (newVal) => {
+    if (!props.loading) {
+        animateValue(newVal);
+    }
+}, { immediate: true });
+
+onMounted(() => {
+    if (!props.loading) {
+        animateValue(props.value);
+    }
 });
 
 const colorClasses = {
@@ -65,31 +143,35 @@ const colorClasses = {
         bg: 'bg-blue-100',
         icon: 'text-blue-600',
         text: 'text-blue-600',
+        gradient: 'bg-gradient-to-br from-blue-500 to-blue-600',
     },
     green: {
         bg: 'bg-green-100',
         icon: 'text-green-600',
         text: 'text-green-600',
+        gradient: 'bg-gradient-to-br from-green-500 to-green-600',
     },
     purple: {
         bg: 'bg-purple-100',
         icon: 'text-purple-600',
         text: 'text-purple-600',
+        gradient: 'bg-gradient-to-br from-purple-500 to-purple-600',
     },
     orange: {
         bg: 'bg-orange-100',
         icon: 'text-orange-600',
         text: 'text-orange-600',
+        gradient: 'bg-gradient-to-br from-orange-500 to-orange-600',
     },
     red: {
         bg: 'bg-red-100',
         icon: 'text-red-600',
         text: 'text-red-600',
+        gradient: 'bg-gradient-to-br from-red-500 to-red-600',
     },
 };
 
-const bgColor = computed(() => colorClasses[props.color]?.bg || colorClasses.blue.bg);
-const iconColor = computed(() => colorClasses[props.color]?.icon || colorClasses.blue.icon);
+const bgGradient = computed(() => colorClasses[props.color]?.gradient || colorClasses.blue.gradient);
 const textColor = computed(() => colorClasses[props.color]?.text || 'text-gray-900');
 const changeColor = computed(() => (props.change >= 0 ? 'text-green-600' : 'text-red-600'));
 const resolvedIcon = computed(() => icons[props.icon] || icons.ChartBarIcon);

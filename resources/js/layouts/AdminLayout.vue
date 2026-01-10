@@ -1,52 +1,71 @@
 <template>
     <div class="min-h-screen bg-gray-100">
+        <!-- Toast Notifications -->
+        <Toast />
+
+        <!-- Mobile Overlay -->
+        <div
+            v-if="sidebarOpen"
+            class="fixed inset-0 z-40 bg-black/50 lg:hidden"
+            @click="sidebarOpen = false"
+        ></div>
+
         <!-- Sidebar -->
-        <aside class="fixed inset-y-0 left-0 z-50 w-64 bg-[#1A1A2E] text-white">
+        <aside
+            :class="[
+                'fixed inset-y-0 left-0 z-50 w-64 bg-[#1A1A2E] text-white transition-transform duration-300',
+                sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+            ]"
+        >
             <!-- Logo -->
-            <div class="h-16 flex items-center px-6 border-b border-white/10">
+            <div class="h-16 flex items-center justify-between px-6 border-b border-white/10">
                 <span class="text-xl font-bold">ThaiVote Admin</span>
+                <button @click="sidebarOpen = false" class="lg:hidden p-1 hover:bg-white/10 rounded">
+                    <XMarkIcon class="w-5 h-5" />
+                </button>
             </div>
 
             <!-- Navigation -->
-            <nav class="p-4 space-y-1">
+            <nav class="p-4 space-y-1 overflow-y-auto" style="max-height: calc(100vh - 140px)">
                 <a
                     v-for="item in navigation"
                     :key="item.name"
                     :href="item.href"
                     :class="[
-                        'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
+                        'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200',
                         isActive(item.href)
-                            ? 'bg-white/10 text-white'
+                            ? 'bg-white/10 text-white shadow-lg'
                             : 'text-gray-400 hover:text-white hover:bg-white/5',
                     ]"
+                    @click="sidebarOpen = false"
                 >
-                    <component :is="item.icon" class="w-5 h-5" />
+                    <component :is="item.icon" class="w-5 h-5 flex-shrink-0" />
                     <span>{{ item.name }}</span>
                 </a>
             </nav>
 
             <!-- Footer -->
-            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
+            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 bg-[#1A1A2E]">
                 <div class="flex items-center gap-3">
                     <div
-                        class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"
+                        class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0"
                     >
-                        <span class="font-semibold">A</span>
+                        <span class="font-semibold text-sm">{{ userInitials }}</span>
                     </div>
-                    <div class="flex-1">
-                        <p class="text-sm font-medium">Admin User</p>
-                        <p class="text-xs text-gray-400">admin@thaivote.com</p>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium truncate">{{ userName }}</p>
+                        <p class="text-xs text-gray-400 truncate">{{ userEmail }}</p>
                     </div>
                 </div>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <div class="pl-64">
+        <div class="lg:pl-64">
             <!-- Top Bar -->
             <header class="h-16 bg-white shadow-sm flex items-center justify-between px-6">
                 <div class="flex items-center gap-4">
-                    <button class="p-2 hover:bg-gray-100 rounded-lg">
+                    <button @click="sidebarOpen = !sidebarOpen" class="p-2 hover:bg-gray-100 rounded-lg lg:hidden">
                         <MenuIcon class="w-5 h-5 text-gray-500" />
                     </button>
                     <div class="relative">
@@ -84,8 +103,12 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+import Toast from '@/components/Toast.vue';
+
+// Sidebar state for mobile
+const sidebarOpen = ref(false);
 
 // Simple icon components
 const HomeIcon = {
@@ -125,6 +148,11 @@ const MenuIcon = {
         '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>',
 };
 
+const XMarkIcon = {
+    template:
+        '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>',
+};
+
 const icons = { HomeIcon, CalendarIcon, UsersIcon, UserIcon, NewspaperIcon, CogIcon };
 
 // User management icon
@@ -133,12 +161,18 @@ const UserGroupIcon = {
         '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" /></svg>',
 };
 
+const RssIcon = {
+    template:
+        '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12.75 19.5v-.75a7.5 7.5 0 0 0-7.5-7.5H4.5m0-6.75h.75c7.87 0 14.25 6.38 14.25 14.25v.75M6 18.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" /></svg>',
+};
+
 const navigation = [
     { name: 'Dashboard', href: '/admin', icon: HomeIcon },
     { name: 'การเลือกตั้ง', href: '/admin/elections', icon: CalendarIcon },
     { name: 'พรรคการเมือง', href: '/admin/parties', icon: UsersIcon },
     { name: 'ผู้สมัคร', href: '/admin/candidates', icon: UserIcon },
     { name: 'ข่าวสาร', href: '/admin/news', icon: NewspaperIcon },
+    { name: 'แหล่งข่าว', href: '/admin/sources', icon: RssIcon },
     { name: 'ผู้ใช้งาน', href: '/admin/users', icon: UserGroupIcon },
     { name: 'ตั้งค่า', href: '/admin/settings', icon: CogIcon },
 ];
@@ -152,4 +186,17 @@ const isActive = (href) => {
     }
     return currentPath.value.startsWith(href);
 };
+
+// User info from props
+const userName = computed(() => page.props.auth?.user?.name || 'Admin User');
+const userEmail = computed(() => page.props.auth?.user?.email || 'admin@thaivote.com');
+const userInitials = computed(() => {
+    const name = userName.value;
+    return name
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+});
 </script>
