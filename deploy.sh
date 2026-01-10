@@ -1157,6 +1157,26 @@ create_admin_user() {
 }
 
 #===============================================================================
+# Mark as Installed
+#===============================================================================
+
+mark_as_installed() {
+    log_info "Marking application as installed..."
+
+    cd "${APP_DIR}"
+
+    # Create installed marker file
+    local installed_file="${APP_DIR}/storage/app/installed"
+    if [ ! -f "$installed_file" ]; then
+        mkdir -p "${APP_DIR}/storage/app"
+        echo "$(date -Iseconds)" > "$installed_file"
+        log "Created installed marker file ✓"
+    else
+        log_info "Already marked as installed"
+    fi
+}
+
+#===============================================================================
 # Clear Caches
 #===============================================================================
 
@@ -1427,6 +1447,7 @@ deploy() {
     install_npm_dependencies
     build_frontend
     run_migrations
+    mark_as_installed
     clear_caches
     optimize_application
     setup_storage_links
@@ -1554,6 +1575,14 @@ quick_deploy() {
 
     echo -e "${BLUE}[i]${NC} Running migrations..."
     php artisan migrate --force 2>/dev/null || true
+
+    # Mark as installed
+    echo -e "${BLUE}[i]${NC} Marking as installed..."
+    mkdir -p storage/app
+    if [ ! -f "storage/app/installed" ]; then
+        echo "$(date -Iseconds)" > storage/app/installed
+        echo -e "${GREEN}[✓]${NC} Created installed marker"
+    fi
 
     echo -e "${BLUE}[i]${NC} Setting up storage links..."
     php artisan storage:link 2>/dev/null || true
@@ -1885,7 +1914,7 @@ force_reset() {
     echo -e "\n${PURPLE}เริ่มต้น Force Reset...${NC}\n"
 
     local STEP=0
-    local TOTAL_STEPS=12
+    local TOTAL_STEPS=13
 
     #---------------------------------------------------------------------------
     # Step 1: หยุด services ที่กำลังทำงาน
@@ -2182,6 +2211,20 @@ force_reset() {
     echo -e "${GREEN}   ✓${NC} Laravel optimized เรียบร้อย"
 
     #---------------------------------------------------------------------------
+    # Step 13: Mark as installed
+    #---------------------------------------------------------------------------
+    STEP=$((STEP + 1))
+    echo -e "${PURPLE}[$STEP/$TOTAL_STEPS]${NC} Mark as installed..."
+
+    mkdir -p storage/app
+    if [ ! -f "storage/app/installed" ]; then
+        echo "$(date -Iseconds)" > storage/app/installed
+        echo -e "${GREEN}   ✓${NC} สร้าง installed marker"
+    else
+        echo -e "${GREEN}   ✓${NC} มี installed marker อยู่แล้ว"
+    fi
+
+    #---------------------------------------------------------------------------
     # Summary
     #---------------------------------------------------------------------------
     echo -e "\n${CYAN}╔════════════════════════════════════════════════════════════════════════════╗${NC}"
@@ -2248,7 +2291,7 @@ repair() {
     #---------------------------------------------------------------------------
     # Step 1: สร้างโฟลเดอร์ที่จำเป็น
     #---------------------------------------------------------------------------
-    echo -e "${PURPLE}[1/8]${NC} สร้างโครงสร้างโฟลเดอร์..."
+    echo -e "${PURPLE}[1/9]${NC} สร้างโครงสร้างโฟลเดอร์..."
 
     mkdir -p storage/app/public/images
     mkdir -p storage/app/public/uploads
@@ -2268,7 +2311,7 @@ repair() {
     #---------------------------------------------------------------------------
     # Step 2: สร้าง .env ถ้าไม่มี
     #---------------------------------------------------------------------------
-    echo -e "${PURPLE}[2/8]${NC} ตรวจสอบไฟล์ .env..."
+    echo -e "${PURPLE}[2/9]${NC} ตรวจสอบไฟล์ .env..."
 
     if [ ! -f ".env" ]; then
         if [ -f ".env.example" ]; then
@@ -2286,7 +2329,7 @@ repair() {
     #---------------------------------------------------------------------------
     # Step 3: ติดตั้ง Composer dependencies
     #---------------------------------------------------------------------------
-    echo -e "${PURPLE}[3/8]${NC} ติดตั้ง Composer dependencies..."
+    echo -e "${PURPLE}[3/9]${NC} ติดตั้ง Composer dependencies..."
 
     if [ ! -d "vendor" ] || [ ! -f "vendor/autoload.php" ]; then
         # Install composer if missing
@@ -2333,7 +2376,7 @@ repair() {
     #---------------------------------------------------------------------------
     # Step 4: สร้าง APP_KEY
     #---------------------------------------------------------------------------
-    echo -e "${PURPLE}[4/8]${NC} ตรวจสอบ APP_KEY..."
+    echo -e "${PURPLE}[4/9]${NC} ตรวจสอบ APP_KEY..."
 
     if [ -f ".env" ] && [ -f "vendor/autoload.php" ]; then
         local APP_KEY=$(grep "^APP_KEY=" .env 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'")
@@ -2355,7 +2398,7 @@ repair() {
     #---------------------------------------------------------------------------
     # Step 5: สร้าง/ซ่อมแซม Database
     #---------------------------------------------------------------------------
-    echo -e "${PURPLE}[5/8]${NC} ตรวจสอบฐานข้อมูล..."
+    echo -e "${PURPLE}[5/9]${NC} ตรวจสอบฐานข้อมูล..."
 
     if [ -f ".env" ]; then
         local DB_CONNECTION=$(grep "^DB_CONNECTION=" .env 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'")
@@ -2383,7 +2426,7 @@ repair() {
     #---------------------------------------------------------------------------
     # Step 6: Clear และสร้าง cache ใหม่
     #---------------------------------------------------------------------------
-    echo -e "${PURPLE}[6/8]${NC} ล้าง cache..."
+    echo -e "${PURPLE}[6/9]${NC} ล้าง cache..."
 
     if [ -f "vendor/autoload.php" ]; then
         # Clear bootstrap cache files
@@ -2408,7 +2451,7 @@ repair() {
     #---------------------------------------------------------------------------
     # Step 7: รัน Migrations
     #---------------------------------------------------------------------------
-    echo -e "${PURPLE}[7/8]${NC} รัน database migrations..."
+    echo -e "${PURPLE}[7/9]${NC} รัน database migrations..."
 
     if [ -f "vendor/autoload.php" ]; then
         set +e
@@ -2437,7 +2480,7 @@ repair() {
     #---------------------------------------------------------------------------
     # Step 8: แก้ไข Permissions
     #---------------------------------------------------------------------------
-    echo -e "${PURPLE}[8/8]${NC} แก้ไข permissions..."
+    echo -e "${PURPLE}[8/9]${NC} แก้ไข permissions..."
 
     chmod -R 775 storage bootstrap/cache 2>/dev/null || true
     chmod 644 .env 2>/dev/null || true
@@ -2454,6 +2497,20 @@ repair() {
 
     echo -e "${GREEN}   ✓${NC} แก้ไข permissions เรียบร้อย"
     REPAIRED=$((REPAIRED + 1))
+
+    #---------------------------------------------------------------------------
+    # Step 9: Mark as Installed
+    #---------------------------------------------------------------------------
+    echo -e "${PURPLE}[9/9]${NC} Mark as installed..."
+
+    mkdir -p storage/app
+    if [ ! -f "storage/app/installed" ]; then
+        echo "$(date -Iseconds)" > storage/app/installed
+        echo -e "${GREEN}   ✓${NC} สร้าง installed marker"
+        REPAIRED=$((REPAIRED + 1))
+    else
+        echo -e "${GREEN}   ✓${NC} มี installed marker อยู่แล้ว"
+    fi
 
     #---------------------------------------------------------------------------
     # Summary
