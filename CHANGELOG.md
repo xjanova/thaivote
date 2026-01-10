@@ -1,3 +1,9 @@
+## [1.38.0](https://github.com/xjanova/thaivote/compare/v1.37.0...v1.38.0) (2026-01-10)
+
+### ✨ Features
+
+* Upgrade to deploy.sh v4.2 with forced dependency installation ([a0d9b2b](https://github.com/xjanova/thaivote/commit/a0d9b2b66819307a1e81fa3fdea3dd107867a423))
+
 ## [1.37.0](https://github.com/xjanova/thaivote/compare/v1.36.2...v1.37.0) (2026-01-10)
 
 ### ✨ Features
