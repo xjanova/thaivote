@@ -1,3 +1,9 @@
+## [1.38.2](https://github.com/xjanova/thaivote/compare/v1.38.1...v1.38.2) (2026-01-10)
+
+### 🐛 Bug Fixes
+
+* Add Ziggy route helper to fix route() function errors ([10b2c09](https://github.com/xjanova/thaivote/commit/10b2c09d09113b2738f9b9174458b46ec3943e5a))
+
 ## [1.38.1](https://github.com/xjanova/thaivote/compare/v1.38.0...v1.38.1) (2026-01-10)
 
 ### 🐛 Bug Fixes
