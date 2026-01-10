@@ -11,7 +11,11 @@
 
                 <!-- Value with loading skeleton -->
                 <div v-if="loading" class="h-10 bg-gray-200 rounded w-32 mt-2 animate-pulse"></div>
-                <p v-else class="text-3xl font-bold mt-2 transition-all duration-500" :class="textColor">
+                <p
+                    v-else
+                    class="text-3xl font-bold mt-2 transition-all duration-500"
+                    :class="textColor"
+                >
                     {{ displayValue }}
                 </p>
 
@@ -126,11 +130,15 @@ const animateValue = (target) => {
     }, 16);
 };
 
-watch(() => props.value, (newVal) => {
-    if (!props.loading) {
-        animateValue(newVal);
-    }
-}, { immediate: true });
+watch(
+    () => props.value,
+    (newVal) => {
+        if (!props.loading) {
+            animateValue(newVal);
+        }
+    },
+    { immediate: true }
+);
 
 onMounted(() => {
     if (!props.loading) {
@@ -171,7 +179,9 @@ const colorClasses = {
     },
 };
 
-const bgGradient = computed(() => colorClasses[props.color]?.gradient || colorClasses.blue.gradient);
+const bgGradient = computed(
+    () => colorClasses[props.color]?.gradient || colorClasses.blue.gradient
+);
 const textColor = computed(() => colorClasses[props.color]?.text || 'text-gray-900');
 const changeColor = computed(() => (props.change >= 0 ? 'text-green-600' : 'text-red-600'));
 const resolvedIcon = computed(() => icons[props.icon] || icons.ChartBarIcon);

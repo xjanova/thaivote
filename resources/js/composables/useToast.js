@@ -29,7 +29,7 @@ export function useToast() {
     };
 
     const remove = (id) => {
-        const index = toasts.value.findIndex(t => t.id === id);
+        const index = toasts.value.findIndex((t) => t.id === id);
         if (index > -1) {
             toasts.value[index].visible = false;
             setTimeout(() => {
