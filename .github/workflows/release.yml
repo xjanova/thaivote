@@ -3,6 +3,8 @@ name: Release
 on:
   push:
     branches: [main]
+  pull_request:
+    types: [opened, reopened, synchronize]
   workflow_dispatch:
     inputs:
       release_type:
@@ -22,9 +24,46 @@ permissions:
   issues: write
 
 jobs:
+  # Auto-approve release PR
+  auto-approve:
+    name: Auto-approve Release PR
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.user.login == 'github-actions[bot]' &&
+      startsWith(github.event.pull_request.head.ref, 'release-please--')
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Approve PR
+        run: gh pr review "$PR_NUMBER" --approve
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Auto-merge release PR after checks pass
+  auto-merge:
+    name: Auto-merge Release PR
+    runs-on: ubuntu-latest
+    needs: auto-approve
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.user.login == 'github-actions[bot]' &&
+      startsWith(github.event.pull_request.head.ref, 'release-please--')
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Enable auto-merge
+        run: gh pr merge "$PR_NUMBER" --auto --squash
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   release:
     name: Create Release
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     permissions:
       contents: write
       pull-requests: write
@@ -32,6 +71,7 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
       version: ${{ steps.release.outputs.version }}
+      pr_number: ${{ steps.release.outputs.pr }}
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
