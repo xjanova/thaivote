@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.33.0](https://github.com/xjanova/thaivote/compare/v1.32.0...v1.33.0) (2026-01-10)
+
+
+### Features
+
+* enforce super admin setup when no admin exists ([de3ffc3](https://github.com/xjanova/thaivote/commit/de3ffc39e75af855586f6ff46cd73b6bc09860f4))
+* enforce super admin setup when no admin exists ([eaa9f14](https://github.com/xjanova/thaivote/commit/eaa9f143717fee9eccf6b648616a247151d3a4e6))
+* **map:** upgrade Thailand map with accurate SVG paths ([78c108e](https://github.com/xjanova/thaivote/commit/78c108ecb7e4a822b4384b63a7d3152e1943a712))
+* **map:** upgrade Thailand map with accurate SVG paths ([8577544](https://github.com/xjanova/thaivote/commit/8577544f7055fbea78afe0d7b2dd92a09488ce60))
+
+
+### Bug Fixes
+
+* apply Prettier formatting to provinces.js ([dc1e0a5](https://github.com/xjanova/thaivote/commit/dc1e0a59c1cbb6dee7dc0ccb0eae7b63ba785c8c))
+* apply Prettier formatting to provinces.js ([646fbcb](https://github.com/xjanova/thaivote/commit/646fbcb3954eba0047749e2ef10d6e72412ef2ed))
+
+## [1.32.0](https://github.com/xjanova/thaivote/compare/v1.31.0...v1.32.0) (2026-01-10)
+
+
+### Features
+
+* add force-reset command for nuclear recovery option ([d586c65](https://github.com/xjanova/thaivote/commit/d586c652f9d65a2802b648e4702f3c9c3937ec3b))
+* add force-reset command for nuclear recovery option ([0503187](https://github.com/xjanova/thaivote/commit/05031879847b2b96131299a169b2d0683eaad238))
+
 ## [1.31.0](https://github.com/xjanova/thaivote/compare/v1.30.0...v1.31.0) (2026-01-10)
 
 
