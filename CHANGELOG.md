@@ -1,3 +1,9 @@
+## [1.38.4](https://github.com/xjanova/thaivote/compare/v1.38.3...v1.38.4) (2026-01-10)
+
+### 🐛 Bug Fixes
+
+* Add [@routes](https://github.com/routes) directive to inject Ziggy routes into HTML ([b74f4a2](https://github.com/xjanova/thaivote/commit/b74f4a28ea9b6b0cf2ff5eedc3ff2d8b88bb25bd))
+
 ## [1.38.3](https://github.com/xjanova/thaivote/compare/v1.38.2...v1.38.3) (2026-01-10)
 
 ### 🐛 Bug Fixes
