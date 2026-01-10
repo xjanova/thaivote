@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AdminPartyController;
 use App\Http\Controllers\Admin\AdminSourceController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Install\InstallController;
+use App\Http\Controllers\SetupAdminController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -29,6 +30,10 @@ Route::prefix('install')->name('install.')->group(function () {
     Route::post('/admin', [InstallController::class, 'adminStore'])->name('admin.store');
     Route::get('/complete', [InstallController::class, 'complete'])->name('complete');
 });
+
+// Setup Admin Route (when no admin exists after installation)
+Route::get('/setup-admin', [SetupAdminController::class, 'show'])->name('setup-admin');
+Route::post('/setup-admin', [SetupAdminController::class, 'store'])->name('setup-admin.store');
 
 // Public Routes
 Route::get('/', function () {

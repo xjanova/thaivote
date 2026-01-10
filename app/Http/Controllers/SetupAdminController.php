@@ -1,0 +1,91 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+
+class SetupAdminController extends Controller
+{
+    /**
+     * Show the setup admin form.
+     * This is used when no admin exists in the system after installation.
+     */
+    public function show()
+    {
+        // If admin already exists, redirect to home
+        $hasAdmin = DB::table('users')->where('is_admin', true)->exists();
+        if ($hasAdmin) {
+            return redirect('/');
+        }
+
+        return view('setup-admin');
+    }
+
+    /**
+     * Create the super admin user.
+     */
+    public function store(Request $request)
+    {
+        // Double check no admin exists
+        $hasAdmin = DB::table('users')->where('is_admin', true)->exists();
+        if ($hasAdmin) {
+            return redirect('/');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+        ], [
+            'name.required' => 'กรุณากรอกชื่อ',
+            'email.required' => 'กรุณากรอกอีเมล',
+            'email.email' => 'รูปแบบอีเมลไม่ถูกต้อง',
+            'email.unique' => 'อีเมลนี้ถูกใช้งานแล้ว',
+            'password.required' => 'กรุณากรอกรหัสผ่าน',
+            'password.min' => 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร',
+            'password.confirmed' => 'ยืนยันรหัสผ่านไม่ตรงกัน',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        try {
+            // Create admin user
+            DB::table('users')->insert([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'is_admin' => true,
+                'email_verified_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } catch (Exception $e) {
+            // Try alternative approach using Model
+            try {
+                $userClass = config('auth.providers.users.model', 'App\Models\User');
+                $user = new $userClass;
+                $user->name = $request->name;
+                $user->email = $request->email;
+                $user->password = Hash::make($request->password);
+                $user->email_verified_at = now();
+
+                if (in_array('is_admin', $user->getFillable())) {
+                    $user->is_admin = true;
+                }
+                $user->save();
+            } catch (Exception $e2) {
+                return back()->withErrors([
+                    'user' => 'ไม่สามารถสร้างผู้ใช้งานได้: '.$e2->getMessage(),
+                ])->withInput();
+            }
+        }
+
+        return redirect('/')->with('success', 'สร้างบัญชีแอดมินเรียบร้อยแล้ว');
+    }
+}
