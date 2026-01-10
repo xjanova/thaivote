@@ -1,7 +1,7 @@
 #!/bin/bash
 #===============================================================================
 # ThaiVote - Election Results Tracker
-# Smart Automated Deployment Script v3.0
+# Smart Automated Deployment Script v4.1
 #
 # Features:
 #   - Smart migration handling (detects and reports errors)
@@ -9,10 +9,14 @@
 #   - Detailed error logging and reporting
 #   - Automatic rollback on failure
 #   - PHP version compatibility checks
+#   - Force Reset - Nuclear option to fix broken installations
 #
 # Usage:
 #   ./deploy.sh              # Full deployment
 #   ./deploy.sh quick        # Quick deployment (no backups)
+#   ./deploy.sh force-reset  # Nuclear option - delete & reinstall all (keeps DB)
+#   ./deploy.sh repair       # Auto-repair system issues
+#   ./deploy.sh doctor       # Diagnose and auto-fix
 #   ./deploy.sh --seed       # Force run seeders
 #   ./deploy.sh --admin      # Create admin user
 #   ./deploy.sh status       # Show application status
@@ -21,7 +25,7 @@
 set -e
 
 # Script version
-VERSION="4.0"
+VERSION="4.1"
 
 # Colors for output
 RED='\033[0;31m'
@@ -1842,6 +1846,391 @@ diagnose() {
 }
 
 #===============================================================================
+# Force Reset - รีเซ็ตทุกอย่างให้ Laravel พร้อมใช้งาน (ไม่ลบข้อมูลฐานข้อมูล)
+#===============================================================================
+
+force_reset() {
+    echo -e "\n${CYAN}╔════════════════════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║${NC}   ${RED}⚡ ThaiVote FORCE RESET - Nuclear Option${NC}                                ${CYAN}║${NC}"
+    echo -e "${CYAN}║${NC}   ${YELLOW}ลบและสร้างใหม่ทุกอย่าง ยกเว้นฐานข้อมูล${NC}                                    ${CYAN}║${NC}"
+    echo -e "${CYAN}╚════════════════════════════════════════════════════════════════════════════╝${NC}\n"
+
+    cd "${APP_DIR}"
+
+    # Confirm with user
+    if [ -t 0 ]; then
+        echo -e "${RED}⚠️  คำเตือน: จะลบและสร้างใหม่:${NC}"
+        echo "   - vendor/ (Composer dependencies)"
+        echo "   - node_modules/ (NPM dependencies)"
+        echo "   - bootstrap/cache/*"
+        echo "   - storage/framework/cache/*"
+        echo "   - storage/framework/sessions/*"
+        echo "   - storage/framework/views/*"
+        echo "   - public_html/build/*"
+        echo "   - composer.lock"
+        echo ""
+        echo -e "${GREEN}✓ จะไม่ลบ:${NC}"
+        echo "   - ฐานข้อมูล (database.sqlite หรือ MySQL data)"
+        echo "   - .env (configuration)"
+        echo "   - storage/app/* (uploaded files)"
+        echo "   - storage/logs/*"
+        echo ""
+        read -p "ต้องการดำเนินการ Force Reset? (y/N): " confirm
+        if [[ ! "$confirm" =~ ^[Yy](es)?$ ]]; then
+            echo -e "\n${YELLOW}ยกเลิกการ Force Reset${NC}\n"
+            exit 0
+        fi
+    fi
+
+    echo -e "\n${PURPLE}เริ่มต้น Force Reset...${NC}\n"
+
+    local STEP=0
+    local TOTAL_STEPS=12
+
+    #---------------------------------------------------------------------------
+    # Step 1: หยุด services ที่กำลังทำงาน
+    #---------------------------------------------------------------------------
+    STEP=$((STEP + 1))
+    echo -e "${PURPLE}[$STEP/$TOTAL_STEPS]${NC} หยุด services ที่กำลังทำงาน..."
+
+    # Stop queue workers and reverb if running
+    pkill -f "artisan queue:work" 2>/dev/null || true
+    pkill -f "artisan reverb:start" 2>/dev/null || true
+    php artisan down 2>/dev/null || true
+    echo -e "${GREEN}   ✓${NC} หยุด services เรียบร้อย"
+
+    #---------------------------------------------------------------------------
+    # Step 2: ลบ cache และ compiled files ทั้งหมด
+    #---------------------------------------------------------------------------
+    STEP=$((STEP + 1))
+    echo -e "${PURPLE}[$STEP/$TOTAL_STEPS]${NC} ลบ cache และ compiled files..."
+
+    rm -rf bootstrap/cache/*.php 2>/dev/null || true
+    rm -rf bootstrap/cache/.gitignore 2>/dev/null || true
+    rm -rf storage/framework/cache/data/* 2>/dev/null || true
+    rm -rf storage/framework/sessions/* 2>/dev/null || true
+    rm -rf storage/framework/views/*.php 2>/dev/null || true
+    rm -rf storage/framework/testing/* 2>/dev/null || true
+    echo -e "${GREEN}   ✓${NC} ลบ cache เรียบร้อย"
+
+    #---------------------------------------------------------------------------
+    # Step 3: ลบ vendor directory
+    #---------------------------------------------------------------------------
+    STEP=$((STEP + 1))
+    echo -e "${PURPLE}[$STEP/$TOTAL_STEPS]${NC} ลบ vendor/ และ composer.lock..."
+
+    rm -rf vendor 2>/dev/null || true
+    rm -f composer.lock 2>/dev/null || true
+    echo -e "${GREEN}   ✓${NC} ลบ vendor/ เรียบร้อย"
+
+    #---------------------------------------------------------------------------
+    # Step 4: ลบ node_modules และ build
+    #---------------------------------------------------------------------------
+    STEP=$((STEP + 1))
+    echo -e "${PURPLE}[$STEP/$TOTAL_STEPS]${NC} ลบ node_modules/ และ build files..."
+
+    rm -rf node_modules 2>/dev/null || true
+    rm -f package-lock.json 2>/dev/null || true
+    rm -rf public_html/build 2>/dev/null || true
+    rm -rf public_html/hot 2>/dev/null || true
+    echo -e "${GREEN}   ✓${NC} ลบ node_modules/ เรียบร้อย"
+
+    #---------------------------------------------------------------------------
+    # Step 5: สร้างโครงสร้างโฟลเดอร์ใหม่
+    #---------------------------------------------------------------------------
+    STEP=$((STEP + 1))
+    echo -e "${PURPLE}[$STEP/$TOTAL_STEPS]${NC} สร้างโครงสร้างโฟลเดอร์..."
+
+    mkdir -p storage/app/public/images
+    mkdir -p storage/app/public/uploads
+    mkdir -p storage/app/private
+    mkdir -p storage/framework/cache/data
+    mkdir -p storage/framework/sessions
+    mkdir -p storage/framework/testing
+    mkdir -p storage/framework/views
+    mkdir -p storage/logs
+    mkdir -p bootstrap/cache
+    mkdir -p database
+    mkdir -p public_html/build
+
+    # Create .gitignore files
+    echo "*
+!.gitignore" > bootstrap/cache/.gitignore
+
+    echo -e "${GREEN}   ✓${NC} สร้างโฟลเดอร์เรียบร้อย"
+
+    #---------------------------------------------------------------------------
+    # Step 6: ตรวจสอบและสร้าง .env
+    #---------------------------------------------------------------------------
+    STEP=$((STEP + 1))
+    echo -e "${PURPLE}[$STEP/$TOTAL_STEPS]${NC} ตรวจสอบ .env..."
+
+    if [ ! -f ".env" ]; then
+        if [ -f ".env.example" ]; then
+            cp .env.example .env
+            echo -e "${GREEN}   ✓${NC} สร้าง .env จาก .env.example"
+        else
+            echo -e "${RED}   ✗${NC} ไม่พบ .env และ .env.example"
+            exit 1
+        fi
+    else
+        echo -e "${GREEN}   ✓${NC} มี .env อยู่แล้ว"
+    fi
+
+    #---------------------------------------------------------------------------
+    # Step 7: ติดตั้ง Composer dependencies ใหม่
+    #---------------------------------------------------------------------------
+    STEP=$((STEP + 1))
+    echo -e "${PURPLE}[$STEP/$TOTAL_STEPS]${NC} ติดตั้ง Composer dependencies..."
+
+    # Install composer if missing
+    if ! command -v composer &> /dev/null && [ ! -f "composer.phar" ]; then
+        echo -e "${YELLOW}   ⚠${NC} กำลังติดตั้ง Composer..."
+        install_composer || {
+            echo -e "${RED}   ✗${NC} ไม่สามารถติดตั้ง Composer"
+            exit 1
+        }
+    fi
+
+    local APP_ENV=$(grep "^APP_ENV=" .env 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'" || echo "local")
+
+    set +e
+    local COMPOSER_OUTPUT
+    if [ "${APP_ENV}" = "production" ]; then
+        COMPOSER_OUTPUT=$(run_composer install --no-dev --optimize-autoloader --no-interaction 2>&1)
+    else
+        COMPOSER_OUTPUT=$(run_composer install --optimize-autoloader --no-interaction 2>&1)
+    fi
+    local COMPOSER_EXIT=$?
+    set -e
+
+    if [ $COMPOSER_EXIT -eq 0 ]; then
+        echo -e "${GREEN}   ✓${NC} ติดตั้ง Composer dependencies เรียบร้อย"
+    else
+        echo -e "${YELLOW}   ⚠${NC} Composer install ล้มเหลว ลองใหม่ด้วย update..."
+        log_error_detail "Composer output: $COMPOSER_OUTPUT"
+
+        set +e
+        if [ "${APP_ENV}" = "production" ]; then
+            COMPOSER_OUTPUT=$(run_composer update --no-dev --optimize-autoloader --no-interaction 2>&1)
+        else
+            COMPOSER_OUTPUT=$(run_composer update --optimize-autoloader --no-interaction 2>&1)
+        fi
+        COMPOSER_EXIT=$?
+        set -e
+
+        if [ $COMPOSER_EXIT -eq 0 ]; then
+            echo -e "${GREEN}   ✓${NC} Composer update สำเร็จ"
+        else
+            echo -e "${RED}   ✗${NC} Composer ล้มเหลว กรุณาตรวจสอบ error:"
+            echo "$COMPOSER_OUTPUT" | tail -20
+            exit 1
+        fi
+    fi
+
+    #---------------------------------------------------------------------------
+    # Step 8: สร้าง APP_KEY
+    #---------------------------------------------------------------------------
+    STEP=$((STEP + 1))
+    echo -e "${PURPLE}[$STEP/$TOTAL_STEPS]${NC} ตรวจสอบและสร้าง APP_KEY..."
+
+    local APP_KEY=$(grep "^APP_KEY=" .env 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+    if [ -z "${APP_KEY}" ] || [ "${APP_KEY}" = "" ] || [ "${APP_KEY}" = "base64:" ]; then
+        php artisan key:generate --force 2>/dev/null && {
+            echo -e "${GREEN}   ✓${NC} สร้าง APP_KEY ใหม่"
+        } || {
+            echo -e "${RED}   ✗${NC} ไม่สามารถสร้าง APP_KEY"
+        }
+    else
+        echo -e "${GREEN}   ✓${NC} มี APP_KEY อยู่แล้ว"
+    fi
+
+    #---------------------------------------------------------------------------
+    # Step 9: ตั้งค่าฐานข้อมูล (SQLite) หากจำเป็น
+    #---------------------------------------------------------------------------
+    STEP=$((STEP + 1))
+    echo -e "${PURPLE}[$STEP/$TOTAL_STEPS]${NC} ตรวจสอบฐานข้อมูล..."
+
+    local DB_CONNECTION=$(grep "^DB_CONNECTION=" .env 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+
+    if [ "${DB_CONNECTION}" = "sqlite" ] || [ -z "${DB_CONNECTION}" ]; then
+        if [ ! -f "database/database.sqlite" ]; then
+            touch database/database.sqlite
+            chmod 664 database/database.sqlite
+            echo -e "${GREEN}   ✓${NC} สร้างไฟล์ database.sqlite ใหม่"
+        else
+            echo -e "${GREEN}   ✓${NC} มี database.sqlite อยู่แล้ว (ข้อมูลยังอยู่)"
+        fi
+    else
+        echo -e "${GREEN}   ✓${NC} ใช้ ${DB_CONNECTION} database"
+    fi
+
+    # รัน migrations
+    echo -e "${YELLOW}   ⚠${NC} กำลังรัน migrations..."
+    set +e
+    local MIGRATION_OUTPUT=$(php artisan migrate --force 2>&1)
+    local MIGRATION_EXIT=$?
+    set -e
+
+    if [ $MIGRATION_EXIT -eq 0 ]; then
+        echo -e "${GREEN}   ✓${NC} Migrations สำเร็จ"
+    else
+        if echo "$MIGRATION_OUTPUT" | grep -q "Nothing to migrate"; then
+            echo -e "${GREEN}   ✓${NC} ไม่มี migration ใหม่"
+        else
+            echo -e "${YELLOW}   ⚠${NC} Migration มีปัญหา (อาจมีอยู่แล้ว):"
+            echo "$MIGRATION_OUTPUT" | grep -E "error|Error|SQLSTATE" | head -3 || true
+        fi
+    fi
+
+    #---------------------------------------------------------------------------
+    # Step 10: ติดตั้ง NPM และ build frontend
+    #---------------------------------------------------------------------------
+    STEP=$((STEP + 1))
+    echo -e "${PURPLE}[$STEP/$TOTAL_STEPS]${NC} ติดตั้ง NPM dependencies และ build..."
+
+    if command -v npm &> /dev/null; then
+        set +e
+        local NPM_OUTPUT=$(npm install 2>&1)
+        local NPM_EXIT=$?
+        set -e
+
+        if [ $NPM_EXIT -eq 0 ]; then
+            echo -e "${GREEN}   ✓${NC} NPM install สำเร็จ"
+
+            # Build for production or dev
+            if [ "${APP_ENV}" = "production" ]; then
+                echo -e "${YELLOW}   ⚠${NC} กำลัง build production..."
+                set +e
+                NPM_OUTPUT=$(npm run build 2>&1)
+                NPM_EXIT=$?
+                set -e
+            else
+                echo -e "${YELLOW}   ⚠${NC} กำลัง build..."
+                set +e
+                NPM_OUTPUT=$(npm run build 2>&1)
+                NPM_EXIT=$?
+                set -e
+            fi
+
+            if [ $NPM_EXIT -eq 0 ]; then
+                echo -e "${GREEN}   ✓${NC} Frontend build สำเร็จ"
+            else
+                echo -e "${YELLOW}   ⚠${NC} Frontend build ล้มเหลว (เว็บอาจยังใช้งานได้)"
+                log_error_detail "NPM build output: $NPM_OUTPUT"
+            fi
+        else
+            echo -e "${YELLOW}   ⚠${NC} NPM install ล้มเหลว"
+            log_error_detail "NPM install output: $NPM_OUTPUT"
+        fi
+    else
+        echo -e "${YELLOW}   ⚠${NC} ไม่พบ npm - ข้ามการ build frontend"
+    fi
+
+    #---------------------------------------------------------------------------
+    # Step 11: สร้าง storage link และตั้งค่า permissions
+    #---------------------------------------------------------------------------
+    STEP=$((STEP + 1))
+    echo -e "${PURPLE}[$STEP/$TOTAL_STEPS]${NC} สร้าง storage link และตั้งค่า permissions..."
+
+    # Remove old storage link
+    rm -f public_html/storage 2>/dev/null || true
+
+    # Create storage link
+    php artisan storage:link 2>/dev/null || {
+        # Manual symlink if artisan fails
+        ln -sf "${APP_DIR}/storage/app/public" "${APP_DIR}/public_html/storage" 2>/dev/null || true
+    }
+
+    # Set permissions
+    chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+    chmod 644 .env 2>/dev/null || true
+
+    # Set ownership if www-data exists
+    if id "www-data" &>/dev/null; then
+        chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
+    fi
+
+    echo -e "${GREEN}   ✓${NC} Storage link และ permissions ตั้งค่าเรียบร้อย"
+
+    #---------------------------------------------------------------------------
+    # Step 12: Optimize Laravel
+    #---------------------------------------------------------------------------
+    STEP=$((STEP + 1))
+    echo -e "${PURPLE}[$STEP/$TOTAL_STEPS]${NC} Optimize Laravel..."
+
+    # Clear all caches first
+    php artisan cache:clear 2>/dev/null || true
+    php artisan config:clear 2>/dev/null || true
+    php artisan route:clear 2>/dev/null || true
+    php artisan view:clear 2>/dev/null || true
+    php artisan event:clear 2>/dev/null || true
+
+    # Restart queue (if using)
+    php artisan queue:restart 2>/dev/null || true
+
+    # Cache config and routes for production
+    if [ "${APP_ENV}" = "production" ]; then
+        php artisan config:cache 2>/dev/null || true
+        php artisan route:cache 2>/dev/null || true
+        php artisan view:cache 2>/dev/null || true
+    fi
+
+    # Bring the application back up
+    php artisan up 2>/dev/null || true
+
+    echo -e "${GREEN}   ✓${NC} Laravel optimized เรียบร้อย"
+
+    #---------------------------------------------------------------------------
+    # Summary
+    #---------------------------------------------------------------------------
+    echo -e "\n${CYAN}╔════════════════════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║${NC}   ${GREEN}✅ Force Reset เสร็จสมบูรณ์!${NC}                                             ${CYAN}║${NC}"
+    echo -e "${CYAN}╚════════════════════════════════════════════════════════════════════════════╝${NC}\n"
+
+    # Quick health check
+    echo -e "${PURPLE}ตรวจสอบสถานะ:${NC}"
+
+    # Check vendor
+    if [ -f "vendor/autoload.php" ]; then
+        echo -e "${GREEN}   ✓${NC} Composer dependencies พร้อม"
+    else
+        echo -e "${RED}   ✗${NC} vendor/ ไม่พร้อม"
+    fi
+
+    # Check frontend build
+    if [ -d "public_html/build" ] && [ -f "public_html/build/manifest.json" ]; then
+        echo -e "${GREEN}   ✓${NC} Frontend build พร้อม"
+    else
+        echo -e "${YELLOW}   ⚠${NC} Frontend build ไม่สมบูรณ์"
+    fi
+
+    # Check database connection
+    set +e
+    local DB_CHECK=$(php artisan tinker --execute="try { \DB::connection()->getPdo(); echo 'ok'; } catch(\Exception \$e) { echo 'fail'; }" 2>/dev/null | tail -1)
+    set -e
+
+    if [ "$DB_CHECK" = "ok" ]; then
+        echo -e "${GREEN}   ✓${NC} Database connection พร้อม"
+    else
+        echo -e "${YELLOW}   ⚠${NC} Database connection มีปัญหา"
+    fi
+
+    # Check APP_KEY
+    local FINAL_KEY=$(grep "^APP_KEY=" .env 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+    if [ -n "${FINAL_KEY}" ] && [ "${FINAL_KEY}" != "base64:" ]; then
+        echo -e "${GREEN}   ✓${NC} APP_KEY ตั้งค่าแล้ว"
+    else
+        echo -e "${RED}   ✗${NC} APP_KEY ไม่ถูกตั้งค่า"
+    fi
+
+    echo ""
+    echo -e "${WHITE}เว็บไซต์พร้อมใช้งานแล้ว!${NC}"
+    echo -e "ทดสอบด้วย: ${CYAN}php artisan serve${NC}"
+    echo ""
+}
+
+#===============================================================================
 # Repair - ซ่อมแซมระบบอัตโนมัติ
 #===============================================================================
 
@@ -2142,6 +2531,7 @@ show_help() {
     echo "  repair        Auto-repair system issues (ซ่อมแซมอัตโนมัติ)"
     echo "  diagnose      Diagnose system issues (ตรวจสอบปัญหา)"
     echo "  doctor        Diagnose and auto-fix (ตรวจสอบและซ่อมแซม)"
+    echo "  force-reset   Nuclear option - ลบและติดตั้งใหม่ทั้งหมด (ไม่ลบ DB)"
     echo "  status        Show application status"
     echo "  help          Show this help message"
     echo ""
@@ -2158,6 +2548,7 @@ show_help() {
     echo "  $0 repair           # Auto-repair (ซ่อมแซมอัตโนมัติ)"
     echo "  $0 diagnose         # Check for issues (ตรวจสอบปัญหา)"
     echo "  $0 doctor           # Diagnose + repair"
+    echo "  $0 force-reset      # Nuclear option - ลบและติดตั้งใหม่ทั้งหมด"
     echo "  $0 deploy --seed    # Full deployment with seeders"
     echo "  $0 quick            # Quick deployment"
     echo "  $0 --admin          # Deploy with admin user creation"
@@ -2225,6 +2616,9 @@ case "${1:-deploy}" in
         ;;
     doctor)
         doctor
+        ;;
+    force-reset|forcereset|nuclear)
+        force_reset
         ;;
     status)
         show_status
