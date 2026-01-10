@@ -1,3 +1,14 @@
+## [1.35.1](https://github.com/xjanova/thaivote/compare/v1.35.0...v1.35.1) (2026-01-10)
+
+### 🐛 Bug Fixes
+
+* Add error handling and initialization scripts for settings ([534bf00](https://github.com/xjanova/thaivote/commit/534bf00daeb2cdfcbce0b1152961978cecdca44d))
+* Add forceFormData and debug tools for Settings form ([7b8b914](https://github.com/xjanova/thaivote/commit/7b8b914986d1e9412072c01cea3badc322ba0c4e))
+
+### 📝 Documentation
+
+* Add setup guide and SQL script for logo/favicon feature ([094ce69](https://github.com/xjanova/thaivote/commit/094ce695b788950b1b715dd8217f6e6b16289769))
+
 ## [1.35.0](https://github.com/xjanova/thaivote/compare/v1.34.2...v1.35.0) (2026-01-10)
 
 ### ✨ Features
