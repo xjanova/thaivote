@@ -21,7 +21,7 @@
 set -e
 
 # Script version
-VERSION="3.3"
+VERSION="4.0"
 
 # Colors for output
 RED='\033[0;31m'
@@ -1621,6 +1621,513 @@ show_status() {
 }
 
 #===============================================================================
+# Diagnose - ตรวจสอบปัญหาแบบละเอียด
+#===============================================================================
+
+diagnose() {
+    echo -e "\n${CYAN}╔════════════════════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║${NC}   ${PURPLE}🔍 ThaiVote System Diagnosis${NC}                                            ${CYAN}║${NC}"
+    echo -e "${CYAN}╚════════════════════════════════════════════════════════════════════════════╝${NC}\n"
+
+    cd "${APP_DIR}"
+    local ISSUES=0
+    local WARNINGS=0
+
+    echo -e "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${WHITE}1. ตรวจสอบไฟล์พื้นฐาน (Core Files)${NC}"
+    echo -e "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+    # Check artisan
+    if [ -f "artisan" ]; then
+        echo -e "${GREEN}   ✓${NC} artisan"
+    else
+        echo -e "${RED}   ✗${NC} artisan - ไม่พบไฟล์ artisan (นี่ไม่ใช่โปรเจค Laravel)"
+        ISSUES=$((ISSUES + 1))
+    fi
+
+    # Check composer.json
+    if [ -f "composer.json" ]; then
+        echo -e "${GREEN}   ✓${NC} composer.json"
+    else
+        echo -e "${RED}   ✗${NC} composer.json - ไม่พบไฟล์"
+        ISSUES=$((ISSUES + 1))
+    fi
+
+    # Check .env
+    if [ -f ".env" ]; then
+        echo -e "${GREEN}   ✓${NC} .env"
+
+        # Check APP_KEY
+        local APP_KEY=$(grep "^APP_KEY=" .env 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+        if [ -z "${APP_KEY}" ] || [ "${APP_KEY}" = "" ] || [ "${APP_KEY}" = "base64:" ]; then
+            echo -e "${RED}   ✗${NC} APP_KEY - ไม่ได้ตั้งค่า"
+            ISSUES=$((ISSUES + 1))
+        else
+            echo -e "${GREEN}   ✓${NC} APP_KEY ตั้งค่าแล้ว"
+        fi
+    else
+        if [ -f ".env.example" ]; then
+            echo -e "${RED}   ✗${NC} .env - ไม่พบ (ต้องสร้างจาก .env.example)"
+        else
+            echo -e "${RED}   ✗${NC} .env - ไม่พบ (ไม่มี .env.example ด้วย)"
+        fi
+        ISSUES=$((ISSUES + 1))
+    fi
+
+    # Check vendor
+    if [ -d "vendor" ] && [ -f "vendor/autoload.php" ]; then
+        echo -e "${GREEN}   ✓${NC} vendor/ (Composer dependencies)"
+    else
+        echo -e "${RED}   ✗${NC} vendor/ - ยังไม่ได้รัน composer install"
+        ISSUES=$((ISSUES + 1))
+    fi
+
+    # Check node_modules
+    if [ -d "node_modules" ]; then
+        echo -e "${GREEN}   ✓${NC} node_modules/ (NPM dependencies)"
+    else
+        echo -e "${YELLOW}   ⚠${NC} node_modules/ - ยังไม่ได้รัน npm install"
+        WARNINGS=$((WARNINGS + 1))
+    fi
+
+    echo -e "\n${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${WHITE}2. ตรวจสอบโฟลเดอร์ Storage${NC}"
+    echo -e "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+    # Check storage directories
+    local storage_dirs=("storage/app" "storage/app/public" "storage/framework/cache" "storage/framework/sessions" "storage/framework/views" "storage/logs")
+    for dir in "${storage_dirs[@]}"; do
+        if [ -d "$dir" ]; then
+            if [ -w "$dir" ]; then
+                echo -e "${GREEN}   ✓${NC} $dir (writable)"
+            else
+                echo -e "${RED}   ✗${NC} $dir (not writable)"
+                ISSUES=$((ISSUES + 1))
+            fi
+        else
+            echo -e "${RED}   ✗${NC} $dir - ไม่พบโฟลเดอร์"
+            ISSUES=$((ISSUES + 1))
+        fi
+    done
+
+    # Check bootstrap/cache
+    if [ -d "bootstrap/cache" ]; then
+        if [ -w "bootstrap/cache" ]; then
+            echo -e "${GREEN}   ✓${NC} bootstrap/cache (writable)"
+        else
+            echo -e "${RED}   ✗${NC} bootstrap/cache (not writable)"
+            ISSUES=$((ISSUES + 1))
+        fi
+    else
+        echo -e "${RED}   ✗${NC} bootstrap/cache - ไม่พบโฟลเดอร์"
+        ISSUES=$((ISSUES + 1))
+    fi
+
+    echo -e "\n${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${WHITE}3. ตรวจสอบฐานข้อมูล (Database)${NC}"
+    echo -e "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+    if [ -f ".env" ]; then
+        local DB_CONNECTION=$(grep "^DB_CONNECTION=" .env 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+        echo -e "   Database Driver: ${CYAN}${DB_CONNECTION:-sqlite}${NC}"
+
+        if [ "${DB_CONNECTION}" = "sqlite" ] || [ -z "${DB_CONNECTION}" ]; then
+            if [ -f "database/database.sqlite" ]; then
+                echo -e "${GREEN}   ✓${NC} database/database.sqlite"
+            else
+                echo -e "${RED}   ✗${NC} database/database.sqlite - ไม่พบไฟล์"
+                ISSUES=$((ISSUES + 1))
+            fi
+        elif [ "${DB_CONNECTION}" = "mysql" ]; then
+            echo -e "   Host: $(grep '^DB_HOST=' .env 2>/dev/null | cut -d '=' -f2 || echo 'N/A')"
+            echo -e "   Database: $(grep '^DB_DATABASE=' .env 2>/dev/null | cut -d '=' -f2 || echo 'N/A')"
+
+            # Try database connection (only if vendor exists)
+            if [ -f "vendor/autoload.php" ]; then
+                set +e
+                local DB_CHECK=$(php artisan tinker --execute="try { \DB::connection()->getPdo(); echo 'ok'; } catch(\Exception \$e) { echo 'fail'; }" 2>/dev/null | tail -1)
+                set -e
+                if [ "$DB_CHECK" = "ok" ]; then
+                    echo -e "${GREEN}   ✓${NC} สามารถเชื่อมต่อ MySQL ได้"
+                else
+                    echo -e "${RED}   ✗${NC} ไม่สามารถเชื่อมต่อ MySQL"
+                    ISSUES=$((ISSUES + 1))
+                fi
+            fi
+        fi
+    else
+        echo -e "${YELLOW}   ⚠${NC} ไม่มีไฟล์ .env - ไม่สามารถตรวจสอบฐานข้อมูล"
+    fi
+
+    echo -e "\n${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${WHITE}4. ตรวจสอบ Frontend Assets${NC}"
+    echo -e "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+    if [ -d "public_html/build" ]; then
+        local asset_count=$(find public_html/build -type f 2>/dev/null | wc -l)
+        if [ "$asset_count" -gt 0 ]; then
+            echo -e "${GREEN}   ✓${NC} public_html/build/ (${asset_count} files)"
+        else
+            echo -e "${YELLOW}   ⚠${NC} public_html/build/ - โฟลเดอร์ว่าง (ต้อง npm run build)"
+            WARNINGS=$((WARNINGS + 1))
+        fi
+    else
+        echo -e "${YELLOW}   ⚠${NC} public_html/build/ - ยังไม่ได้ build frontend"
+        WARNINGS=$((WARNINGS + 1))
+    fi
+
+    # Check storage symlink
+    if [ -L "public_html/storage" ]; then
+        if [ -e "public_html/storage" ]; then
+            echo -e "${GREEN}   ✓${NC} public_html/storage symlink"
+        else
+            echo -e "${RED}   ✗${NC} public_html/storage - symlink หัก (broken)"
+            ISSUES=$((ISSUES + 1))
+        fi
+    else
+        echo -e "${YELLOW}   ⚠${NC} public_html/storage - ยังไม่มี symlink"
+        WARNINGS=$((WARNINGS + 1))
+    fi
+
+    echo -e "\n${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${WHITE}5. ตรวจสอบ PHP Extensions${NC}"
+    echo -e "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+    local required_extensions=("pdo" "mbstring" "openssl" "tokenizer" "xml" "ctype" "json" "bcmath" "fileinfo")
+    for ext in "${required_extensions[@]}"; do
+        if php -m 2>/dev/null | grep -qi "^${ext}$"; then
+            echo -e "${GREEN}   ✓${NC} ${ext}"
+        else
+            echo -e "${RED}   ✗${NC} ${ext} - ไม่พบ extension"
+            ISSUES=$((ISSUES + 1))
+        fi
+    done
+
+    # Check pdo_sqlite or pdo_mysql
+    local DB_CONNECTION=$(grep "^DB_CONNECTION=" .env 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'" || echo "sqlite")
+    if [ "${DB_CONNECTION}" = "sqlite" ]; then
+        if php -m 2>/dev/null | grep -qi "pdo_sqlite"; then
+            echo -e "${GREEN}   ✓${NC} pdo_sqlite"
+        else
+            echo -e "${RED}   ✗${NC} pdo_sqlite - ไม่พบ extension"
+            ISSUES=$((ISSUES + 1))
+        fi
+    elif [ "${DB_CONNECTION}" = "mysql" ]; then
+        if php -m 2>/dev/null | grep -qi "pdo_mysql"; then
+            echo -e "${GREEN}   ✓${NC} pdo_mysql"
+        else
+            echo -e "${RED}   ✗${NC} pdo_mysql - ไม่พบ extension"
+            ISSUES=$((ISSUES + 1))
+        fi
+    fi
+
+    # Summary
+    echo -e "\n${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${WHITE}📊 สรุปผลการวิเคราะห์${NC}"
+    echo -e "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+    if [ $ISSUES -eq 0 ] && [ $WARNINGS -eq 0 ]; then
+        echo -e "\n${GREEN}   ✅ ระบบปกติ ไม่พบปัญหา${NC}\n"
+    else
+        if [ $ISSUES -gt 0 ]; then
+            echo -e "\n${RED}   ❌ พบปัญหาร้ายแรง: ${ISSUES} รายการ${NC}"
+        fi
+        if [ $WARNINGS -gt 0 ]; then
+            echo -e "${YELLOW}   ⚠️  พบ warnings: ${WARNINGS} รายการ${NC}"
+        fi
+        echo -e "\n${CYAN}   💡 แนะนำ: รัน ./deploy.sh repair เพื่อซ่อมแซมอัตโนมัติ${NC}\n"
+    fi
+
+    return $ISSUES
+}
+
+#===============================================================================
+# Repair - ซ่อมแซมระบบอัตโนมัติ
+#===============================================================================
+
+repair() {
+    echo -e "\n${CYAN}╔════════════════════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║${NC}   ${PURPLE}🔧 ThaiVote Auto-Repair System${NC}                                          ${CYAN}║${NC}"
+    echo -e "${CYAN}╚════════════════════════════════════════════════════════════════════════════╝${NC}\n"
+
+    cd "${APP_DIR}"
+    local REPAIRED=0
+    local FAILED=0
+
+    echo -e "${YELLOW}กำลังซ่อมแซมระบบ...${NC}\n"
+
+    #---------------------------------------------------------------------------
+    # Step 1: สร้างโฟลเดอร์ที่จำเป็น
+    #---------------------------------------------------------------------------
+    echo -e "${PURPLE}[1/8]${NC} สร้างโครงสร้างโฟลเดอร์..."
+
+    mkdir -p storage/app/public/images
+    mkdir -p storage/app/public/uploads
+    mkdir -p storage/app/private
+    mkdir -p storage/framework/cache/data
+    mkdir -p storage/framework/sessions
+    mkdir -p storage/framework/testing
+    mkdir -p storage/framework/views
+    mkdir -p storage/logs
+    mkdir -p bootstrap/cache
+    mkdir -p database
+    mkdir -p public_html/build
+
+    echo -e "${GREEN}   ✓${NC} สร้างโฟลเดอร์เรียบร้อย"
+    REPAIRED=$((REPAIRED + 1))
+
+    #---------------------------------------------------------------------------
+    # Step 2: สร้าง .env ถ้าไม่มี
+    #---------------------------------------------------------------------------
+    echo -e "${PURPLE}[2/8]${NC} ตรวจสอบไฟล์ .env..."
+
+    if [ ! -f ".env" ]; then
+        if [ -f ".env.example" ]; then
+            cp .env.example .env
+            echo -e "${GREEN}   ✓${NC} สร้าง .env จาก .env.example"
+            REPAIRED=$((REPAIRED + 1))
+        else
+            echo -e "${RED}   ✗${NC} ไม่พบ .env.example"
+            FAILED=$((FAILED + 1))
+        fi
+    else
+        echo -e "${GREEN}   ✓${NC} มี .env อยู่แล้ว"
+    fi
+
+    #---------------------------------------------------------------------------
+    # Step 3: ติดตั้ง Composer dependencies
+    #---------------------------------------------------------------------------
+    echo -e "${PURPLE}[3/8]${NC} ติดตั้ง Composer dependencies..."
+
+    if [ ! -d "vendor" ] || [ ! -f "vendor/autoload.php" ]; then
+        # Install composer if missing
+        if ! command -v composer &> /dev/null && [ ! -f "composer.phar" ]; then
+            echo -e "${YELLOW}   ⚠${NC} กำลังติดตั้ง Composer..."
+            install_composer || {
+                echo -e "${RED}   ✗${NC} ไม่สามารถติดตั้ง Composer"
+                FAILED=$((FAILED + 1))
+            }
+        fi
+
+        echo -e "${YELLOW}   ⚠${NC} กำลังรัน composer install..."
+        set +e
+        local COMPOSER_OUTPUT
+        COMPOSER_OUTPUT=$(run_composer install --no-interaction --optimize-autoloader 2>&1)
+        local COMPOSER_EXIT=$?
+        set -e
+
+        if [ $COMPOSER_EXIT -eq 0 ]; then
+            echo -e "${GREEN}   ✓${NC} ติดตั้ง Composer dependencies เรียบร้อย"
+            REPAIRED=$((REPAIRED + 1))
+        else
+            echo -e "${RED}   ✗${NC} Composer install ล้มเหลว"
+            log_error_detail "Composer output: $COMPOSER_OUTPUT"
+
+            # Try without lock file
+            echo -e "${YELLOW}   ⚠${NC} ลองใหม่โดยไม่ใช้ lock file..."
+            rm -f composer.lock
+            COMPOSER_OUTPUT=$(run_composer update --no-interaction --optimize-autoloader 2>&1)
+            COMPOSER_EXIT=$?
+
+            if [ $COMPOSER_EXIT -eq 0 ]; then
+                echo -e "${GREEN}   ✓${NC} Composer update สำเร็จ"
+                REPAIRED=$((REPAIRED + 1))
+            else
+                echo -e "${RED}   ✗${NC} Composer update ล้มเหลว"
+                FAILED=$((FAILED + 1))
+            fi
+        fi
+    else
+        echo -e "${GREEN}   ✓${NC} มี vendor/ อยู่แล้ว"
+    fi
+
+    #---------------------------------------------------------------------------
+    # Step 4: สร้าง APP_KEY
+    #---------------------------------------------------------------------------
+    echo -e "${PURPLE}[4/8]${NC} ตรวจสอบ APP_KEY..."
+
+    if [ -f ".env" ] && [ -f "vendor/autoload.php" ]; then
+        local APP_KEY=$(grep "^APP_KEY=" .env 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+        if [ -z "${APP_KEY}" ] || [ "${APP_KEY}" = "" ] || [ "${APP_KEY}" = "base64:" ]; then
+            php artisan key:generate --force 2>/dev/null && {
+                echo -e "${GREEN}   ✓${NC} สร้าง APP_KEY เรียบร้อย"
+                REPAIRED=$((REPAIRED + 1))
+            } || {
+                echo -e "${RED}   ✗${NC} ไม่สามารถสร้าง APP_KEY"
+                FAILED=$((FAILED + 1))
+            }
+        else
+            echo -e "${GREEN}   ✓${NC} มี APP_KEY อยู่แล้ว"
+        fi
+    else
+        echo -e "${YELLOW}   ⚠${NC} ข้าม - ต้องติดตั้ง dependencies ก่อน"
+    fi
+
+    #---------------------------------------------------------------------------
+    # Step 5: สร้าง/ซ่อมแซม Database
+    #---------------------------------------------------------------------------
+    echo -e "${PURPLE}[5/8]${NC} ตรวจสอบฐานข้อมูล..."
+
+    if [ -f ".env" ]; then
+        local DB_CONNECTION=$(grep "^DB_CONNECTION=" .env 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+
+        if [ "${DB_CONNECTION}" = "sqlite" ] || [ -z "${DB_CONNECTION}" ]; then
+            if [ ! -f "database/database.sqlite" ]; then
+                touch database/database.sqlite
+                chmod 664 database/database.sqlite
+                echo -e "${GREEN}   ✓${NC} สร้างไฟล์ database.sqlite"
+                REPAIRED=$((REPAIRED + 1))
+            else
+                echo -e "${GREEN}   ✓${NC} มี database.sqlite อยู่แล้ว"
+            fi
+
+            # Check pdo_sqlite
+            if ! php -m 2>/dev/null | grep -qi "pdo_sqlite"; then
+                echo -e "${YELLOW}   ⚠${NC} ไม่พบ pdo_sqlite - กำลังเปลี่ยนเป็น file-based drivers"
+                update_env_var "SESSION_DRIVER" "file"
+                update_env_var "CACHE_STORE" "file"
+                update_env_var "QUEUE_CONNECTION" "sync"
+            fi
+        fi
+    fi
+
+    #---------------------------------------------------------------------------
+    # Step 6: Clear และสร้าง cache ใหม่
+    #---------------------------------------------------------------------------
+    echo -e "${PURPLE}[6/8]${NC} ล้าง cache..."
+
+    if [ -f "vendor/autoload.php" ]; then
+        # Clear bootstrap cache files
+        rm -f bootstrap/cache/config.php 2>/dev/null || true
+        rm -f bootstrap/cache/routes-v7.php 2>/dev/null || true
+        rm -f bootstrap/cache/services.php 2>/dev/null || true
+        rm -f bootstrap/cache/packages.php 2>/dev/null || true
+        rm -f bootstrap/cache/events.php 2>/dev/null || true
+
+        # Clear Laravel caches
+        php artisan cache:clear 2>/dev/null || true
+        php artisan config:clear 2>/dev/null || true
+        php artisan route:clear 2>/dev/null || true
+        php artisan view:clear 2>/dev/null || true
+
+        echo -e "${GREEN}   ✓${NC} ล้าง cache เรียบร้อย"
+        REPAIRED=$((REPAIRED + 1))
+    else
+        echo -e "${YELLOW}   ⚠${NC} ข้าม - ต้องติดตั้ง dependencies ก่อน"
+    fi
+
+    #---------------------------------------------------------------------------
+    # Step 7: รัน Migrations
+    #---------------------------------------------------------------------------
+    echo -e "${PURPLE}[7/8]${NC} รัน database migrations..."
+
+    if [ -f "vendor/autoload.php" ]; then
+        set +e
+        local MIGRATION_OUTPUT=$(php artisan migrate --force 2>&1)
+        local MIGRATION_EXIT=$?
+        set -e
+
+        if [ $MIGRATION_EXIT -eq 0 ]; then
+            echo -e "${GREEN}   ✓${NC} Migrations เรียบร้อย"
+            REPAIRED=$((REPAIRED + 1))
+        else
+            if echo "$MIGRATION_OUTPUT" | grep -q "Nothing to migrate"; then
+                echo -e "${GREEN}   ✓${NC} ไม่มี pending migrations"
+            elif echo "$MIGRATION_OUTPUT" | grep -q "already exists"; then
+                echo -e "${YELLOW}   ⚠${NC} บางตารางมีอยู่แล้ว (ปกติ)"
+            else
+                echo -e "${RED}   ✗${NC} Migration ล้มเหลว"
+                log_error_detail "Migration output: $MIGRATION_OUTPUT"
+                FAILED=$((FAILED + 1))
+            fi
+        fi
+    else
+        echo -e "${YELLOW}   ⚠${NC} ข้าม - ต้องติดตั้ง dependencies ก่อน"
+    fi
+
+    #---------------------------------------------------------------------------
+    # Step 8: แก้ไข Permissions
+    #---------------------------------------------------------------------------
+    echo -e "${PURPLE}[8/8]${NC} แก้ไข permissions..."
+
+    chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+    chmod 644 .env 2>/dev/null || true
+
+    # Set ownership if www-data exists
+    if id "www-data" &>/dev/null; then
+        chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
+    fi
+
+    # Create storage symlink if missing
+    if [ ! -L "public_html/storage" ]; then
+        ln -sf "${APP_DIR}/storage/app/public" "${APP_DIR}/public_html/storage" 2>/dev/null || true
+    fi
+
+    echo -e "${GREEN}   ✓${NC} แก้ไข permissions เรียบร้อย"
+    REPAIRED=$((REPAIRED + 1))
+
+    #---------------------------------------------------------------------------
+    # Summary
+    #---------------------------------------------------------------------------
+    echo -e "\n${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${WHITE}📊 สรุปผลการซ่อมแซม${NC}"
+    echo -e "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+    if [ $FAILED -eq 0 ]; then
+        echo -e "\n${GREEN}   ✅ ซ่อมแซมสำเร็จ ${REPAIRED} รายการ${NC}"
+        echo -e "\n${CYAN}   💡 ขั้นตอนถัดไป:${NC}"
+        echo -e "   1. รัน ${WHITE}./deploy.sh${NC} เพื่อ deploy แบบเต็ม"
+        echo -e "   2. หรือรัน ${WHITE}./deploy.sh quick${NC} เพื่อ deploy แบบเร็ว"
+        echo -e "   3. รัน ${WHITE}./deploy.sh diagnose${NC} เพื่อตรวจสอบอีกครั้ง\n"
+    else
+        echo -e "\n${RED}   ❌ ซ่อมแซมไม่สำเร็จ ${FAILED} รายการ${NC}"
+        echo -e "${GREEN}   ✅ ซ่อมแซมสำเร็จ ${REPAIRED} รายการ${NC}"
+        echo -e "\n${CYAN}   💡 ลองตรวจสอบ:${NC}"
+        echo -e "   1. ตรวจสอบ PHP version และ extensions"
+        echo -e "   2. ตรวจสอบ Composer installation"
+        echo -e "   3. ดู error log ที่ ${ERROR_LOG}\n"
+    fi
+
+    return $FAILED
+}
+
+#===============================================================================
+# Doctor - ตรวจสอบและซ่อมแซมอัตโนมัติ
+#===============================================================================
+
+doctor() {
+    echo -e "\n${CYAN}╔════════════════════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║${NC}   ${PURPLE}👨‍⚕️ ThaiVote Doctor - Diagnose & Auto-Fix${NC}                               ${CYAN}║${NC}"
+    echo -e "${CYAN}╚════════════════════════════════════════════════════════════════════════════╝${NC}\n"
+
+    echo -e "${WHITE}กำลังวิเคราะห์ระบบ...${NC}\n"
+
+    # Run diagnosis first
+    set +e
+    diagnose
+    local ISSUES=$?
+    set -e
+
+    if [ $ISSUES -gt 0 ]; then
+        echo ""
+        if [ -t 0 ]; then
+            read -p "พบปัญหา ${ISSUES} รายการ ต้องการซ่อมแซมอัตโนมัติหรือไม่? (y/N): " confirm
+            if [[ "$confirm" =~ ^[Yy](es)?$ ]]; then
+                repair
+            else
+                echo -e "\n${YELLOW}ยกเลิกการซ่อมแซม${NC}"
+                echo -e "รัน ${WHITE}./deploy.sh repair${NC} เมื่อต้องการซ่อมแซม\n"
+            fi
+        else
+            echo -e "\n${YELLOW}โหมด non-interactive - กำลังซ่อมแซมอัตโนมัติ...${NC}\n"
+            repair
+        fi
+    else
+        echo -e "\n${GREEN}ระบบปกติ ไม่จำเป็นต้องซ่อมแซม${NC}\n"
+    fi
+}
+
+#===============================================================================
 # Help
 #===============================================================================
 
@@ -1632,6 +2139,9 @@ show_help() {
     echo "Commands:"
     echo "  deploy        Full deployment (default)"
     echo "  quick         Quick deployment without backups"
+    echo "  repair        Auto-repair system issues (ซ่อมแซมอัตโนมัติ)"
+    echo "  diagnose      Diagnose system issues (ตรวจสอบปัญหา)"
+    echo "  doctor        Diagnose and auto-fix (ตรวจสอบและซ่อมแซม)"
     echo "  status        Show application status"
     echo "  help          Show this help message"
     echo ""
@@ -1645,6 +2155,9 @@ show_help() {
     echo ""
     echo "Examples:"
     echo "  $0                  # Full deployment"
+    echo "  $0 repair           # Auto-repair (ซ่อมแซมอัตโนมัติ)"
+    echo "  $0 diagnose         # Check for issues (ตรวจสอบปัญหา)"
+    echo "  $0 doctor           # Diagnose + repair"
     echo "  $0 deploy --seed    # Full deployment with seeders"
     echo "  $0 quick            # Quick deployment"
     echo "  $0 --admin          # Deploy with admin user creation"
@@ -1703,6 +2216,15 @@ case "${1:-deploy}" in
         ;;
     quick)
         quick_deploy
+        ;;
+    repair|fix)
+        repair
+        ;;
+    diagnose|check)
+        diagnose
+        ;;
+    doctor)
+        doctor
         ;;
     status)
         show_status
