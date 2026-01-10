@@ -2,10 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\Response;
 
 class TrackPageViews
@@ -13,17 +13,17 @@ class TrackPageViews
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
         // Only track GET requests (not API, admin, or asset requests)
         if ($request->isMethod('GET') &&
-            !$request->is('api/*') &&
-            !$request->is('admin/*') &&
-            !$request->is('build/*') &&
-            !str_ends_with($request->path(), '.js') &&
-            !str_ends_with($request->path(), '.css')
+            ! $request->is('api/*') &&
+            ! $request->is('admin/*') &&
+            ! $request->is('build/*') &&
+            ! str_ends_with($request->path(), '.js') &&
+            ! str_ends_with($request->path(), '.css')
         ) {
             $this->trackView();
         }
