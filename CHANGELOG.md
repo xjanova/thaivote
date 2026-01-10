@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.30.0](https://github.com/xjanova/thaivote/compare/v1.29.1...v1.30.0) (2026-01-10)
+
+
+### Features
+
+* add repair/diagnose/doctor commands to deploy.sh ([f30692b](https://github.com/xjanova/thaivote/commit/f30692b41b505dc502bc4b40f48a52219b011341))
+* add repair/diagnose/doctor commands to deploy.sh ([b4c7c07](https://github.com/xjanova/thaivote/commit/b4c7c0760d472e518d3a496116ab277096a72bae))
+
+
+### Bug Fixes
+
+* resolve composer install failure during CI ([031aebd](https://github.com/xjanova/thaivote/commit/031aebd0afed50081f7b10418adde1a39fb736ee))
+* resolve ESLint errors in Vue components ([933b66f](https://github.com/xjanova/thaivote/commit/933b66f201aa32200ae590948b15c440e711653f))
+
 ## [1.29.1](https://github.com/xjanova/thaivote/compare/v1.29.0...v1.29.1) (2026-01-07)
 
 
