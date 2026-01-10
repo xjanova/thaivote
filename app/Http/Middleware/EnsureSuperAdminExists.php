@@ -31,8 +31,8 @@ class EnsureSuperAdminExists
                 return $next($request);
             }
 
-            // Check if any admin exists
-            $hasAdmin = DB::table('users')->where('is_admin', true)->exists();
+            // Check if any admin exists (use 1 for MySQL compatibility)
+            $hasAdmin = DB::table('users')->where('is_admin', 1)->exists();
 
             if (! $hasAdmin) {
                 // No admin exists - redirect to setup (even from login/register)

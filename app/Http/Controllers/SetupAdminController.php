@@ -28,7 +28,7 @@ class SetupAdminController extends Controller
             }
 
             // If admin already exists, redirect to home
-            $hasAdmin = DB::table('users')->where('is_admin', true)->exists();
+            $hasAdmin = DB::table('users')->where('is_admin', 1)->exists();
             if ($hasAdmin) {
                 return redirect('/');
             }
@@ -46,7 +46,7 @@ class SetupAdminController extends Controller
     public function store(Request $request)
     {
         // Double check no admin exists
-        $hasAdmin = DB::table('users')->where('is_admin', true)->exists();
+        $hasAdmin = DB::table('users')->where('is_admin', 1)->exists();
         if ($hasAdmin) {
             return redirect('/');
         }
