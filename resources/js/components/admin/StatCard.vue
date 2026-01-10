@@ -1,49 +1,67 @@
 <template>
     <div
-        class="card p-6 transition-all duration-200 hover:shadow-lg hover:-translate-y-1 group"
+        class="card p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 group relative overflow-hidden"
         :class="{ 'animate-pulse': loading }"
     >
-        <div class="flex items-center justify-between">
-            <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">
-                    {{ title }}
-                </p>
+        <!-- Decorative background gradient -->
+        <div
+            class="absolute top-0 right-0 w-32 h-32 opacity-5 transform translate-x-8 -translate-y-8 transition-transform group-hover:scale-110"
+            :class="bgGradient"
+        ></div>
 
-                <!-- Value with loading skeleton -->
-                <div v-if="loading" class="h-10 bg-gray-200 rounded w-32 mt-2 animate-pulse"></div>
-                <p
-                    v-else
-                    class="text-3xl font-bold mt-2 transition-all duration-500"
-                    :class="textColor"
+        <!-- Content -->
+        <div class="relative z-10">
+            <!-- Icon at top -->
+            <div class="flex justify-center mb-4">
+                <div
+                    :class="[
+                        'w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0',
+                        'transition-all duration-300 shadow-lg',
+                        'group-hover:scale-110 group-hover:shadow-xl',
+                        bgGradient,
+                    ]"
                 >
-                    {{ displayValue }}
-                </p>
-
-                <!-- Trend Indicator -->
-                <div v-if="!loading && change !== null" class="flex items-center gap-1 mt-2">
                     <component
-                        :is="change >= 0 ? ArrowUpIcon : ArrowDownIcon"
-                        :class="[
-                            'w-4 h-4 transition-transform group-hover:scale-110',
-                            change >= 0 ? 'text-green-600' : 'text-red-600',
-                        ]"
+                        v-if="resolvedIcon"
+                        :is="resolvedIcon"
+                        class="w-8 h-8 text-white transition-transform group-hover:scale-110"
                     />
-                    <span class="text-sm font-medium" :class="changeColor">
-                        {{ Math.abs(change) }}%
-                    </span>
-                    <span class="text-xs text-gray-500">จากเมื่อวาน</span>
                 </div>
             </div>
 
-            <!-- Icon with gradient background -->
-            <div
-                :class="[
-                    'w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300',
-                    'group-hover:scale-110 group-hover:rotate-3',
-                    bgGradient,
-                ]"
+            <!-- Title -->
+            <p
+                class="text-xs font-semibold text-gray-500 uppercase tracking-wider text-center mb-3"
             >
-                <component v-if="resolvedIcon" :is="resolvedIcon" class="w-7 h-7 text-white" />
+                {{ title }}
+            </p>
+
+            <!-- Value with loading skeleton -->
+            <div v-if="loading" class="h-10 bg-gray-200 rounded w-full mb-3 animate-pulse"></div>
+            <p
+                v-else
+                class="text-4xl font-bold text-center mb-3 transition-all duration-500"
+                :class="textColor"
+            >
+                {{ displayValue }}
+            </p>
+
+            <!-- Trend Indicator -->
+            <div
+                v-if="!loading && change !== null"
+                class="flex items-center justify-center gap-1.5 pt-3 border-t border-gray-100"
+            >
+                <component
+                    :is="change >= 0 ? ArrowUpIcon : ArrowDownIcon"
+                    :class="[
+                        'w-4 h-4 transition-transform group-hover:scale-110',
+                        change >= 0 ? 'text-green-600' : 'text-red-600',
+                    ]"
+                />
+                <span class="text-sm font-semibold" :class="changeColor">
+                    {{ Math.abs(change) }}%
+                </span>
+                <span class="text-xs text-gray-500">จากเมื่อวาน</span>
             </div>
         </div>
     </div>

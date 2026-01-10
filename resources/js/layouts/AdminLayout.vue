@@ -58,30 +58,40 @@
             </div>
 
             <!-- Navigation -->
-            <nav class="p-4 space-y-1.5 overflow-y-auto" style="max-height: calc(100vh - 180px)">
+            <nav class="p-4 space-y-2 overflow-y-auto" style="max-height: calc(100vh - 180px)">
                 <a
                     v-for="item in navigation"
                     :key="item.name"
                     :href="item.href"
                     :class="[
-                        'group flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 relative overflow-hidden',
+                        'group flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-200 relative overflow-hidden',
                         isActive(item.href)
                             ? 'bg-white/15 text-white shadow-lg backdrop-blur-sm border border-white/20'
                             : 'text-indigo-200 hover:text-white hover:bg-white/10',
                     ]"
                     @click="sidebarOpen = false"
                 >
-                    <component
-                        :is="item.icon"
+                    <!-- Icon with background circle -->
+                    <div
                         :class="[
-                            'w-5 h-5 flex-shrink-0 transition-transform duration-200',
-                            isActive(item.href) ? 'scale-110' : 'group-hover:scale-110',
+                            'w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200',
+                            isActive(item.href)
+                                ? 'bg-white/20 shadow-md'
+                                : 'bg-white/5 group-hover:bg-white/15',
                         ]"
-                    />
-                    <span class="font-medium text-sm">{{ item.name }}</span>
+                    >
+                        <component
+                            :is="item.icon"
+                            :class="[
+                                'w-6 h-6 transition-transform duration-200',
+                                isActive(item.href) ? 'scale-110' : 'group-hover:scale-110',
+                            ]"
+                        />
+                    </div>
+                    <span class="font-semibold text-sm">{{ item.name }}</span>
                     <div
                         v-if="isActive(item.href)"
-                        class="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-blue-400 to-indigo-400 rounded-l-full"
+                        class="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-10 bg-gradient-to-b from-blue-400 to-indigo-400 rounded-l-full shadow-lg"
                     ></div>
                 </a>
             </nav>
@@ -120,10 +130,12 @@
                 <div class="h-full px-6 flex items-center justify-between">
                     <div class="flex items-center gap-4">
                         <button
-                            class="p-2.5 hover:bg-gray-100 rounded-xl lg:hidden transition-colors"
+                            class="p-3 hover:bg-indigo-50 rounded-xl lg:hidden transition-all group"
                             @click="sidebarOpen = !sidebarOpen"
                         >
-                            <MenuIcon class="w-5 h-5 text-gray-600" />
+                            <MenuIcon
+                                class="w-6 h-6 text-gray-600 group-hover:text-indigo-600 transition-all group-hover:scale-110"
+                            />
                         </button>
                         <!-- Logo สำหรับ Mobile/Tablet -->
                         <div v-if="siteLogo" class="flex lg:hidden items-center">
@@ -133,46 +145,46 @@
                             <input
                                 type="search"
                                 placeholder="ค้นหา..."
-                                class="w-80 pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm"
+                                class="w-80 pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent focus:bg-white transition-all text-sm"
                             />
                             <SearchIcon
-                                class="w-5 h-5 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2"
+                                class="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2"
                             />
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-3">
                         <!-- Notifications -->
                         <button
-                            class="relative p-2.5 hover:bg-gray-100 rounded-xl transition-colors group"
+                            class="relative p-3 hover:bg-indigo-50 rounded-xl transition-all group"
                         >
                             <BellIcon
-                                class="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors"
+                                class="w-6 h-6 text-gray-600 group-hover:text-indigo-600 transition-all group-hover:scale-110"
                             />
                             <span
-                                class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"
+                                class="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white animate-pulse"
                             ></span>
                         </button>
 
                         <!-- Settings -->
                         <a
                             href="/admin/settings"
-                            class="p-2.5 hover:bg-gray-100 rounded-xl transition-colors group"
+                            class="p-3 hover:bg-indigo-50 rounded-xl transition-all group"
                         >
                             <CogIcon
-                                class="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors"
+                                class="w-6 h-6 text-gray-600 group-hover:text-indigo-600 transition-all group-hover:rotate-90"
                             />
                         </a>
 
                         <!-- Profile Dropdown -->
-                        <div class="hidden sm:block ml-2 pl-2 border-l border-gray-200">
+                        <div class="hidden sm:block ml-2 pl-3 border-l border-gray-200">
                             <div
-                                class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors"
+                                class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-indigo-50 cursor-pointer transition-all group"
                             >
                                 <div
-                                    class="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-sm"
+                                    class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-all group-hover:scale-105"
                                 >
-                                    <span class="font-semibold text-xs text-white">{{
+                                    <span class="font-bold text-xs text-white">{{
                                         userInitials
                                     }}</span>
                                 </div>
