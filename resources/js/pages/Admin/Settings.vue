@@ -16,6 +16,8 @@ const flash = computed(() => page.props.flash || {});
 const form = useForm({
     site_name: props.settings.site_name || 'ThaiVote',
     site_description: props.settings.site_description || '',
+    site_logo: null,
+    site_favicon: null,
     maintenance_mode: props.settings.maintenance_mode || false,
     auto_refresh_interval: props.settings.auto_refresh_interval || 30,
     news_fetch_enabled: props.settings.news_fetch_enabled !== false,
@@ -23,6 +25,34 @@ const form = useForm({
     results_scrape_enabled: props.settings.results_scrape_enabled !== false,
     results_scrape_interval: props.settings.results_scrape_interval || 60,
 });
+
+const currentLogo = computed(() => {
+    if (props.settings.site_logo) {
+        return `/storage/${props.settings.site_logo}`;
+    }
+    return null;
+});
+
+const currentFavicon = computed(() => {
+    if (props.settings.site_favicon) {
+        return `/storage/${props.settings.site_favicon}`;
+    }
+    return null;
+});
+
+const handleLogoChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        form.site_logo = file;
+    }
+};
+
+const handleFaviconChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        form.site_favicon = file;
+    }
+};
 
 const saveSettings = () => {
     form.post(route('admin.settings.update'), {
@@ -52,6 +82,61 @@ const saveSettings = () => {
             </div>
 
             <form class="space-y-6" @submit.prevent="saveSettings">
+                <!-- Appearance Settings -->
+                <div class="bg-white shadow rounded-lg p-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">รูปลักษณ์</h2>
+
+                    <div class="space-y-4">
+                        <!-- Logo Upload -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2"
+                                >โลโก้เว็บไซต์</label
+                            >
+                            <div v-if="currentLogo" class="mb-2">
+                                <img
+                                    :src="currentLogo"
+                                    alt="Current Logo"
+                                    class="h-16 w-auto object-contain border border-gray-200 rounded p-2"
+                                />
+                            </div>
+                            <input
+                                type="file"
+                                accept="image/png,image/jpeg,image/jpg,image/svg+xml"
+                                @change="handleLogoChange"
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                            />
+                            <p class="mt-1 text-sm text-gray-500">PNG, JPG, JPEG หรือ SVG (สูงสุด 2MB)</p>
+                            <p v-if="form.errors.site_logo" class="mt-1 text-sm text-red-600">
+                                {{ form.errors.site_logo }}
+                            </p>
+                        </div>
+
+                        <!-- Favicon Upload -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2"
+                                >Favicon</label
+                            >
+                            <div v-if="currentFavicon" class="mb-2">
+                                <img
+                                    :src="currentFavicon"
+                                    alt="Current Favicon"
+                                    class="h-8 w-auto object-contain border border-gray-200 rounded p-1"
+                                />
+                            </div>
+                            <input
+                                type="file"
+                                accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/x-icon"
+                                @change="handleFaviconChange"
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                            />
+                            <p class="mt-1 text-sm text-gray-500">PNG, JPG, JPEG, SVG หรือ ICO (สูงสุด 1MB)</p>
+                            <p v-if="form.errors.site_favicon" class="mt-1 text-sm text-red-600">
+                                {{ form.errors.site_favicon }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- General Settings -->
                 <div class="bg-white shadow rounded-lg p-6">
                     <h2 class="text-xl font-semibold text-gray-900 mb-4">ตั้งค่าทั่วไป</h2>

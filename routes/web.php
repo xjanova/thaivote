@@ -153,6 +153,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // Settings
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
     Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
+    Route::get('/settings/api', [SettingsController::class, 'getSettings'])->name('settings.api');
 
     // ผู้ใช้งาน (User Management)
     Route::resource('users', AdminUserController::class);
