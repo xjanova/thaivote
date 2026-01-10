@@ -1157,6 +1157,55 @@ create_admin_user() {
 }
 
 #===============================================================================
+# Check Admin Setup Required
+#===============================================================================
+
+check_admin_setup_required() {
+    cd "${APP_DIR}"
+
+    # Check if database is available and has users table
+    if [ "$DB_AVAILABLE" = false ]; then
+        return 0
+    fi
+
+    # Check if any admin user exists
+    set +e
+    local admin_exists=$(php artisan tinker --execute="
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('users')) {
+                echo \App\Models\User::where('is_admin', true)->exists() ? 'yes' : 'no';
+            } else {
+                echo 'notable';
+            }
+        } catch (\Exception \$e) {
+            echo 'error';
+        }
+    " 2>/dev/null | tail -1 | tr -d '[:space:]')
+    set -e
+
+    if [ "$admin_exists" = "no" ]; then
+        local APP_URL=$(grep "^APP_URL=" .env | cut -d'=' -f2 | tr -d '"' | tr -d "'")
+        [ -z "$APP_URL" ] && APP_URL="http://localhost"
+
+        echo ""
+        echo -e "${YELLOW}╔════════════════════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${YELLOW}║${NC}                                                                            ${YELLOW}║${NC}"
+        echo -e "${YELLOW}║${NC}   ${YELLOW}⚠️  ยังไม่มีผู้ดูแลระบบ (Super Admin)${NC}                                    ${YELLOW}║${NC}"
+        echo -e "${YELLOW}║${NC}                                                                            ${YELLOW}║${NC}"
+        echo -e "${YELLOW}║${NC}   เมื่อเข้าเว็บไซต์ ระบบจะบังคับให้สร้างบัญชีแอดมินก่อนใช้งาน              ${YELLOW}║${NC}"
+        echo -e "${YELLOW}║${NC}                                                                            ${YELLOW}║${NC}"
+        echo -e "${YELLOW}║${NC}   ${WHITE}เปิดเบราว์เซอร์ไปที่:${NC} ${CYAN}${APP_URL}${NC}                                       ${YELLOW}║${NC}"
+        echo -e "${YELLOW}║${NC}                                                                            ${YELLOW}║${NC}"
+        echo -e "${YELLOW}╚════════════════════════════════════════════════════════════════════════════╝${NC}"
+        echo ""
+
+        log_warning "No admin user found. Please visit ${APP_URL} to create one."
+    elif [ "$admin_exists" = "yes" ]; then
+        log "Super Admin exists ✓"
+    fi
+}
+
+#===============================================================================
 # Mark as Installed
 #===============================================================================
 
@@ -1473,6 +1522,9 @@ deploy() {
     echo -e "${GREEN}║${NC}                                                                            ${GREEN}║${NC}"
     echo -e "${GREEN}╚════════════════════════════════════════════════════════════════════════════╝${NC}\n"
 
+    # Check if admin setup is required
+    check_admin_setup_required
+
     log "Deployment completed in ${DURATION} seconds"
 }
 
@@ -1606,6 +1658,9 @@ quick_deploy() {
     echo -e "\n${GREEN}╔════════════════════════════════════════════════════════════════════════════╗${NC}"
     echo -e "${GREEN}║${NC}   ${GREEN}✅ QUICK DEPLOYMENT COMPLETED!${NC}                                          ${GREEN}║${NC}"
     echo -e "${GREEN}╚════════════════════════════════════════════════════════════════════════════╝${NC}\n"
+
+    # Check if admin setup is required
+    check_admin_setup_required
 }
 
 #===============================================================================
@@ -2271,6 +2326,9 @@ force_reset() {
     echo -e "${WHITE}เว็บไซต์พร้อมใช้งานแล้ว!${NC}"
     echo -e "ทดสอบด้วย: ${CYAN}php artisan serve${NC}"
     echo ""
+
+    # Check if admin setup is required
+    check_admin_setup_required
 }
 
 #===============================================================================
@@ -2525,6 +2583,9 @@ repair() {
         echo -e "   1. รัน ${WHITE}./deploy.sh${NC} เพื่อ deploy แบบเต็ม"
         echo -e "   2. หรือรัน ${WHITE}./deploy.sh quick${NC} เพื่อ deploy แบบเร็ว"
         echo -e "   3. รัน ${WHITE}./deploy.sh diagnose${NC} เพื่อตรวจสอบอีกครั้ง\n"
+
+        # Check if admin setup is required
+        check_admin_setup_required
     else
         echo -e "\n${RED}   ❌ ซ่อมแซมไม่สำเร็จ ${FAILED} รายการ${NC}"
         echo -e "${GREEN}   ✅ ซ่อมแซมสำเร็จ ${REPAIRED} รายการ${NC}"
