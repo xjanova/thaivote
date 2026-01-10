@@ -709,6 +709,107 @@ setup_database() {
 }
 
 #===============================================================================
+# Smart Database Upgrade Check
+#===============================================================================
+
+smart_database_check() {
+    cd "${APP_DIR}"
+
+    # Skip if database not available
+    if [ "$DB_AVAILABLE" = false ]; then
+        return 0
+    fi
+
+    log_info "🔍 Analyzing database schema..."
+
+    # Check if users table exists
+    set +e
+    local has_users_table=$(php artisan tinker --execute="echo Schema::hasTable('users') ? 'yes' : 'no';" 2>/dev/null | tail -1 | tr -d '[:space:]')
+    set -e
+
+    if [ "$has_users_table" != "yes" ]; then
+        log_info "📦 Fresh installation detected - will create all tables"
+        DB_UPGRADE_TYPE="fresh"
+        return 0
+    fi
+
+    # Check for is_admin column
+    set +e
+    local has_is_admin=$(php artisan tinker --execute="echo Schema::hasColumn('users', 'is_admin') ? 'yes' : 'no';" 2>/dev/null | tail -1 | tr -d '[:space:]')
+    set -e
+
+    if [ "$has_is_admin" != "yes" ]; then
+        log_warning "⚠️  Missing column: users.is_admin"
+        echo -e "${YELLOW}   Database needs upgrade - will add missing columns${NC}"
+        DB_UPGRADE_TYPE="upgrade"
+        MISSING_COLUMNS="is_admin"
+    else
+        log "✓ users.is_admin column exists"
+    fi
+
+    # Check for avatar column
+    set +e
+    local has_avatar=$(php artisan tinker --execute="echo Schema::hasColumn('users', 'avatar') ? 'yes' : 'no';" 2>/dev/null | tail -1 | tr -d '[:space:]')
+    set -e
+
+    if [ "$has_avatar" != "yes" ]; then
+        log_warning "⚠️  Missing column: users.avatar"
+        MISSING_COLUMNS="${MISSING_COLUMNS} avatar"
+        DB_UPGRADE_TYPE="upgrade"
+    fi
+
+    # Check admin user exists
+    set +e
+    local admin_count=$(php artisan tinker --execute="
+        try {
+            if (Schema::hasColumn('users', 'is_admin')) {
+                echo DB::table('users')->where('is_admin', 1)->count();
+            } else {
+                echo '0';
+            }
+        } catch (Exception \$e) {
+            echo '0';
+        }
+    " 2>/dev/null | tail -1 | tr -d '[:space:]')
+    set -e
+
+    if [ "$admin_count" = "0" ] || [ -z "$admin_count" ]; then
+        log_warning "⚠️  No admin user found"
+        NEEDS_ADMIN_SETUP=true
+    else
+        log "✓ Admin user exists (${admin_count} admin(s))"
+        NEEDS_ADMIN_SETUP=false
+    fi
+
+    # Show summary
+    echo ""
+    echo -e "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${WHITE}📊 Database Analysis Summary${NC}"
+    echo -e "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+    if [ "$DB_UPGRADE_TYPE" = "fresh" ]; then
+        echo -e "   Status: ${CYAN}Fresh Installation${NC}"
+        echo -e "   Action: Will create all tables"
+    elif [ "$DB_UPGRADE_TYPE" = "upgrade" ]; then
+        echo -e "   Status: ${YELLOW}Upgrade Required${NC}"
+        echo -e "   Missing: ${MISSING_COLUMNS}"
+        echo -e "   Action: Will add missing columns"
+    else
+        echo -e "   Status: ${GREEN}Up to date${NC}"
+        echo -e "   Action: No schema changes needed"
+    fi
+
+    if [ "$NEEDS_ADMIN_SETUP" = true ]; then
+        echo -e "   Admin:  ${YELLOW}No admin - setup required after deploy${NC}"
+    else
+        echo -e "   Admin:  ${GREEN}Configured${NC}"
+    fi
+
+    echo -e "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+}
+
+#===============================================================================
 # Maintenance Mode
 #===============================================================================
 
@@ -1490,6 +1591,7 @@ deploy() {
     check_environment
     backup_database
     setup_database
+    smart_database_check
     enable_maintenance_mode
     pull_latest_code
     install_composer_dependencies

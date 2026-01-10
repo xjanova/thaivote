@@ -98,7 +98,7 @@
                 <div class="mt-6 text-center">
                     <p class="text-sm text-gray-600">
                         มีบัญชีอยู่แล้ว?
-                        <Link :href="route('login')" class="text-blue-600 hover:underline">
+                        <Link href="/login" class="text-blue-600 hover:underline">
                             เข้าสู่ระบบ
                         </Link>
                     </p>
@@ -126,7 +126,7 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post(route('register'), {
+    form.post('/register', {
         onFinish: () => form.reset('password', 'password_confirmation'),
     });
 };

@@ -78,7 +78,7 @@
                 <div class="mt-6 text-center">
                     <p class="text-sm text-gray-600">
                         ยังไม่มีบัญชี?
-                        <Link :href="route('register')" class="text-blue-600 hover:underline">
+                        <Link href="/register" class="text-blue-600 hover:underline">
                             สมัครสมาชิก
                         </Link>
                     </p>
@@ -105,7 +105,7 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post(route('login'), {
+    form.post('/login', {
         onFinish: () => form.reset('password'),
     });
 };
