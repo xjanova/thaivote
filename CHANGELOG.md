@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.32.0](https://github.com/xjanova/thaivote/compare/v1.31.0...v1.32.0) (2026-01-10)
+
+
+### Features
+
+* add force-reset command for nuclear recovery option ([d586c65](https://github.com/xjanova/thaivote/commit/d586c652f9d65a2802b648e4702f3c9c3937ec3b))
+* add force-reset command for nuclear recovery option ([0503187](https://github.com/xjanova/thaivote/commit/05031879847b2b96131299a169b2d0683eaad238))
+
 ## [1.31.0](https://github.com/xjanova/thaivote/compare/v1.30.0...v1.31.0) (2026-01-10)
 
 
