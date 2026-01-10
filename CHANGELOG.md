@@ -1,3 +1,9 @@
+## [1.36.1](https://github.com/xjanova/thaivote/compare/v1.36.0...v1.36.1) (2026-01-10)
+
+### 🐛 Bug Fixes
+
+* Improve deploy.sh to actually install dependencies ([7cce4ae](https://github.com/xjanova/thaivote/commit/7cce4aeec71e81b31aba987080679eea03b0a467))
+
 ## [1.36.0](https://github.com/xjanova/thaivote/compare/v1.35.1...v1.36.0) (2026-01-10)
 
 ### ✨ Features
