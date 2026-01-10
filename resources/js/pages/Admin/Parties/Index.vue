@@ -163,6 +163,7 @@
                             แสดง {{ parties.from }} - {{ parties.to }} จาก
                             {{ parties.total }} รายการ
                         </p>
+                        <!-- eslint-disable vue/no-v-html -- Laravel pagination labels with HTML entities are safe -->
                         <div class="flex gap-1">
                             <Link
                                 v-for="link in parties.links"
@@ -178,6 +179,7 @@
                                 ><span v-html="link.label"
                             /></Link>
                         </div>
+                        <!-- eslint-enable vue/no-v-html -->
                     </div>
                 </div>
             </div>
