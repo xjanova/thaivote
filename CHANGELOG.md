@@ -1,3 +1,9 @@
+## [1.41.1](https://github.com/xjanova/thaivote/compare/v1.41.0...v1.41.1) (2026-01-10)
+
+### 🐛 Bug Fixes
+
+* Fix dashboard stat card NaN display and missing icons ([e6d19fe](https://github.com/xjanova/thaivote/commit/e6d19fea79ed85b33ee6377b8a23619df0ec8a6d))
+
 ## [1.41.0](https://github.com/xjanova/thaivote/compare/v1.40.0...v1.41.0) (2026-01-10)
 
 ### ✨ Features
