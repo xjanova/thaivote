@@ -1,3 +1,9 @@
+## [1.40.0](https://github.com/xjanova/thaivote/compare/v1.39.1...v1.40.0) (2026-01-10)
+
+### ✨ Features
+
+* Expand political party database to 60+ parties for 2026 election ([6ef4b64](https://github.com/xjanova/thaivote/commit/6ef4b6419f9f08c46c670c84db5e042c07e6ad61)), closes [#55-57](https://github.com/xjanova/thaivote/issues/55-57) [#1-52](https://github.com/xjanova/thaivote/issues/1-52)
+
 ## [1.39.1](https://github.com/xjanova/thaivote/compare/v1.39.0...v1.39.1) (2026-01-10)
 
 ### 🐛 Bug Fixes
