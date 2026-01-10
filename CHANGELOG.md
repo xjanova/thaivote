@@ -1,3 +1,9 @@
+## [1.42.1](https://github.com/xjanova/thaivote/compare/v1.42.0...v1.42.1) (2026-01-10)
+
+### 🐛 Bug Fixes
+
+* Add loading state to StatCard components to prevent NaN flicker ([0b86d2e](https://github.com/xjanova/thaivote/commit/0b86d2e287f479d7ff765e6b67aa22d549953768))
+
 ## [1.42.0](https://github.com/xjanova/thaivote/compare/v1.41.1...v1.42.0) (2026-01-10)
 
 ### ✨ Features
