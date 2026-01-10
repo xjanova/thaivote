@@ -127,11 +127,17 @@ const settings = ref({});
 onMounted(async () => {
     try {
         const response = await axios.get('/admin/settings/api');
-        if (response.data.success) {
+        if (response.data && response.data.data) {
             settings.value = response.data.data;
         }
     } catch (error) {
         console.error('Failed to load settings:', error);
+        // Set default values if API fails
+        settings.value = {
+            site_name: 'ThaiVote',
+            site_logo: '',
+            site_favicon: '',
+        };
     }
 });
 

@@ -82,10 +82,27 @@ class SettingsController extends Controller
      */
     public function getSettings()
     {
-        return response()->json([
-            'success' => true,
-            'data' => Setting::getAllSettings(),
-        ]);
+        try {
+            $settings = Setting::getAllSettings();
+
+            return response()->json([
+                'success' => true,
+                'data' => $settings,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to get settings: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load settings',
+                'data' => [
+                    'site_name' => 'ThaiVote',
+                    'site_description' => '',
+                    'site_logo' => '',
+                    'site_favicon' => '',
+                ],
+            ]);
+        }
     }
 
     /**
