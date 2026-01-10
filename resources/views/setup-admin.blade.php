@@ -255,6 +255,15 @@
                     สร้างบัญชีแอดมินใหญ่
                 </button>
             </form>
+
+            <div style="margin-top: 1.5rem; text-align: center; padding-top: 1.5rem; border-top: 1px solid #e2e8f0;">
+                <p style="color: #64748b; font-size: 0.875rem;">
+                    มีบัญชีอยู่แล้ว?
+                    <a href="{{ url('/login') }}" style="color: #dc2626; text-decoration: none; font-weight: 500;">
+                        เข้าสู่ระบบ
+                    </a>
+                </p>
+            </div>
         </div>
     </div>
 </body>

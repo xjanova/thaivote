@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
@@ -68,30 +70,27 @@ class SetupAdminController extends Controller
         }
 
         try {
-            // Create admin user
-            DB::table('users')->insert([
+            // Create admin user using Model for proper login
+            $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'is_admin' => true,
                 'email_verified_at' => now(),
-                'created_at' => now(),
-                'updated_at' => now(),
             ]);
         } catch (Exception $e) {
-            // Try alternative approach using Model
+            // Try alternative approach using DB facade
             try {
-                $userClass = config('auth.providers.users.model', 'App\Models\User');
-                $user = new $userClass;
-                $user->name = $request->name;
-                $user->email = $request->email;
-                $user->password = Hash::make($request->password);
-                $user->email_verified_at = now();
-
-                if (in_array('is_admin', $user->getFillable())) {
-                    $user->is_admin = true;
-                }
-                $user->save();
+                DB::table('users')->insert([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'password' => Hash::make($request->password),
+                    'is_admin' => true,
+                    'email_verified_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                $user = User::where('email', $request->email)->first();
             } catch (Exception $e2) {
                 return back()->withErrors([
                     'user' => 'ไม่สามารถสร้างผู้ใช้งานได้: '.$e2->getMessage(),
@@ -105,6 +104,11 @@ class SetupAdminController extends Controller
             File::put($installedPath, now()->toIso8601String());
         }
 
-        return redirect('/')->with('success', 'สร้างบัญชีแอดมินเรียบร้อยแล้ว');
+        // Login the admin user
+        if ($user) {
+            Auth::login($user);
+        }
+
+        return redirect('/admin')->with('success', 'สร้างบัญชีแอดมินเรียบร้อยแล้ว');
     }
 }

@@ -29,7 +29,26 @@
                     </nav>
                     <div class="flex items-center gap-3">
                         <button class="btn btn-outline text-sm">ดาวน์โหลดข้อมูล</button>
-                        <button class="btn btn-primary text-sm">เข้าสู่ระบบ</button>
+                        <template v-if="auth?.user">
+                            <Link
+                                v-if="auth.user.is_admin"
+                                href="/admin"
+                                class="btn btn-primary text-sm"
+                            >
+                                หลังบ้าน
+                            </Link>
+                            <Link
+                                href="/logout"
+                                method="post"
+                                as="button"
+                                class="btn btn-outline text-sm"
+                            >
+                                ออกจากระบบ
+                            </Link>
+                        </template>
+                        <Link v-else href="/login" class="btn btn-primary text-sm">
+                            เข้าสู่ระบบ
+                        </Link>
                     </div>
                 </div>
             </div>
@@ -363,8 +382,12 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
 import { useResultsStore } from '@/stores/results';
 import ThailandMap from '@/components/map/ThailandMap.vue';
+
+const page = usePage();
+const auth = computed(() => page.props.auth);
 
 const props = defineProps({
     electionId: {
