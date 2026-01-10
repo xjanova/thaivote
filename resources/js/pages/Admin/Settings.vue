@@ -105,7 +105,9 @@ const saveSettings = () => {
                                 @change="handleLogoChange"
                                 class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                             />
-                            <p class="mt-1 text-sm text-gray-500">PNG, JPG, JPEG หรือ SVG (สูงสุด 2MB)</p>
+                            <p class="mt-1 text-sm text-gray-500">
+                                PNG, JPG, JPEG หรือ SVG (สูงสุด 2MB)
+                            </p>
                             <p v-if="form.errors.site_logo" class="mt-1 text-sm text-red-600">
                                 {{ form.errors.site_logo }}
                             </p>
@@ -129,7 +131,9 @@ const saveSettings = () => {
                                 @change="handleFaviconChange"
                                 class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                             />
-                            <p class="mt-1 text-sm text-gray-500">PNG, JPG, JPEG, SVG หรือ ICO (สูงสุด 1MB)</p>
+                            <p class="mt-1 text-sm text-gray-500">
+                                PNG, JPG, JPEG, SVG หรือ ICO (สูงสุด 1MB)
+                            </p>
                             <p v-if="form.errors.site_favicon" class="mt-1 text-sm text-red-600">
                                 {{ form.errors.site_favicon }}
                             </p>
