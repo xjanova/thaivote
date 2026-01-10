@@ -8,6 +8,7 @@ use App\Models\NewsArticle;
 use App\Models\NewsSource;
 use App\Models\Party;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -24,16 +25,18 @@ class DashboardController extends Controller
         $stats = Cache::remember('admin.dashboard.stats', 60, function () {
             // Get total votes from election_stats or national_results
             $totalVotes = 0;
+
             try {
                 // Try election_stats first (most accurate)
                 if (Schema::hasTable('election_stats')) {
                     $totalVotes = DB::table('election_stats')->sum('total_votes_cast') ?? 0;
                 }
+
                 // Fallback to national_results
                 if ($totalVotes === 0 && Schema::hasTable('national_results')) {
                     $totalVotes = DB::table('national_results')->sum('total_votes') ?? 0;
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // Gracefully handle missing tables
                 $totalVotes = 0;
             }

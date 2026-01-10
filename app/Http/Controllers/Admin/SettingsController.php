@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Log;
 
 class SettingsController extends Controller
 {
@@ -54,6 +56,7 @@ class SettingsController extends Controller
         // Handle logo upload
         if ($request->hasFile('site_logo')) {
             $oldLogo = Setting::get('site_logo');
+
             if ($oldLogo) {
                 Storage::disk('public')->delete($oldLogo);
             }
@@ -64,6 +67,7 @@ class SettingsController extends Controller
         // Handle favicon upload
         if ($request->hasFile('site_favicon')) {
             $oldFavicon = Setting::get('site_favicon');
+
             if ($oldFavicon) {
                 Storage::disk('public')->delete($oldFavicon);
             }
@@ -89,8 +93,8 @@ class SettingsController extends Controller
                 'success' => true,
                 'data' => $settings,
             ]);
-        } catch (\Exception $e) {
-            \Log::error('Failed to get settings: ' . $e->getMessage());
+        } catch (Exception $e) {
+            Log::error('Failed to get settings: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
@@ -110,7 +114,7 @@ class SettingsController extends Controller
      */
     private function uploadImage($file, string $folder): string
     {
-        $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
+        $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
 
         return $file->storeAs("images/{$folder}", $filename, 'public');
     }

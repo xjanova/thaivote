@@ -41,13 +41,14 @@ try {
         "mysql:host={$DB_HOST};dbname={$DB_NAME};charset=utf8mb4",
         $DB_USER,
         $DB_PASS,
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
     );
 
     echo '<p class="success">✅ Database connected successfully!</p>';
 
     // Check if settings table exists
     $stmt = $pdo->query("SHOW TABLES LIKE 'settings'");
+
     if ($stmt->rowCount() == 0) {
         echo '<p class="error">❌ Error: <code>settings</code> table does not exist.</p>';
         echo '<p>Please run database migrations first.</p>';
@@ -78,7 +79,7 @@ try {
     // Insert settings
     $now = date('Y-m-d H:i:s');
 
-    if (!$logoExists) {
+    if (! $logoExists) {
         $stmt = $pdo->prepare("
             INSERT INTO settings (`key`, `value`, `type`, `group`, created_at, updated_at)
             VALUES ('site_logo', '', 'string', 'appearance', :now1, :now2)
@@ -89,7 +90,7 @@ try {
         echo '<p class="success">✓ <code>site_logo</code> already exists</p>';
     }
 
-    if (!$faviconExists) {
+    if (! $faviconExists) {
         $stmt = $pdo->prepare("
             INSERT INTO settings (`key`, `value`, `type`, `group`, created_at, updated_at)
             VALUES ('site_favicon', '', 'string', 'appearance', :now1, :now2)
