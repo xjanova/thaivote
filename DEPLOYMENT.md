@@ -1,12 +1,18 @@
-# 🚀 ThaiVote Smart Deployment Guide
+# 🚀 ThaiVote Deployment Guide
 
 ## Overview
 
-**deploy.sh v5.0** เป็น deployment script ที่ฉลาดพอที่จะ:
-- ✅ ตรวจสอบและติดตั้ง dependencies อัตโนมัติ
-- ✅ แก้ไขปัญหาทั่วไปได้เอง (.env, database, storage, permissions)
-- ✅ ไม่ต้องแก้ปัญหาเดิมซ้ำๆ
-- ✅ รองรับ first-time installation และ update
+**deploy.sh v4.1** - Smart Automated Deployment Script
+
+### ✨ Features
+- ✅ **บังคับติดตั้ง dependencies ทุกครั้ง** (Composer + NPM)
+- ✅ **Pull latest code** จาก git อัตโนมัติ
+- ✅ **Smart migration** handling with error detection
+- ✅ **Intelligent seeding** (skip existing data)
+- ✅ **Auto-repair** system issues
+- ✅ **Rollback on failure** อัตโนมัติ
+- ✅ **Detailed logging** และ error reports
+- ✅ **Force reset** option สำหรับการติดตั้งใหม่ทั้งหมด
 
 ---
 
@@ -15,185 +21,337 @@
 ### First Time Installation
 
 ```bash
-# ติดตั้งครั้งแรก (จะติดตั้งทุกอย่างให้อัตโนมัติ)
+# ติดตั้งครั้งแรก
 ./deploy.sh
-```
 
-หรือใช้ doctor mode สำหรับ diagnosis และ auto-fix:
-
-```bash
+# หรือใช้ doctor mode (ตรวจสอบและแก้ไขอัตโนมัติ)
 ./deploy.sh doctor
 ```
 
 ### Update/Redeploy
 
 ```bash
-# Deploy อัตโนมัติ (จะติดตั้งเฉพาะสิ่งที่ขาด)
+# Production deployment (มี git pull + ติดตั้ง dependencies ทุกครั้ง)
 ./deploy.sh
+
+# Quick deployment (ไม่มี backup)
+./deploy.sh quick
 ```
 
 ---
 
 ## 📋 Available Commands
 
-### 1. **`./deploy.sh`** (Full Deployment)
-ติดตั้งและตั้งค่าทุกอย่างอัตโนมัติ
+### 1. **`./deploy.sh`** หรือ **`./deploy.sh deploy`**
+**Full deployment** - ติดตั้งและตั้งค่าทุกอย่าง
 
-**จะทำอะไร:**
-- ✓ **Pull ไฟล์ใหม่จาก git** (ถ้าเป็น git repository)
-- ✓ Stash uncommitted changes อัตโนมัติ (ถ้ามี)
-- ✓ ตรวจสอบ PHP, Composer, Node.js
-- ✓ ติดตั้ง dependencies (composer, npm) ถ้ายังไม่มี
-- ✓ สร้าง .env จาก .env.example ถ้ายังไม่มี
-- ✓ Generate APP_KEY ถ้ายังไม่มี
-- ✓ สร้าง SQLite database ถ้ายังไม่มี
-- ✓ Run migrations ถ้ายังไม่ได้ run
-- ✓ Run seeders ถ้า database ว่าง
-- ✓ สร้าง storage link ถ้ายังไม่มี
-- ✓ Build frontend assets ถ้ายังไม่ได้ build
-- ✓ Optimize application
+**จะทำอะไร (ตามลำดับ):**
+1. ✓ **Preflight checks** - ตรวจสอบ disk space, PHP version
+2. ✓ **Bootstrap Laravel** - สร้าง directories ที่จำเป็น (storage, cache, etc.)
+3. ✓ **Check environment** - ตรวจสอบ .env และ database
+4. ✓ **Backup database** (ถ้าเปิด --backup)
+5. ✓ **Setup database** - สร้าง SQLite database ถ้ายังไม่มี
+6. ✓ **Enable maintenance mode** - ป้องกัน user เข้าถึงระหว่าง deploy
+7. ✓ **🔥 Pull latest code** - git fetch + git pull (auto-stash uncommitted changes)
+8. ✓ **🔥 Install Composer dependencies** - บังคับติดตั้งทุกครั้ง (95 packages)
+9. ✓ **🔥 Install NPM dependencies** - บังคับติดตั้งทุกครั้ง (431 packages)
+10. ✓ **🔥 Build frontend assets** - npm run build ทุกครั้ง
+11. ✓ **Run migrations** - Smart migration with error detection
+12. ✓ **Clear caches** - Config, route, view caches
+13. ✓ **Optimize application** - Cache config, routes (production only)
+14. ✓ **Setup storage links** - Symlink storage/app/public → public_html/storage
+15. ✓ **Fix permissions** - chmod storage, bootstrap/cache
+16. ✓ **Run seeders** - ถ้ามี --seed flag หรือ database ว่าง
+17. ✓ **Create admin user** - ถ้ามี --admin flag
+18. ✓ **Health check** - ทดสอบว่าระบบทำงานได้
+19. ✓ **Disable maintenance mode** - เปิดให้ใช้งานได้อีกครั้ง
 
 **ตัวอย่าง:**
 ```bash
-./deploy.sh
-```
-
-**Options:**
-- `--skip-git-pull` - ข้าม git pull (สำหรับ local development)
-
-**ตัวอย่างการใช้งาน:**
-```bash
-# Production deployment (มี git pull)
-./deploy.sh
-
-# Local development (ไม่ต้องการ git pull)
-./deploy.sh --skip-git-pull
-
-# หรือ
-./deploy.sh deploy --skip-git-pull
+./deploy.sh                    # Full deployment
+./deploy.sh deploy             # เหมือนกัน
+./deploy.sh deploy --seed      # พร้อม run seeders
+./deploy.sh deploy --admin     # พร้อมสร้าง admin user
+./deploy.sh --backup           # เปิด database backup
 ```
 
 **Output:**
 ```
-╔════════════════════════════════════════════════════════════╗
-║  ThaiVote Smart Deployment System v5.0                    ║
-║  ฉลาดพอที่จะติดตั้งและแก้ไขปัญหาทุกอย่างเอง              ║
-╚════════════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════════════════╗
+║                                                                          ║
+║                        🚀 ThaiVote Deployment                           ║
+║                     Smart Automated Deployment v4.1                     ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📌 Updating from Git Repository
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ℹ Current branch: main
-ℹ Fetching latest changes from origin...
-ℹ Pulling latest changes from origin/main...
-✓ Successfully updated from git
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 STEP 5: Pulling Latest Code
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ℹ 📍 Current branch: main
+ℹ 📦 Current commit: abc1234 - Fix backend settings
+[✓] Fetched updates from remote ✓
+ℹ Pulling latest changes...
+[✓] Successfully pulled latest code ✓
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📌 Checking PHP
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ PHP version: 8.4.16
-✓ PHP check passed
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 STEP 6: Installing Composer Dependencies
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ℹ 📦 Installing/Updating ALL Composer dependencies...
+[✓] Composer dependencies installed ✓
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 STEP 7: Installing NPM Dependencies
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ℹ 📦 Installing/Updating ALL NPM dependencies...
+[✓] NPM dependencies installed ✓
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 STEP 8: Building Frontend Assets
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ℹ 🏗️  Building ALL frontend assets with Vite...
+[✓] Frontend assets built ✓
+
 ...
-✅ Deployment Complete
 
-Your application is ready!
-Admin login: test@example.com / password
-
-To start development server:
-  npm run dev         # Frontend dev server
-  php artisan serve  # Backend server
+╔════════════════════════════════════════════════════════════════════════╗
+║                    ✅ DEPLOYMENT SUCCESSFUL! ✅                        ║
+║                                                                        ║
+║  🎉 ThaiVote has been successfully deployed!                          ║
+║  ⏱️  Deployment took 2 minutes 34 seconds                             ║
+╚════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-### 2. **`./deploy.sh doctor`** (System Doctor)
-วินิจฉัยและแก้ไขปัญหาทั้งหมดอัตโนมัติ
+### 2. **`./deploy.sh quick`**
+**Quick deployment** - เหมือน deploy แต่ไม่มี backup
+
+**ความแตกต่าง:**
+- ❌ ไม่ backup database (เร็วกว่า)
+- ✅ ทุกอย่างอื่นเหมือนกัน
+
+**ตัวอย่าง:**
+```bash
+./deploy.sh quick
+```
+
+---
+
+### 3. **`./deploy.sh repair`**
+**Auto-repair** - ซ่อมแซมปัญหาอัตโนมัติ
 
 **เมื่อไหร่ควรใช้:**
-- เมื่อมีปัญหาแปลกๆ เกิดขึ้น
-- เมื่อ dependencies หาย
-- เมื่อ permissions ผิด
-- เมื่อต้องการตรวจสุขภาพระบบ
+- Dependencies หาย (vendor/, node_modules/)
+- Permissions ผิด (storage/, bootstrap/cache/)
+- Cache เก่า (config.php, routes-v7.php)
+- Storage link หาย
+- .env ผิดพลาด
+
+**จะทำอะไร:**
+1. ✓ สร้าง directories ที่จำเป็นทั้งหมด
+2. ✓ ติดตั้ง Composer dependencies ใหม่
+3. ✓ ติดตั้ง NPM dependencies ใหม่
+4. ✓ Build frontend assets ใหม่
+5. ✓ Fix permissions (chmod 775)
+6. ✓ Clear all caches
+7. ✓ Setup storage links
+8. ✓ Generate APP_KEY (ถ้ายังไม่มี)
+
+**ตัวอย่าง:**
+```bash
+./deploy.sh repair
+```
+
+---
+
+### 4. **`./deploy.sh diagnose`**
+**Diagnose** - ตรวจสอบปัญหา (ไม่แก้ไข)
+
+**จะทำอะไร:**
+- 🔍 ตรวจสอบ PHP extensions
+- 🔍 ตรวจสอบ file permissions
+- 🔍 ตรวจสอบ .env configuration
+- 🔍 ตรวจสอบ database connection
+- 🔍 ตรวจสอบ storage links
+- 🔍 ตรวจสอบ dependencies
+- 📊 แสดงรายงานปัญหาทั้งหมด
+
+**ตัวอย่าง:**
+```bash
+./deploy.sh diagnose
+```
+
+---
+
+### 5. **`./deploy.sh doctor`**
+**Doctor** - ตรวจสอบ + แก้ไขอัตโนมัติ
+
+**= `diagnose` + `repair`**
 
 **ตัวอย่าง:**
 ```bash
 ./deploy.sh doctor
 ```
 
-**จะทำอะไร:**
-- 🔍 ตรวจสอบทุกอย่างอย่างละเอียด
-- 🔧 แก้ไขปัญหาอัตโนมัติ
-- 📊 แสดงรายงานผล
-
 ---
 
-### 3. **`./deploy.sh fix`** (Quick Fix)
-แก้ไขปัญหาทั่วไปแบบรวดเร็ว
+### 6. **`./deploy.sh force-reset`**
+**⚠️  Nuclear option** - ลบและติดตั้งใหม่ทั้งหมด (ไม่ลบ database)
+
+**จะลบ:**
+- ❌ vendor/
+- ❌ node_modules/
+- ❌ public_html/build/
+- ❌ bootstrap/cache/*
+- ❌ storage/framework/cache/*
+- ❌ storage/framework/views/*
+
+**จะเก็บ:**
+- ✅ database/database.sqlite
+- ✅ .env
+- ✅ storage/logs/
+
+**แล้วติดตั้งใหม่ทั้งหมด**
 
 **เมื่อไหร่ควรใช้:**
-- เมื่อ dependencies หาย
-- เมื่อ assets ไม่ build
-- เมื่อ permissions ผิด
+- เมื่อระบบพังหนักมาก
+- เมื่อ dependencies conflict
+- เมื่อต้องการเริ่มต้นใหม่
 
 **ตัวอย่าง:**
 ```bash
-./deploy.sh fix
+./deploy.sh force-reset
+# จะถามยืนยันก่อน (yes/no)
 ```
-
-**จะทำอะไร:**
-- ✓ ตรวจสอบและสร้าง .env
-- ✓ ติดตั้ง dependencies ที่ขาด
-- ✓ แก้ไข storage permissions
-- ✓ Build assets ถ้ายังไม่มี
-- ✓ Clear และ optimize caches
 
 ---
 
-### 4. **`./deploy.sh status`** (Status Check)
-แสดงสถานะของ application
+### 7. **`./deploy.sh status`**
+**Status** - แสดงสถานะของ application
+
+**จะแสดง:**
+- ✓ PHP version
+- ✓ Composer version
+- ✓ Node.js + NPM version
+- ✓ Composer dependencies status
+- ✓ NPM dependencies status
+- ✓ .env status
+- ✓ APP_KEY status
+- ✓ Database status
+- ✓ Storage link status
+- ✓ Frontend assets status
+- ✓ Disk space usage
+- ✓ Recent deployments
 
 **ตัวอย่าง:**
 ```bash
 ./deploy.sh status
 ```
 
-**Output:**
+---
+
+## 🚩 Available Options (Flags)
+
+### `--seed`
+**บังคับ run database seeders**
+
+```bash
+./deploy.sh --seed
+./deploy.sh deploy --seed
 ```
-✓ PHP: 8.4.16
-✓ Composer: Installed
-✓ Node.js: v22.21.1
-✓ NPM: 10.9.4
-✓ Composer dependencies: Installed
-✓ NPM dependencies: Installed
-✓ .env: Exists
-✓ APP_KEY: Set
-✓ Database: Exists
-✓ Storage link: Exists
-✓ Frontend assets: Built
+
+### `--admin`
+**สร้าง admin user**
+
+```bash
+./deploy.sh --admin
+./deploy.sh deploy --admin
+
+# จะสร้าง:
+# Email: admin@thaivote.com
+# Password: (จะให้ input)
+```
+
+### `--backup`
+**เปิด database backup**
+
+```bash
+./deploy.sh --backup
+# จะสร้าง backup ใน storage/backups/
+```
+
+### `--fresh-composer`
+**Force regenerate composer.lock**
+
+```bash
+./deploy.sh --fresh-composer
+```
+
+### `--skip-npm`
+**ข้าม NPM install และ build**
+
+```bash
+./deploy.sh --skip-npm
+```
+
+### `--verbose` หรือ `-v`
+**แสดง verbose output**
+
+```bash
+./deploy.sh --verbose
+./deploy.sh -v
 ```
 
 ---
 
-### 5. **`./deploy.sh reset`** (Reset Installation)
-Reset application ให้กลับเป็นเหมือนใหม่
+## 🔥 Key Improvements ใน v4.1
 
-**⚠️ คำเตือน:** จะลบข้อมูลทั้งหมด (database, .env, caches, assets)
+### **1. บังคับติดตั้ง Dependencies ทุกครั้ง**
 
-**เมื่อไหร่ควรใช้:**
-- เมื่อต้องการเริ่มต้นใหม่
-- เมื่อมีปัญหาร้ายแรงที่แก้ไม่ได้
-
-**ตัวอย่าง:**
+**เดิม (ก่อน v4.1):**
 ```bash
-./deploy.sh reset
+# Check ว่ามี vendor/ ไหม
+if [ -d "vendor" ]; then
+    echo "✓ Skip" # ไม่ติดตั้ง
+fi
 ```
 
-**จะทำอะไร:**
-- 🗑️ ลบ database (database.sqlite)
-- 🗑️ ลบ .env
-- 🗑️ Clear caches ทั้งหมด
-- 🗑️ ลบ built assets
-- ✅ **เก็บ** dependencies (vendor, node_modules)
+**ใหม่ (v4.1):**
+```bash
+# ติดตั้งทุกครั้ง ไม่ skip
+log_info "📦 Installing/Updating ALL Composer dependencies..."
+composer install # ทุกครั้ง!
+```
+
+**ผลลัพธ์:**
+- ✅ ไม่มีปัญหา dependencies หาย
+- ✅ Dependencies เป็น version ล่าสุดเสมอ
+- ✅ ไม่ต้องแก้ปัญหาซ้ำๆ
+
+---
+
+## 📊 Deployment Flow
+
+```
+1.  Preflight Checks        → disk space, PHP version
+2.  Bootstrap Laravel        → create directories
+3.  Check Environment        → .env, database config
+4.  Backup Database          → (if --backup)
+5.  🔥 Pull Latest Code     → git pull (auto-stash)
+6.  🔥 Install Composer     → บังคับติดตั้งทุกครั้ง
+7.  🔥 Install NPM          → บังคับติดตั้งทุกครั้ง
+8.  🔥 Build Frontend       → บังคับ build ทุกครั้ง
+9.  Run Migrations          → smart migration
+10. Clear Caches            → config, route, view
+11. Optimize Application    → cache (production only)
+12. Setup Storage Links     → symlink
+13. Fix Permissions         → chmod 775
+14. Restart Services        → queue, reverb (if running)
+15. Run Seeders            → (if --seed or empty DB)
+16. Create Admin User      → (if --admin)
+17. Health Check           → test database, routes
+18. Disable Maintenance    → ปิด maintenance mode
+```
 
 ---
 
@@ -202,100 +360,82 @@ Reset application ให้กลับเป็นเหมือนใหม�
 ### Case 1: Clone โปรเจคครั้งแรก
 
 ```bash
-git clone <repository-url>
+git clone <repository>
 cd thaivote
 ./deploy.sh
-```
 
-**Result:** ระบบจะติดตั้งทุกอย่างให้อัตโนมัติ
+# จะติดตั้งทุกอย่างให้อัตโนมัติ:
+# - vendor/ (95 packages)
+# - node_modules/ (431 packages)
+# - public_html/build/
+# - database, migrations, seeders
+```
 
 ---
 
-### Case 2: Dependencies หาย
+### Case 2: Update โค้ดใหม่
+
+```bash
+# อยู่ใน project directory แล้ว
+./deploy.sh
+
+# จะทำอัตโนมัติ:
+# 1. git pull (ดึงโค้ดใหม่)
+# 2. composer install (อัปเดต dependencies)
+# 3. npm install (อัปเดต dependencies)
+# 4. npm run build (build assets ใหม่)
+# 5. php artisan migrate (run migrations ใหม่)
+```
+
+---
+
+### Case 3: Dependencies หาย
 
 **ปัญหา:**
 - ไม่มี vendor/
 - ไม่มี node_modules/
 - ไอคอนไม่แสดง
+- Tailwind CSS ไม่ทำงาน
 
 **วิธีแก้:**
 ```bash
-./deploy.sh doctor
-```
+./deploy.sh repair
 
-หรือ
-
-```bash
-./deploy.sh fix
-```
-
----
-
-### Case 3: Settings form บันทึกไม่ได้
-
-**ปัญหา:**
-- ปุ่มบันทึกไม่ทำงาน
-- Storage permissions ผิด
-
-**วิธีแก้:**
-```bash
+# หรือ
 ./deploy.sh doctor
 ```
 
 ---
 
-### Case 4: Assets ไม่ build
+### Case 4: ระบบพังหนัก
 
 **ปัญหา:**
-- CSS, JavaScript ไม่โหลด
-- หน้าเว็บไม่แสดงผล
+- Dependencies conflict
+- Cache เก่าเยอะ
+- Permissions ยุ่ง
 
 **วิธีแก้:**
 ```bash
-./deploy.sh fix
-```
-
-หรือ manual:
-
-```bash
-npm install
-npm run build
+./deploy.sh force-reset
+# ลบและติดตั้งใหม่ทั้งหมด (ไม่ลบ database)
 ```
 
 ---
 
-### Case 5: Database หาย
+### Case 5: Production Deployment
 
-**ปัญหา:**
-- ไม่มี database.sqlite
-- Migrations ยังไม่ได้ run
-
-**วิธีแก้:**
 ```bash
-./deploy.sh doctor
-```
+# เซิร์ฟเวอร์ production
+cd /var/www/thaivote
+./deploy.sh --backup
 
----
-
-### Case 6: .env หาย
-
-**ปัญหา:**
-- ไม่มี .env file
-- APP_KEY ไม่มี
-
-**วิธีแก้:**
-```bash
-./deploy.sh doctor
-```
-
----
-
-### Case 7: เริ่มต้นใหม่ทั้งหมด
-
-**วิธีทำ:**
-```bash
-./deploy.sh reset
-./deploy.sh
+# จะทำอัตโนมัติ:
+# 1. Backup database
+# 2. git pull
+# 3. install dependencies
+# 4. run migrations
+# 5. build assets
+# 6. optimize (cache config, routes)
 ```
 
 ---
@@ -305,12 +445,21 @@ npm run build
 Script จะสร้าง logs อัตโนมัติ:
 
 ```
-storage/logs/deploy/deploy_YYYYMMDD_HHMMSS.log
+storage/logs/deploy/
+├── deploy_20260110_143052.log    # ทุกขั้นตอน
+└── error_20260110_143052.log     # เฉพาะ errors
 ```
 
 **ดู logs:**
 ```bash
+# Log ล่าสุด
 tail -f storage/logs/deploy/deploy_*.log
+
+# Errors
+tail -f storage/logs/deploy/error_*.log
+
+# ทุกไฟล์
+ls -lh storage/logs/deploy/
 ```
 
 ---
@@ -319,7 +468,6 @@ tail -f storage/logs/deploy/deploy_*.log
 
 ### ปัญหา: Script ไม่ run
 
-**วิธีแก้:**
 ```bash
 chmod +x deploy.sh
 ```
@@ -328,144 +476,94 @@ chmod +x deploy.sh
 
 ### ปัญหา: Permission denied
 
-**วิธีแก้:**
 ```bash
 # ให้สิทธิ์ storage และ bootstrap
 chmod -R 775 storage bootstrap/cache
-```
 
-หรือใช้ doctor:
-
-```bash
-./deploy.sh doctor
+# หรือใช้ repair
+./deploy.sh repair
 ```
 
 ---
 
 ### ปัญหา: Composer install ล้มเหลว
 
-**วิธีแก้:**
 ```bash
 # ลบ composer.lock แล้วลองใหม่
 rm composer.lock
-./deploy.sh
+./deploy.sh --fresh-composer
 ```
 
 ---
 
 ### ปัญหา: NPM install ล้มเหลว
 
-**วิธีแก้:**
 ```bash
 # ลบ node_modules แล้วลองใหม่
-rm -rf node_modules
+rm -rf node_modules package-lock.json
 npm install
 ```
 
 ---
 
-### ปัญหา: Database connection failed
+### ปัญหา: Git pull conflict
 
-**วิธีแก้:**
-
-1. ตรวจสอบ .env:
 ```bash
-DB_CONNECTION=sqlite
-```
-
-2. สร้าง database:
-```bash
-touch database/database.sqlite
-./deploy.sh doctor
+# Script จะ auto-stash ให้
+# แต่ถ้ายังมีปัญหา:
+git stash
+./deploy.sh
+git stash pop
 ```
 
 ---
 
 ## 🔐 Default Credentials
 
-**Admin User:**
+**Admin User (ถ้าใช้ --admin):**
 - Email: `admin@thaivote.com`
-- Password: `password`
+- Password: (ตั้งเองตอน deploy)
 
-**Test User (is_admin = true):**
+**Test User (from seeders):**
 - Email: `test@example.com`
 - Password: `password`
+- is_admin: `true`
 
 ---
 
-## 🎓 Best Practices
+## ⚡ Performance
 
-### 1. ใช้ `doctor` เมื่อมีปัญหา
-```bash
-./deploy.sh doctor
+### Full Deployment
+```
+Total time: 2-5 minutes
+
+Breakdown:
+- Git pull:         5-10 seconds
+- Composer install: 30-60 seconds
+- NPM install:      30-60 seconds
+- Build assets:     10-30 seconds
+- Migrations:       5-10 seconds
+- Seeders:          5-10 seconds
+- Optimization:     5-10 seconds
 ```
 
-### 2. ตรวจสอบ `status` ก่อน deploy
-```bash
-./deploy.sh status
-./deploy.sh
+### Quick Deployment
 ```
+Total time: 30-60 seconds
 
-### 3. ใช้ `fix` สำหรับ quick fixes
-```bash
-./deploy.sh fix
-```
-
-### 4. Commit dependencies
-- ✅ **DO** commit: `package-lock.json`, `composer.lock`
-- ❌ **DON'T** commit: `node_modules/`, `vendor/`, `.env`
-
-### 5. Use `.gitignore` correctly
-```gitignore
-/node_modules
-/vendor
-.env
-/public_html/build
-```
-
----
-
-## 🚦 Development Workflow
-
-### Daily Development
-
-```bash
-# 1. Pull latest changes
-git pull
-
-# 2. Check status
-./deploy.sh status
-
-# 3. Fix if needed
-./deploy.sh fix
-
-# 4. Start dev servers
-npm run dev         # Terminal 1
-php artisan serve   # Terminal 2
-```
-
----
-
-### Deploying to Production
-
-```bash
-# 1. Set environment to production
-echo "APP_ENV=production" >> .env
-
-# 2. Deploy
-./deploy.sh
-
-# 3. Verify
-./deploy.sh status
+Breakdown:
+- Composer install: 10-20 seconds (cached)
+- NPM install:      10-20 seconds (cached)
+- Build assets:     10-30 seconds
 ```
 
 ---
 
 ## 📚 Additional Resources
 
-- **Project Documentation**: `/docs`
-- **Code Style Guide**: `CLAUDE.md`
-- **API Documentation**: Visit `/api-docs` when server is running
+- **Project Documentation**: `CLAUDE.md`
+- **Testing Guide**: `TESTING_DEPLOYMENT.md`
+- **API Documentation**: Visit `/api-docs`
 - **Laravel Documentation**: https://laravel.com/docs
 - **Vue.js Documentation**: https://vuejs.org/guide
 
@@ -473,7 +571,7 @@ echo "APP_ENV=production" >> .env
 
 ## 🆘 Need Help?
 
-1. **Check Status First:**
+1. **Check Status:**
    ```bash
    ./deploy.sh status
    ```
@@ -485,14 +583,16 @@ echo "APP_ENV=production" >> .env
 
 3. **Check Logs:**
    ```bash
-   tail -f storage/logs/deploy/deploy_*.log
+   tail -f storage/logs/deploy/*.log
    ```
 
-4. **Ask for Help:**
-   - Create an issue in the repository
-   - Include output from `./deploy.sh status`
-   - Include relevant log files
+4. **Force Reset:**
+   ```bash
+   ./deploy.sh force-reset
+   ```
 
 ---
 
 **Happy Deploying! 🚀**
+
+*ThaiVote Deploy Script v4.1*
