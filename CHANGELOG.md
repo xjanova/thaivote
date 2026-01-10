@@ -1,3 +1,9 @@
+## [1.35.0](https://github.com/xjanova/thaivote/compare/v1.34.2...v1.35.0) (2026-01-10)
+
+### ✨ Features
+
+* Add admin logo and favicon settings ([0bb2e08](https://github.com/xjanova/thaivote/commit/0bb2e081c97cc656b3a6c8cb3b69a15dd1217cee))
+
 ## [1.34.2](https://github.com/xjanova/thaivote/compare/v1.34.1...v1.34.2) (2026-01-10)
 
 ### 🐛 Bug Fixes
