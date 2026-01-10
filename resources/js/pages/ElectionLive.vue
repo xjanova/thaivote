@@ -518,6 +518,8 @@ const CountUp = {
 </script>
 
 <style scoped>
+@reference "tailwindcss";
+
 .election-live {
     @apply min-h-screen bg-gray-900;
 }

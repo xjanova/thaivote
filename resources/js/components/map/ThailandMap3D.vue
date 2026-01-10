@@ -649,6 +649,8 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+@reference "tailwindcss";
+
 .thailand-map-3d {
     @apply relative w-full h-[700px] lg:h-[900px] rounded-3xl overflow-hidden;
     background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 50%, #0a0a1a 100%);
@@ -699,7 +701,8 @@ onUnmounted(() => {
 }
 
 .party-result {
-    @apply bg-white/5 rounded-xl p-3 animate-fadeIn;
+    @apply bg-white/5 rounded-xl p-3;
+    animation: fadeIn 0.5s ease forwards;
 }
 
 .party-badge {
