@@ -1,3 +1,9 @@
+## [1.38.3](https://github.com/xjanova/thaivote/compare/v1.38.2...v1.38.3) (2026-01-10)
+
+### 🐛 Bug Fixes
+
+* Disable semantic-release issue/PR comments to prevent API errors ([5bf41a4](https://github.com/xjanova/thaivote/commit/5bf41a4fe8518b5db3220603a0591ac4e1a6c95c)), closes [#165](https://github.com/xjanova/thaivote/issues/165) [#123](https://github.com/xjanova/thaivote/issues/123)
+
 ## [1.38.2](https://github.com/xjanova/thaivote/compare/v1.38.1...v1.38.2) (2026-01-10)
 
 ### 🐛 Bug Fixes
