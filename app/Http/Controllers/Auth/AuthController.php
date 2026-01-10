@@ -62,9 +62,20 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            // Name must be English letters, numbers, spaces, dots, and hyphens only
+            'name' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9\s.\-]+$/'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users', 'regex:/^[a-zA-Z0-9@.\-_]+$/'],
             'password' => ['required', 'confirmed', Password::min(8)],
+        ], [
+            'name.required' => 'กรุณากรอกชื่อ',
+            'name.regex' => 'ชื่อต้องเป็นภาษาอังกฤษเท่านั้น (กรุณาเปลี่ยนแป้นพิมพ์เป็นภาษาอังกฤษ)',
+            'email.required' => 'กรุณากรอกอีเมล',
+            'email.email' => 'รูปแบบอีเมลไม่ถูกต้อง',
+            'email.unique' => 'อีเมลนี้ถูกใช้งานแล้ว',
+            'email.regex' => 'อีเมลต้องเป็นภาษาอังกฤษเท่านั้น',
+            'password.required' => 'กรุณากรอกรหัสผ่าน',
+            'password.min' => 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร',
+            'password.confirmed' => 'ยืนยันรหัสผ่านไม่ตรงกัน',
         ]);
 
         $user = User::create([
