@@ -343,7 +343,7 @@ const panY = ref(0);
 const isPanning = ref(false);
 const startX = ref(0);
 const startY = ref(0);
-const viewBox = ref('0 0 500 1200');
+const viewBox = ref('0 0 560 1025');
 
 // Selection state
 const selectedProvince = ref(null);
