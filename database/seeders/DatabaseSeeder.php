@@ -26,6 +26,18 @@ class DatabaseSeeder extends Seeder
             Candidate2569Seeder::class, // ผู้สมัคร 2569 (แคนดิเดตนายกฯ + บัญชีรายชื่อ)
         ]);
 
+        // Create admin user only if it doesn't exist
+        if (! User::where('email', 'admin@thaivote.com')->exists()) {
+            User::factory()->create([
+                'name' => 'Admin User',
+                'email' => 'admin@thaivote.com',
+                'is_admin' => true,
+            ]);
+            $this->command->info('Admin user created: admin@thaivote.com (password: password)');
+        } else {
+            $this->command->info('Admin user already exists, skipping.');
+        }
+
         // Create test user only if it doesn't exist
         if (! User::where('email', 'test@example.com')->exists()) {
             User::factory()->create([
