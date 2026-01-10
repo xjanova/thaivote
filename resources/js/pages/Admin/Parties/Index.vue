@@ -217,7 +217,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 
