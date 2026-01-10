@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class LiveResultsController extends Controller
 {
     public function __construct(
-        protected LiveResultsService $resultsService
+        protected LiveResultsService $resultsService,
     ) {}
 
     /**
@@ -29,10 +29,10 @@ class LiveResultsController extends Controller
                 ->first()?->id
             ?? Election::orderBy('election_date', 'desc')->first()?->id;
 
-        if (!$electionId) {
+        if (! $electionId) {
             return response()->json([
                 'success' => false,
-                'message' => 'ไม่พบข้อมูลการเลือกตั้ง'
+                'message' => 'ไม่พบข้อมูลการเลือกตั้ง',
             ], 404);
         }
 
@@ -52,7 +52,7 @@ class LiveResultsController extends Controller
     {
         $electionId = $this->getElectionId($request);
 
-        if (!$electionId) {
+        if (! $electionId) {
             return $this->electionNotFound();
         }
 
@@ -72,7 +72,7 @@ class LiveResultsController extends Controller
     {
         $electionId = $this->getElectionId($request);
 
-        if (!$electionId) {
+        if (! $electionId) {
             return $this->electionNotFound();
         }
 
@@ -92,7 +92,7 @@ class LiveResultsController extends Controller
     {
         $electionId = $this->getElectionId($request);
 
-        if (!$electionId) {
+        if (! $electionId) {
             return $this->electionNotFound();
         }
 
@@ -112,7 +112,7 @@ class LiveResultsController extends Controller
     {
         $electionId = $this->getElectionId($request);
 
-        if (!$electionId) {
+        if (! $electionId) {
             return $this->electionNotFound();
         }
 
@@ -136,9 +136,9 @@ class LiveResultsController extends Controller
             $lastData = null;
 
             while (true) {
-                if (!$electionId) {
+                if (! $electionId) {
                     echo "event: error\n";
-                    echo "data: " . json_encode(['message' => 'ไม่พบข้อมูลการเลือกตั้ง']) . "\n\n";
+                    echo 'data: ' . json_encode(['message' => 'ไม่พบข้อมูลการเลือกตั้ง']) . "\n\n";
                     break;
                 }
 
@@ -148,12 +148,12 @@ class LiveResultsController extends Controller
                 // Only send if data changed
                 if ($currentData !== $lastData) {
                     echo "event: update\n";
-                    echo "data: " . $currentData . "\n\n";
+                    echo 'data: ' . $currentData . "\n\n";
                     $lastData = $currentData;
                 } else {
                     // Send heartbeat
                     echo "event: heartbeat\n";
-                    echo "data: " . json_encode(['timestamp' => now()->toIso8601String()]) . "\n\n";
+                    echo 'data: ' . json_encode(['timestamp' => now()->toIso8601String()]) . "\n\n";
                 }
 
                 ob_flush();
@@ -195,7 +195,7 @@ class LiveResultsController extends Controller
     {
         return response()->json([
             'success' => false,
-            'message' => 'ไม่พบข้อมูลการเลือกตั้ง'
+            'message' => 'ไม่พบข้อมูลการเลือกตั้ง',
         ], 404);
     }
 }

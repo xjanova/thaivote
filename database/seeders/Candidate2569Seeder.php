@@ -24,8 +24,9 @@ class Candidate2569Seeder extends Seeder
 
         $election = Election::where('name', 'การเลือกตั้ง ส.ส. 2569')->first();
 
-        if (!$election) {
+        if (! $election) {
             $this->command->error('Election 2569 not found. Run Election2569Seeder first.');
+
             return;
         }
 
@@ -51,7 +52,7 @@ class Candidate2569Seeder extends Seeder
         foreach ($pmCandidates as $data) {
             $party = $parties->get($data['party_name']);
 
-            if (!$party) {
+            if (! $party) {
                 $this->command->warn("Party not found: {$data['party_name']}");
                 $skipped++;
                 continue;
@@ -70,7 +71,7 @@ class Candidate2569Seeder extends Seeder
                     'type' => 'party_list',
                     'party_list_order' => $data['party_list_order'] ?? 1,
                     'is_pm_candidate' => true,
-                ]
+                ],
             );
             $created++;
         }
@@ -89,7 +90,8 @@ class Candidate2569Seeder extends Seeder
 
         foreach ($partyListCandidates as $partyName => $candidates) {
             $party = $parties->get($partyName);
-            if (!$party) {
+
+            if (! $party) {
                 continue;
             }
 

@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Candidate;
 use App\Models\Constituency;
 use App\Models\Election;
 use App\Models\Party;
@@ -63,7 +62,7 @@ class Election2569Seeder extends Seeder
                     'advance_voting_date' => '2569-02-01',
                     'announcement_date' => '2569-01-07',
                 ],
-            ]
+            ],
         );
     }
 
@@ -102,6 +101,7 @@ class Election2569Seeder extends Seeder
 
         foreach ($allocation as $provinceName => $seatCount) {
             $province = $provinces->get($provinceName);
+
             if ($province) {
                 $province->update(['total_constituencies' => $seatCount]);
 
@@ -113,7 +113,7 @@ class Election2569Seeder extends Seeder
                         ],
                         [
                             'name' => "เขตเลือกตั้งที่ {$i}",
-                        ]
+                        ],
                     );
                 }
                 $updated++;

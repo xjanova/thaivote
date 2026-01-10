@@ -2,16 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\Candidate;
 use App\Models\Constituency;
-use App\Models\ConstituencyResult;
 use App\Models\Election;
 use App\Models\NationalResult;
-use App\Models\Party;
 use App\Models\Province;
 use App\Models\ProvinceResult;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Service สำหรับดึงและรวบรวมผลเลือกตั้งแบบ real-time
@@ -51,7 +47,7 @@ class LiveResultsService
     {
         $election = Election::find($electionId);
 
-        if (!$election) {
+        if (! $election) {
             return [];
         }
 
@@ -172,7 +168,7 @@ class LiveResultsService
             $query->where('election_id', $electionId)->with(['candidate', 'party']);
         }])->find($provinceId);
 
-        if (!$province) {
+        if (! $province) {
             return [];
         }
 
@@ -241,7 +237,7 @@ class LiveResultsService
                 ->orderByDesc('votes');
         }])->find($constituencyId);
 
-        if (!$constituency) {
+        if (! $constituency) {
             return [];
         }
 
@@ -308,7 +304,8 @@ class LiveResultsService
             foreach ($regionProvinces as $province) {
                 foreach ($province->results as $result) {
                     $partyId = $result->party_id;
-                    if (!isset($partySeats[$partyId])) {
+
+                    if (! isset($partySeats[$partyId])) {
                         $partySeats[$partyId] = [
                             'id' => $result->party->id,
                             'name_th' => $result->party->name_th,
@@ -324,7 +321,7 @@ class LiveResultsService
             }
 
             // Sort by seats
-            usort($partySeats, fn($a, $b) => $b['seats'] - $a['seats']);
+            usort($partySeats, fn ($a, $b) => $b['seats'] - $a['seats']);
 
             $regionResults[$regionKey] = [
                 'key' => $regionKey,
