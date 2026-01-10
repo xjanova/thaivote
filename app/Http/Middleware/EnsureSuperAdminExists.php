@@ -19,12 +19,8 @@ class EnsureSuperAdminExists
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Skip check for certain routes (install, setup-admin, auth routes)
-        if ($request->is('install*') ||
-            $request->is('setup-admin*') ||
-            $request->is('login') ||
-            $request->is('register') ||
-            $request->is('logout')) {
+        // Always skip for install and setup-admin routes
+        if ($request->is('install*') || $request->is('setup-admin*')) {
             return $next($request);
         }
 
@@ -39,7 +35,7 @@ class EnsureSuperAdminExists
             $hasAdmin = DB::table('users')->where('is_admin', true)->exists();
 
             if (! $hasAdmin) {
-                // No admin exists - redirect to setup
+                // No admin exists - redirect to setup (even from login/register)
                 return redirect('/setup-admin');
             }
         } catch (\Exception $e) {
