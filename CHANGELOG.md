@@ -1,3 +1,9 @@
+## [1.37.0](https://github.com/xjanova/thaivote/compare/v1.36.2...v1.37.0) (2026-01-10)
+
+### ✨ Features
+
+* Force install ALL dependencies on every deployment ([da2f1c2](https://github.com/xjanova/thaivote/commit/da2f1c21dcd5b5d1f3bcf6fcc577448ec4a54ec1))
+
 ## [1.36.2](https://github.com/xjanova/thaivote/compare/v1.36.1...v1.36.2) (2026-01-10)
 
 ### ⏪ Reverts
