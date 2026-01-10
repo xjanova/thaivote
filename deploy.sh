@@ -939,6 +939,12 @@ install_composer_dependencies() {
     # Log which composer we're using
     log_info "Using: $(get_composer_cmd)"
 
+    # 🔥 CRITICAL: ALWAYS install Composer dependencies (no checking)
+    log_info "📦 Installing/Updating ALL Composer dependencies..."
+    if [ ! -d "vendor" ]; then
+        log_warning "⚠️  vendor/ not found - installing from scratch"
+    fi
+
     if [ "$FRESH_COMPOSER" = true ]; then
         log_warning "Regenerating composer.lock for PHP $(get_php_version)..."
         rm -f composer.lock
@@ -1020,6 +1026,12 @@ install_npm_dependencies() {
 
     cd "${APP_DIR}"
 
+    # 🔥 CRITICAL: ALWAYS install NPM dependencies (no checking)
+    log_info "📦 Installing/Updating ALL NPM dependencies..."
+    if [ ! -d "node_modules" ]; then
+        log_warning "⚠️  node_modules/ not found - installing from scratch (may take a few minutes)"
+    fi
+
     if [ -f "package-lock.json" ]; then
         log_info "Running npm ci..."
         set +e
@@ -1058,6 +1070,12 @@ build_frontend() {
     log_step "8" "Building Frontend Assets"
 
     cd "${APP_DIR}"
+
+    # 🔥 CRITICAL: ALWAYS build frontend assets (no checking)
+    log_info "🏗️  Building ALL frontend assets with Vite..."
+    if [ ! -d "public_html/build" ]; then
+        log_warning "⚠️  public_html/build/ not found - building from scratch"
+    fi
 
     set +e
     local BUILD_OUTPUT=$(timeout 600 npm run build 2>&1)
