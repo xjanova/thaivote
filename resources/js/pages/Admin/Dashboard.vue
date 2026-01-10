@@ -289,9 +289,22 @@ const fetchStats = async () => {
     statsLoading.value = true;
     try {
         const response = await axios.get('/admin/api/dashboard/stats');
-        stats.value = response.data;
+        // Ensure we have valid numeric values
+        stats.value = {
+            activeElections: Number(response.data?.activeElections) || 0,
+            totalParties: Number(response.data?.totalParties) || 0,
+            todayNews: Number(response.data?.todayNews) || 0,
+            activeSources: Number(response.data?.activeSources) || 0,
+        };
     } catch (error) {
         console.error('Failed to fetch stats:', error);
+        // Keep existing values or reset to 0 on error
+        stats.value = {
+            activeElections: stats.value.activeElections || 0,
+            totalParties: stats.value.totalParties || 0,
+            todayNews: stats.value.todayNews || 0,
+            activeSources: stats.value.activeSources || 0,
+        };
     } finally {
         statsLoading.value = false;
     }

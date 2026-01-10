@@ -43,7 +43,7 @@
                     bgGradient,
                 ]"
             >
-                <component :is="resolvedIcon" class="w-7 h-7 text-white" />
+                <component v-if="resolvedIcon" :is="resolvedIcon" class="w-7 h-7 text-white" />
             </div>
         </div>
     </div>
@@ -110,13 +110,25 @@ const props = defineProps({
 // Animated value display
 const displayValue = ref(0);
 const animateValue = (target) => {
+    // Handle non-numeric or invalid values
+    if (target === null || target === undefined || target === '') {
+        displayValue.value = 0;
+        return;
+    }
+
     if (typeof target !== 'number') {
         displayValue.value = target;
         return;
     }
 
+    // Validate that target is a valid number
+    if (isNaN(target) || !isFinite(target)) {
+        displayValue.value = 0;
+        return;
+    }
+
     const duration = 1000;
-    const start = displayValue.value || 0;
+    const start = typeof displayValue.value === 'number' ? displayValue.value : 0;
     const increment = (target - start) / (duration / 16);
     let current = start;
 
@@ -187,9 +199,19 @@ const changeColor = computed(() => (props.change >= 0 ? 'text-green-600' : 'text
 const resolvedIcon = computed(() => icons[props.icon] || icons.ChartBarIcon);
 
 const formatValue = (val) => {
+    // Handle invalid values
+    if (val === null || val === undefined || val === '') {
+        return '0';
+    }
+
     if (typeof val === 'number') {
+        // Handle NaN and Infinity
+        if (isNaN(val) || !isFinite(val)) {
+            return '0';
+        }
         return new Intl.NumberFormat('th-TH').format(val);
     }
+
     return val;
 };
 </script>
