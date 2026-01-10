@@ -9,6 +9,7 @@ use App\Models\NewsSource;
 use App\Models\Party;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -173,6 +174,83 @@ class DashboardController extends Controller
         return response()->json([
             'labels' => $labels,
             'data' => $data,
+        ]);
+    }
+
+    /**
+     * Approve a pending item.
+     */
+    public function approve(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'entity_type' => 'required|string|in:news',
+            'entity_id' => 'required|integer',
+        ]);
+
+        $success = false;
+        $message = '';
+
+        switch ($validated['entity_type']) {
+            case 'news':
+                $article = NewsArticle::find($validated['entity_id']);
+                if ($article) {
+                    $article->is_approved = true;
+                    $article->save();
+                    $success = true;
+                    $message = 'อนุมัติข่าวเรียบร้อยแล้ว';
+                } else {
+                    $message = 'ไม่พบข่าวที่ต้องการอนุมัติ';
+                }
+                break;
+
+            default:
+                $message = 'ประเภทไม่ถูกต้อง';
+        }
+
+        // Clear related caches
+        Cache::forget('admin.dashboard.stats');
+
+        return response()->json([
+            'success' => $success,
+            'message' => $message,
+        ]);
+    }
+
+    /**
+     * Reject/delete a pending item.
+     */
+    public function reject(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'entity_type' => 'required|string|in:news',
+            'entity_id' => 'required|integer',
+        ]);
+
+        $success = false;
+        $message = '';
+
+        switch ($validated['entity_type']) {
+            case 'news':
+                $article = NewsArticle::find($validated['entity_id']);
+                if ($article) {
+                    $article->delete();
+                    $success = true;
+                    $message = 'ลบข่าวเรียบร้อยแล้ว';
+                } else {
+                    $message = 'ไม่พบข่าวที่ต้องการลบ';
+                }
+                break;
+
+            default:
+                $message = 'ประเภทไม่ถูกต้อง';
+        }
+
+        // Clear related caches
+        Cache::forget('admin.dashboard.stats');
+
+        return response()->json([
+            'success' => $success,
+            'message' => $message,
         ]);
     }
 }
