@@ -1,3 +1,10 @@
+## [1.34.1](https://github.com/xjanova/thaivote/compare/v1.34.0...v1.34.1) (2026-01-10)
+
+### 🐛 Bug Fixes
+
+* resolve ESLint errors in rebased code ([c89f2ee](https://github.com/xjanova/thaivote/commit/c89f2eec2834b4afd5d2b3a02e6888b126cc2654))
+* resolve ESLint warnings by removing unused imports and variables ([c4ce066](https://github.com/xjanova/thaivote/commit/c4ce066c567c934d3f92deaba03894a30936b920))
+
 ## [1.34.0](https://github.com/xjanova/thaivote/compare/v1.33.0...v1.34.0) (2026-01-10)
 
 ### ✨ Features
