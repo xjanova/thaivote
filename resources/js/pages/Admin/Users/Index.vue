@@ -219,6 +219,7 @@ const formatDate = (date) =>
                     <div class="text-sm text-gray-500">
                         แสดง {{ users.from }} - {{ users.to }} จาก {{ users.total }} รายการ
                     </div>
+                    <!-- eslint-disable vue/no-v-html -- Laravel pagination labels with HTML entities are safe -->
                     <div class="flex gap-2">
                         <a
                             v-for="link in users.links"
@@ -235,6 +236,7 @@ const formatDate = (date) =>
                             v-html="link.label"
                         />
                     </div>
+                    <!-- eslint-enable vue/no-v-html -->
                 </div>
             </div>
         </div>

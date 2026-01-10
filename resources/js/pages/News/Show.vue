@@ -34,6 +34,7 @@ onMounted(async () => {
 
             <article v-else-if="article" class="bg-white shadow rounded-lg p-6">
                 <h1 class="text-3xl font-bold text-gray-900 mb-4">{{ article.title }}</h1>
+                <!-- eslint-disable-next-line vue/no-v-html -- Content is sanitized server-side -->
                 <div class="prose max-w-none" v-html="article.content"></div>
             </article>
 
