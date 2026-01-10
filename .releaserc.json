@@ -57,7 +57,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "echo ${nextRelease.version} > VERSION && tar -czf thaivote-${nextRelease.version}.tar.gz --exclude='node_modules' --exclude='.git' --exclude='.github' --exclude='tests' --exclude='.env' --exclude='.env.*' --exclude='*.log' --exclude='*.tar.gz' --exclude='coverage' --exclude='storage/logs/*' --exclude='storage/framework/cache/*' --exclude='storage/framework/sessions/*' --exclude='storage/framework/views/*' --warning=no-file-changed ."
+        "prepareCmd": "echo ${nextRelease.version} > VERSION && tar -czf thaivote-${nextRelease.version}.tar.gz --exclude='node_modules' --exclude='.git' --exclude='.github' --exclude='tests' --exclude='.env*' --exclude='*.log' --exclude='*.tar.gz' --exclude='coverage' --exclude='storage/logs' --exclude='storage/framework/cache' --exclude='storage/framework/sessions' --exclude='storage/framework/views' --exclude='vendor' --exclude='.phpunit.result.cache' --ignore-failed-read ."
       }
     ],
     [
