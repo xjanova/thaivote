@@ -31,13 +31,13 @@
         </svg>
 
         <!-- Icon (left) -->
-        <component v-if="icon && iconPosition === 'left'" :is="icon" class="w-4 h-4 mr-2" />
+        <component :is="icon" v-if="icon && iconPosition === 'left'" class="w-4 h-4 mr-2" />
 
         <!-- Slot Content -->
         <slot />
 
         <!-- Icon (right) -->
-        <component v-if="icon && iconPosition === 'right'" :is="icon" class="w-4 h-4 ml-2" />
+        <component :is="icon" v-if="icon && iconPosition === 'right'" class="w-4 h-4 ml-2" />
     </component>
 </template>
 
