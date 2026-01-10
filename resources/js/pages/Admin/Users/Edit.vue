@@ -43,7 +43,7 @@ const submit = () => {
             </div>
 
             <!-- Form -->
-            <form @submit.prevent="submit" class="bg-white rounded-lg shadow p-6 space-y-6">
+            <form class="bg-white rounded-lg shadow p-6 space-y-6" @submit.prevent="submit">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อ</label>
                     <input

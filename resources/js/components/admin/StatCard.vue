@@ -46,7 +46,7 @@
 </template>
 
 <script setup>
-import { computed, h, ref, watch, onMounted } from 'vue';
+import { computed, ref, watch, onMounted } from 'vue';
 
 // Arrow icons for trend
 const ArrowUpIcon = {
