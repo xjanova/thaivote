@@ -1,3 +1,14 @@
+## [1.36.2](https://github.com/xjanova/thaivote/compare/v1.36.1...v1.36.2) (2026-01-10)
+
+### ⏪ Reverts
+
+* Restore original deploy.sh v4.1 with all features ([644ede9](https://github.com/xjanova/thaivote/commit/644ede92b42a14568de7e06de6b18c54f1bd23a8))
+
+### 📝 Documentation
+
+* Add deployment testing guide ([041ce39](https://github.com/xjanova/thaivote/commit/041ce39e4408f1bbaf8091b0b36cdb8a1f42966f))
+* Revert DEPLOYMENT.md to match original deploy.sh v4.1 ([c1ecf0d](https://github.com/xjanova/thaivote/commit/c1ecf0d2d77518a06c3f8db30337f2c3b821b174))
+
 ## [1.36.1](https://github.com/xjanova/thaivote/compare/v1.36.0...v1.36.1) (2026-01-10)
 
 ### 🐛 Bug Fixes
