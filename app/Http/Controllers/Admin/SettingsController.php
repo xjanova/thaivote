@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class SettingsController extends Controller
@@ -29,6 +31,8 @@ class SettingsController extends Controller
         $validated = $request->validate([
             'site_name' => 'required|string|max:255',
             'site_description' => 'nullable|string|max:500',
+            'site_logo' => 'nullable|image|mimes:png,jpg,jpeg,svg|max:2048',
+            'site_favicon' => 'nullable|image|mimes:png,jpg,jpeg,svg,ico|max:1024',
             'maintenance_mode' => 'boolean',
             'auto_refresh_interval' => 'required|integer|min:10|max:600',
             'news_fetch_enabled' => 'boolean',
@@ -47,6 +51,26 @@ class SettingsController extends Controller
         Setting::set('results_scrape_enabled', $validated['results_scrape_enabled'] ?? true, 'boolean', 'results');
         Setting::set('results_scrape_interval', $validated['results_scrape_interval'], 'integer', 'results');
 
+        // Handle logo upload
+        if ($request->hasFile('site_logo')) {
+            $oldLogo = Setting::get('site_logo');
+            if ($oldLogo) {
+                Storage::disk('public')->delete($oldLogo);
+            }
+            $logoPath = $this->uploadImage($request->file('site_logo'), 'settings');
+            Setting::set('site_logo', $logoPath, 'string', 'appearance');
+        }
+
+        // Handle favicon upload
+        if ($request->hasFile('site_favicon')) {
+            $oldFavicon = Setting::get('site_favicon');
+            if ($oldFavicon) {
+                Storage::disk('public')->delete($oldFavicon);
+            }
+            $faviconPath = $this->uploadImage($request->file('site_favicon'), 'settings');
+            Setting::set('site_favicon', $faviconPath, 'string', 'appearance');
+        }
+
         // Clear cache
         Setting::clearCache();
 
@@ -62,5 +86,15 @@ class SettingsController extends Controller
             'success' => true,
             'data' => Setting::getAllSettings(),
         ]);
+    }
+
+    /**
+     * Upload image to storage.
+     */
+    private function uploadImage($file, string $folder): string
+    {
+        $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
+
+        return $file->storeAs("images/{$folder}", $filename, 'public');
     }
 }

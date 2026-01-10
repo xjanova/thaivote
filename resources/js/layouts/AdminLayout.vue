@@ -19,7 +19,10 @@
         >
             <!-- Logo -->
             <div class="h-16 flex items-center justify-between px-6 border-b border-white/10">
-                <span class="text-xl font-bold">ThaiVote Admin</span>
+                <div v-if="siteLogo" class="flex items-center">
+                    <img :src="siteLogo" alt="Logo" class="h-10 w-auto object-contain" />
+                </div>
+                <span v-else class="text-xl font-bold">{{ siteName }} Admin</span>
                 <button
                     class="lg:hidden p-1 hover:bg-white/10 rounded"
                     @click="sidebarOpen = false"
@@ -109,12 +112,38 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+import axios from 'axios';
 import Toast from '@/components/Toast.vue';
 
 // Sidebar state for mobile
 const sidebarOpen = ref(false);
+
+// Settings
+const settings = ref({});
+
+// Fetch settings on mount
+onMounted(async () => {
+    try {
+        const response = await axios.get('/admin/settings/api');
+        if (response.data.success) {
+            settings.value = response.data.data;
+        }
+    } catch (error) {
+        console.error('Failed to load settings:', error);
+    }
+});
+
+// Site logo and name from settings
+const siteLogo = computed(() => {
+    if (settings.value.site_logo) {
+        return `/storage/${settings.value.site_logo}`;
+    }
+    return null;
+});
+
+const siteName = computed(() => settings.value.site_name || 'ThaiVote');
 
 // Simple icon components
 const HomeIcon = {

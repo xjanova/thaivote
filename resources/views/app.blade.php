@@ -7,6 +7,16 @@
 
     <title>{{ config('app.name', 'ThaiVote') }}</title>
 
+    <!-- Favicon -->
+    @php
+        $favicon = \App\Models\Setting::get('site_favicon');
+    @endphp
+    @if($favicon)
+        <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . $favicon) }}">
+    @else
+        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    @endif
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
