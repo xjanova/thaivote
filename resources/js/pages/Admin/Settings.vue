@@ -27,7 +27,7 @@ const saveSettings = async () => {
             <h1 class="text-3xl font-bold text-gray-900 mb-6">ตั้งค่าระบบ</h1>
 
             <div class="bg-white shadow rounded-lg p-6">
-                <form @submit.prevent="saveSettings" class="space-y-6">
+                <form class="space-y-6" @submit.prevent="saveSettings">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">ชื่อเว็บไซต์</label>
                         <input

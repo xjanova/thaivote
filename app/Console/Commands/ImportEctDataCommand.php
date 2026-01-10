@@ -9,7 +9,6 @@ use App\Models\Party;
 use App\Models\Province;
 use App\Services\ECTScraperService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 class ImportEctDataCommand extends Command
 {
@@ -71,6 +70,7 @@ class ImportEctDataCommand extends Command
         $this->warn('Clearing existing 2569 election data...');
 
         $election = Election::where('name', 'การเลือกตั้ง ส.ส. 2569')->first();
+
         if ($election) {
             Candidate::where('election_id', $election->id)->delete();
             $election->delete();
@@ -93,7 +93,7 @@ class ImportEctDataCommand extends Command
                 ['Status', $election->status],
                 ['Eligible Voters', number_format($election->total_eligible_voters)],
                 ['Total Seats', $election->settings['total_seats'] ?? 500],
-            ]
+            ],
         );
     }
 
@@ -147,6 +147,7 @@ class ImportEctDataCommand extends Command
 
         foreach ($allocation as $provinceName => $seatCount) {
             $province = $provinces->get($provinceName);
+
             if ($province) {
                 $province->update(['total_constituencies' => $seatCount]);
 
@@ -159,7 +160,7 @@ class ImportEctDataCommand extends Command
                         ],
                         [
                             'name' => "เขตเลือกตั้งที่ {$i}",
-                        ]
+                        ],
                     );
                 }
 
@@ -177,8 +178,10 @@ class ImportEctDataCommand extends Command
         $this->info('Importing PM candidates for 2569...');
 
         $election = Election::where('name', 'การเลือกตั้ง ส.ส. 2569')->first();
-        if (!$election) {
+
+        if (! $election) {
             $this->error('Election 2569 not found. Run with --election first.');
+
             return;
         }
 
@@ -192,7 +195,7 @@ class ImportEctDataCommand extends Command
         foreach ($pmCandidates as $candidateData) {
             $party = $parties->get($candidateData['party_name']);
 
-            if (!$party) {
+            if (! $party) {
                 $this->newLine();
                 $this->warn("Party not found: {$candidateData['party_name']}");
                 $skipped++;
@@ -213,7 +216,7 @@ class ImportEctDataCommand extends Command
                     'type' => 'party_list',
                     'party_list_order' => $candidateData['party_list_order'] ?? 1,
                     'is_pm_candidate' => $candidateData['is_pm_candidate'] ?? false,
-                ]
+                ],
             );
 
             $created++;
@@ -231,8 +234,8 @@ class ImportEctDataCommand extends Command
             [
                 ['Total PM Candidates', Candidate::where('election_id', $election->id)->where('is_pm_candidate', true)->count()],
                 ['Total Party List', Candidate::where('election_id', $election->id)->where('type', 'party_list')->count()],
-                ['Parties with Candidates', Party::whereHas('candidates', fn($q) => $q->where('election_id', $election->id))->count()],
-            ]
+                ['Parties with Candidates', Party::whereHas('candidates', fn ($q) => $q->where('election_id', $election->id))->count()],
+            ],
         );
     }
 }

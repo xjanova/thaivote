@@ -3,10 +3,10 @@
 namespace App\Services;
 
 use App\Models\Candidate;
-use App\Models\Constituency;
 use App\Models\Election;
 use App\Models\Party;
 use App\Models\Province;
+use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -121,10 +121,11 @@ class ECTScraperService
         foreach ($patterns as $url) {
             try {
                 $response = Http::timeout(30)->get($url);
+
                 if ($response->successful()) {
                     return $response->body();
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::warning("ECT PDF fetch failed: {$url}", ['error' => $e->getMessage()]);
             }
         }
@@ -140,7 +141,7 @@ class ECTScraperService
         $candidates = [];
 
         try {
-            $parser = new PdfParser();
+            $parser = new PdfParser;
             $pdf = $parser->parseContent($pdfContent);
             $text = $pdf->getText();
 
@@ -157,7 +158,7 @@ class ECTScraperService
                     'party_name' => trim($match[3]),
                 ];
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('PDF parsing failed', ['error' => $e->getMessage()]);
         }
 
@@ -255,7 +256,8 @@ class ECTScraperService
 
         foreach ($pmCandidates as $candidateData) {
             $party = $parties->get($candidateData['party_name']);
-            if (!$party) {
+
+            if (! $party) {
                 Log::warning("Party not found: {$candidateData['party_name']}");
                 continue;
             }
@@ -273,7 +275,7 @@ class ECTScraperService
                     'type' => 'party_list',
                     'party_list_order' => $candidateData['party_list_order'] ?? 1,
                     'is_pm_candidate' => $candidateData['is_pm_candidate'] ?? false,
-                ]
+                ],
             );
             $count++;
         }
@@ -342,7 +344,7 @@ class ECTScraperService
 
                 return $filename;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::warning("Failed to download candidate photo: {$photoUrl}", ['error' => $e->getMessage()]);
         }
 
@@ -375,7 +377,7 @@ class ECTScraperService
                     'total_candidates_party_list' => 1570,
                     'pm_candidates' => 94,
                 ],
-            ]
+            ],
         );
     }
 

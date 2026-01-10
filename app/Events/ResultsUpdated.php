@@ -3,7 +3,6 @@
 namespace App\Events;
 
 use App\Models\Election;
-use App\Models\NationalResult;
 use App\Services\LiveResultsService;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -29,7 +28,7 @@ class ResultsUpdated implements ShouldBroadcast
         Election $election,
         ?string $message = null,
         ?array $party = null,
-        string $updateType = 'general'
+        string $updateType = 'general',
     ) {
         $this->election = $election;
         $this->message = $message;
