@@ -1,3 +1,10 @@
+## [1.39.0](https://github.com/xjanova/thaivote/compare/v1.38.4...v1.39.0) (2026-01-10)
+
+### ✨ Features
+
+* Apply admin logo settings to frontend Dashboard page ([63f56fb](https://github.com/xjanova/thaivote/commit/63f56fb14ff36c296651a4d56c0dd43057c6271c))
+* Update political party data with accurate 2026 election information ([4f9766a](https://github.com/xjanova/thaivote/commit/4f9766a7cae5c7a17430a9088cc0a2c0d2fff7c5))
+
 ## [1.38.4](https://github.com/xjanova/thaivote/compare/v1.38.3...v1.38.4) (2026-01-10)
 
 ### 🐛 Bug Fixes
