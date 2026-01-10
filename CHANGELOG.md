@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.31.0](https://github.com/xjanova/thaivote/compare/v1.30.0...v1.31.0) (2026-01-10)
+
+
+### Features
+
+* update auto-release workflow to work with branch protection ([fa70e14](https://github.com/xjanova/thaivote/commit/fa70e14349a76e07dff23c813e1f8aa7f41b675b))
+* update auto-release workflow to work with branch protection ([161a6e3](https://github.com/xjanova/thaivote/commit/161a6e3e4620de70349e1331f996913d1b7aeaca))
+
 ## [1.30.0](https://github.com/xjanova/thaivote/compare/v1.29.1...v1.30.0) (2026-01-10)
 
 
