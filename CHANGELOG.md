@@ -1,3 +1,13 @@
+## [1.38.1](https://github.com/xjanova/thaivote/compare/v1.38.0...v1.38.1) (2026-01-10)
+
+### 🐛 Bug Fixes
+
+* Add pull-requests permission to release workflow ([38911f3](https://github.com/xjanova/thaivote/commit/38911f387437e2f8c4a23e1dda87e3533dc01e8e)), closes [#123](https://github.com/xjanova/thaivote/issues/123) [#165](https://github.com/xjanova/thaivote/issues/165)
+
+### 📝 Documentation
+
+* Add comprehensive troubleshooting guide for admin backend issues ([fb27e33](https://github.com/xjanova/thaivote/commit/fb27e333eddb71366bdf02c9752f5328bf1f2aca))
+
 ## [1.38.0](https://github.com/xjanova/thaivote/compare/v1.37.0...v1.38.0) (2026-01-10)
 
 ### ✨ Features
