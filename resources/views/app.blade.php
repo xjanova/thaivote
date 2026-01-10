@@ -9,7 +9,11 @@
 
     <!-- Favicon -->
     @php
-        $favicon = \App\Models\Setting::get('site_favicon');
+        try {
+            $favicon = \App\Models\Setting::get('site_favicon');
+        } catch (\Exception $e) {
+            $favicon = null;
+        }
     @endphp
     @if($favicon)
         <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . $favicon) }}">
