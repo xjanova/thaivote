@@ -1,3 +1,42 @@
+## [1.38.0](https://github.com/xjanova/thaivote/compare/v1.37.0...v1.38.0) (2026-01-10)
+
+### ✨ Features
+
+* Upgrade to deploy.sh v4.2 with forced dependency installation ([a0d9b2b](https://github.com/xjanova/thaivote/commit/a0d9b2b66819307a1e81fa3fdea3dd107867a423))
+
+## [1.37.0](https://github.com/xjanova/thaivote/compare/v1.36.2...v1.37.0) (2026-01-10)
+
+### ✨ Features
+
+* Force install ALL dependencies on every deployment ([da2f1c2](https://github.com/xjanova/thaivote/commit/da2f1c21dcd5b5d1f3bcf6fcc577448ec4a54ec1))
+
+## [1.36.2](https://github.com/xjanova/thaivote/compare/v1.36.1...v1.36.2) (2026-01-10)
+
+### ⏪ Reverts
+
+* Restore original deploy.sh v4.1 with all features ([644ede9](https://github.com/xjanova/thaivote/commit/644ede92b42a14568de7e06de6b18c54f1bd23a8))
+
+### 📝 Documentation
+
+* Add deployment testing guide ([041ce39](https://github.com/xjanova/thaivote/commit/041ce39e4408f1bbaf8091b0b36cdb8a1f42966f))
+* Revert DEPLOYMENT.md to match original deploy.sh v4.1 ([c1ecf0d](https://github.com/xjanova/thaivote/commit/c1ecf0d2d77518a06c3f8db30337f2c3b821b174))
+
+## [1.36.1](https://github.com/xjanova/thaivote/compare/v1.36.0...v1.36.1) (2026-01-10)
+
+### 🐛 Bug Fixes
+
+* Improve deploy.sh to actually install dependencies ([7cce4ae](https://github.com/xjanova/thaivote/commit/7cce4aeec71e81b31aba987080679eea03b0a467))
+
+## [1.36.0](https://github.com/xjanova/thaivote/compare/v1.35.1...v1.36.0) (2026-01-10)
+
+### ✨ Features
+
+* Create smart deployment system v5.0 ([c7d9fae](https://github.com/xjanova/thaivote/commit/c7d9fae8a2022d0a1f763b589a06937e475c818f))
+
+### 🐛 Bug Fixes
+
+* Setup project dependencies and admin user creation ([cd256e8](https://github.com/xjanova/thaivote/commit/cd256e85b4d79d20c2281b5ed04341cc16b7ba07))
+
 ## [1.35.1](https://github.com/xjanova/thaivote/compare/v1.35.0...v1.35.1) (2026-01-10)
 
 ### 🐛 Bug Fixes
