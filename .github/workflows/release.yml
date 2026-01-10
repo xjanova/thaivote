@@ -3,89 +3,28 @@ name: Release
 on:
   push:
     branches: [main]
-  pull_request:
-    types: [opened, reopened, synchronize]
   workflow_dispatch:
-    inputs:
-      release_type:
-        description: 'Release type'
-        required: true
-        default: 'auto'
-        type: choice
-        options:
-          - auto
-          - patch
-          - minor
-          - major
 
 permissions:
   contents: write
-  pull-requests: write
   issues: write
 
 jobs:
-  # Auto-approve release PR
-  auto-approve:
-    name: Auto-approve Release PR
-    runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'pull_request' &&
-      github.event.pull_request.user.login == 'github-actions[bot]' &&
-      startsWith(github.event.pull_request.head.ref, 'release-please--')
-    permissions:
-      pull-requests: write
-    steps:
-      - name: Approve PR
-        run: gh pr review "$PR_NUMBER" --approve
-        env:
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # Auto-merge release PR after checks pass
-  auto-merge:
-    name: Auto-merge Release PR
-    runs-on: ubuntu-latest
-    needs: auto-approve
-    if: |
-      github.event_name == 'pull_request' &&
-      github.event.pull_request.user.login == 'github-actions[bot]' &&
-      startsWith(github.event.pull_request.head.ref, 'release-please--')
-    permissions:
-      contents: write
-      pull-requests: write
-    steps:
-      - name: Enable auto-merge
-        run: gh pr merge "$PR_NUMBER" --auto --squash
-        env:
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   release:
     name: Create Release
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     permissions:
       contents: write
-      pull-requests: write
+      issues: write
     outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
-      version: ${{ steps.release.outputs.version }}
-      pr_number: ${{ steps.release.outputs.pr }}
+      new_release_published: ${{ steps.semantic.outputs.new_release_published }}
+      new_release_version: ${{ steps.semantic.outputs.new_release_version }}
     steps:
-      - uses: googleapis/release-please-action@v4
-        id: release
+      - name: Checkout
+        uses: actions/checkout@v6
         with:
-          release-type: php
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-  build-release:
-    name: Build Release Assets
-    runs-on: ubuntu-latest
-    needs: release
-    if: ${{ needs.release.outputs.release_created }}
-    steps:
-      - uses: actions/checkout@v6
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -99,26 +38,23 @@ jobs:
           php-version: '8.3'
           extensions: mbstring, xml, ctype, json, bcmath
 
-      - name: Install Composer dependencies (production)
-        run: composer install --no-dev --prefer-dist --optimize-autoloader
-
       - name: Install npm dependencies
         run: npm ci
+
+      - name: Install Composer dependencies (production)
+        run: composer install --no-dev --prefer-dist --optimize-autoloader
 
       - name: Build production assets
         run: npm run build
 
       - name: Create release archive
         run: |
-          VERSION="${{ needs.release.outputs.version }}"
-          if [ -z "$VERSION" ]; then
-            echo "Error: Version is empty"
-            exit 1
-          fi
+          # Get version from package.json (will be updated by semantic-release)
+          VERSION=$(node -p "require('./package.json').version")
           ARCHIVE_NAME="thaivote-${VERSION}.tar.gz"
           echo "Creating archive: $ARCHIVE_NAME"
-          # Create archive excluding dev files and the archive itself
-          tar -czvf "../${ARCHIVE_NAME}" \
+
+          tar -czvf "${ARCHIVE_NAME}" \
             --exclude='node_modules' \
             --exclude='.git' \
             --exclude='.github' \
@@ -133,29 +69,34 @@ jobs:
             --exclude='storage/framework/sessions/*' \
             --exclude='storage/framework/views/*' \
             .
-          mv "../${ARCHIVE_NAME}" .
 
-      - name: Upload release archive
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.release.outputs.tag_name }}
-          files: thaivote-${{ needs.release.outputs.version }}.tar.gz
+      - name: Semantic Release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          extra_plugins: |
+            @semantic-release/changelog
+            @semantic-release/git
+            @semantic-release/exec
+            conventional-changelog-conventionalcommits
 
   notify:
     name: Notify Release
     runs-on: ubuntu-latest
-    needs: [release, build-release]
-    if: ${{ needs.release.outputs.release_created }}
+    needs: release
+    if: ${{ needs.release.outputs.new_release_published == 'true' }}
     steps:
       - name: Create deployment summary
         run: |
-          echo "## Release ${{ needs.release.outputs.version }} Created! :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "## Release ${{ needs.release.outputs.new_release_version }} Created! :rocket:" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Deployment Steps:" >> $GITHUB_STEP_SUMMARY
           echo "1. Download release archive from releases page" >> $GITHUB_STEP_SUMMARY
-          echo "2. Extract to server: \`tar -xzvf thaivote-${{ needs.release.outputs.version }}.tar.gz\`" >> $GITHUB_STEP_SUMMARY
+          echo "2. Extract to server: \`tar -xzvf thaivote-${{ needs.release.outputs.new_release_version }}.tar.gz\`" >> $GITHUB_STEP_SUMMARY
           echo "3. Run: \`./deploy.sh\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Tag:** \`${{ needs.release.outputs.tag_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag:** \`v${{ needs.release.outputs.new_release_version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Note:** No PR was created - version was bumped directly on main branch" >> $GITHUB_STEP_SUMMARY
