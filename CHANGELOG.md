@@ -1,3 +1,9 @@
+## [1.42.0](https://github.com/xjanova/thaivote/compare/v1.41.1...v1.42.0) (2026-01-10)
+
+### ✨ Features
+
+* Redesign admin dashboard with improved icons and layout ([25cd1c2](https://github.com/xjanova/thaivote/commit/25cd1c2279ced584ce0ea763deaa54e1e5c8580e))
+
 ## [1.41.1](https://github.com/xjanova/thaivote/compare/v1.41.0...v1.41.1) (2026-01-10)
 
 ### 🐛 Bug Fixes
