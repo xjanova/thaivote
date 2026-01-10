@@ -15,10 +15,19 @@
             <div class="container mx-auto px-4 py-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-4">
-                        <img src="/images/logo.png" alt="ThaiVote" class="h-10" />
-                        <div>
-                            <h1 class="text-xl font-bold text-gray-900">ThaiVote</h1>
-                            <p class="text-sm text-gray-500">{{ election?.name }}</p>
+                        <div v-if="siteLogo" class="flex items-center">
+                            <img :src="siteLogo" :alt="siteName" class="h-12" />
+                        </div>
+                        <div v-else class="flex items-center gap-2">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                                <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h1 class="text-xl font-bold text-gray-900">{{ siteName }}</h1>
+                                <p class="text-sm text-gray-500">{{ election?.name }}</p>
+                            </div>
                         </div>
                     </div>
                     <nav class="hidden md:flex items-center gap-6">
@@ -385,6 +394,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { useResultsStore } from '@/stores/results';
 import ThailandMap from '@/components/map/ThailandMap.vue';
+import axios from 'axios';
 
 const page = usePage();
 const auth = computed(() => page.props.auth);
@@ -398,6 +408,9 @@ const props = defineProps({
 
 const resultsStore = useResultsStore();
 
+// Settings
+const settings = ref({});
+
 // State
 const resultView = ref('seats');
 const isLive = ref(true);
@@ -405,6 +418,16 @@ const lastUpdated = ref(new Date());
 const breakingNews = ref([]);
 const trendingParties = ref([]);
 const liveFeed = ref([]);
+
+// Logo & Site Name
+const siteLogo = computed(() => {
+    if (settings.value.site_logo) {
+        return `/storage/${settings.value.site_logo}`;
+    }
+    return null;
+});
+
+const siteName = computed(() => settings.value.site_name || 'ThaiVote');
 
 // Computed
 const election = computed(() => resultsStore.election);
@@ -466,6 +489,20 @@ const fetchTrending = async () => {
 
 // Lifecycle
 onMounted(async () => {
+    // Load settings
+    try {
+        const response = await axios.get('/admin/settings/api');
+        if (response.data && response.data.data) {
+            settings.value = response.data.data;
+        }
+    } catch (error) {
+        console.error('Failed to load settings:', error);
+        settings.value = {
+            site_name: 'ThaiVote',
+            site_logo: '',
+        };
+    }
+
     await resultsStore.fetchElection(props.electionId);
     await fetchNews();
     await fetchTrending();
