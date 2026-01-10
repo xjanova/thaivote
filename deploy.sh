@@ -1,7 +1,7 @@
 #!/bin/bash
 #===============================================================================
 # ThaiVote - Election Results Tracker
-# Smart Automated Deployment Script v4.1
+# Smart Automated Deployment Script v4.2
 #
 # Features:
 #   - Smart migration handling (detects and reports errors)
@@ -25,7 +25,7 @@
 set -e
 
 # Script version
-VERSION="4.1"
+VERSION="4.2"
 
 # Colors for output
 RED='\033[0;31m'
