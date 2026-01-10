@@ -44,32 +44,6 @@ jobs:
       - name: Install Composer dependencies (production)
         run: composer install --no-dev --prefer-dist --optimize-autoloader
 
-      - name: Build production assets
-        run: npm run build
-
-      - name: Create release archive
-        run: |
-          # Get version from package.json (will be updated by semantic-release)
-          VERSION=$(node -p "require('./package.json').version")
-          ARCHIVE_NAME="thaivote-${VERSION}.tar.gz"
-          echo "Creating archive: $ARCHIVE_NAME"
-
-          tar -czvf "${ARCHIVE_NAME}" \
-            --exclude='node_modules' \
-            --exclude='.git' \
-            --exclude='.github' \
-            --exclude='tests' \
-            --exclude='.env' \
-            --exclude='.env.*' \
-            --exclude='*.log' \
-            --exclude='*.tar.gz' \
-            --exclude='coverage' \
-            --exclude='storage/logs/*' \
-            --exclude='storage/framework/cache/*' \
-            --exclude='storage/framework/sessions/*' \
-            --exclude='storage/framework/views/*' \
-            .
-
       - name: Semantic Release
         id: semantic
         uses: cycjimmy/semantic-release-action@v4
@@ -79,6 +53,7 @@ jobs:
           extra_plugins: |
             @semantic-release/changelog
             @semantic-release/git
+            @semantic-release/npm
             @semantic-release/exec
             conventional-changelog-conventionalcommits
 
