@@ -1,3 +1,70 @@
+## [1.38.4](https://github.com/xjanova/thaivote/compare/v1.38.3...v1.38.4) (2026-01-10)
+
+### 🐛 Bug Fixes
+
+* Add [@routes](https://github.com/routes) directive to inject Ziggy routes into HTML ([b74f4a2](https://github.com/xjanova/thaivote/commit/b74f4a28ea9b6b0cf2ff5eedc3ff2d8b88bb25bd))
+
+## [1.38.3](https://github.com/xjanova/thaivote/compare/v1.38.2...v1.38.3) (2026-01-10)
+
+### 🐛 Bug Fixes
+
+* Disable semantic-release issue/PR comments to prevent API errors ([5bf41a4](https://github.com/xjanova/thaivote/commit/5bf41a4fe8518b5db3220603a0591ac4e1a6c95c)), closes [#165](https://github.com/xjanova/thaivote/issues/165) [#123](https://github.com/xjanova/thaivote/issues/123)
+
+## [1.38.2](https://github.com/xjanova/thaivote/compare/v1.38.1...v1.38.2) (2026-01-10)
+
+### 🐛 Bug Fixes
+
+* Add Ziggy route helper to fix route() function errors ([10b2c09](https://github.com/xjanova/thaivote/commit/10b2c09d09113b2738f9b9174458b46ec3943e5a))
+
+## [1.38.1](https://github.com/xjanova/thaivote/compare/v1.38.0...v1.38.1) (2026-01-10)
+
+### 🐛 Bug Fixes
+
+* Add pull-requests permission to release workflow ([38911f3](https://github.com/xjanova/thaivote/commit/38911f387437e2f8c4a23e1dda87e3533dc01e8e)), closes [#123](https://github.com/xjanova/thaivote/issues/123) [#165](https://github.com/xjanova/thaivote/issues/165)
+
+### 📝 Documentation
+
+* Add comprehensive troubleshooting guide for admin backend issues ([fb27e33](https://github.com/xjanova/thaivote/commit/fb27e333eddb71366bdf02c9752f5328bf1f2aca))
+
+## [1.38.0](https://github.com/xjanova/thaivote/compare/v1.37.0...v1.38.0) (2026-01-10)
+
+### ✨ Features
+
+* Upgrade to deploy.sh v4.2 with forced dependency installation ([a0d9b2b](https://github.com/xjanova/thaivote/commit/a0d9b2b66819307a1e81fa3fdea3dd107867a423))
+
+## [1.37.0](https://github.com/xjanova/thaivote/compare/v1.36.2...v1.37.0) (2026-01-10)
+
+### ✨ Features
+
+* Force install ALL dependencies on every deployment ([da2f1c2](https://github.com/xjanova/thaivote/commit/da2f1c21dcd5b5d1f3bcf6fcc577448ec4a54ec1))
+
+## [1.36.2](https://github.com/xjanova/thaivote/compare/v1.36.1...v1.36.2) (2026-01-10)
+
+### ⏪ Reverts
+
+* Restore original deploy.sh v4.1 with all features ([644ede9](https://github.com/xjanova/thaivote/commit/644ede92b42a14568de7e06de6b18c54f1bd23a8))
+
+### 📝 Documentation
+
+* Add deployment testing guide ([041ce39](https://github.com/xjanova/thaivote/commit/041ce39e4408f1bbaf8091b0b36cdb8a1f42966f))
+* Revert DEPLOYMENT.md to match original deploy.sh v4.1 ([c1ecf0d](https://github.com/xjanova/thaivote/commit/c1ecf0d2d77518a06c3f8db30337f2c3b821b174))
+
+## [1.36.1](https://github.com/xjanova/thaivote/compare/v1.36.0...v1.36.1) (2026-01-10)
+
+### 🐛 Bug Fixes
+
+* Improve deploy.sh to actually install dependencies ([7cce4ae](https://github.com/xjanova/thaivote/commit/7cce4aeec71e81b31aba987080679eea03b0a467))
+
+## [1.36.0](https://github.com/xjanova/thaivote/compare/v1.35.1...v1.36.0) (2026-01-10)
+
+### ✨ Features
+
+* Create smart deployment system v5.0 ([c7d9fae](https://github.com/xjanova/thaivote/commit/c7d9fae8a2022d0a1f763b589a06937e475c818f))
+
+### 🐛 Bug Fixes
+
+* Setup project dependencies and admin user creation ([cd256e8](https://github.com/xjanova/thaivote/commit/cd256e85b4d79d20c2281b5ed04341cc16b7ba07))
+
 ## [1.35.1](https://github.com/xjanova/thaivote/compare/v1.35.0...v1.35.1) (2026-01-10)
 
 ### 🐛 Bug Fixes
