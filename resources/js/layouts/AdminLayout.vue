@@ -20,7 +20,7 @@
             <!-- Logo -->
             <div class="h-16 flex items-center justify-between px-6 border-b border-white/10">
                 <span class="text-xl font-bold">ThaiVote Admin</span>
-                <button @click="sidebarOpen = false" class="lg:hidden p-1 hover:bg-white/10 rounded">
+                <button class="lg:hidden p-1 hover:bg-white/10 rounded" @click="sidebarOpen = false">
                     <XMarkIcon class="w-5 h-5" />
                 </button>
             </div>
@@ -65,7 +65,7 @@
             <!-- Top Bar -->
             <header class="h-16 bg-white shadow-sm flex items-center justify-between px-6">
                 <div class="flex items-center gap-4">
-                    <button @click="sidebarOpen = !sidebarOpen" class="p-2 hover:bg-gray-100 rounded-lg lg:hidden">
+                    <button class="p-2 hover:bg-gray-100 rounded-lg lg:hidden" @click="sidebarOpen = !sidebarOpen">
                         <MenuIcon class="w-5 h-5 text-gray-500" />
                     </button>
                     <div class="relative">
