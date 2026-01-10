@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class DashboardController extends Controller
 {
@@ -21,13 +22,29 @@ class DashboardController extends Controller
     public function stats(): JsonResponse
     {
         $stats = Cache::remember('admin.dashboard.stats', 60, function () {
+            // Get total votes from election_stats or national_results
+            $totalVotes = 0;
+            try {
+                // Try election_stats first (most accurate)
+                if (Schema::hasTable('election_stats')) {
+                    $totalVotes = DB::table('election_stats')->sum('total_votes_cast') ?? 0;
+                }
+                // Fallback to national_results
+                if ($totalVotes === 0 && Schema::hasTable('national_results')) {
+                    $totalVotes = DB::table('national_results')->sum('total_votes') ?? 0;
+                }
+            } catch (\Exception $e) {
+                // Gracefully handle missing tables
+                $totalVotes = 0;
+            }
+
             return [
                 'activeElections' => Election::where('status', 'active')->count(),
                 'totalParties' => Party::count(),
                 'todayNews' => NewsArticle::whereDate('created_at', today())->count(),
                 'activeSources' => NewsSource::where('is_active', true)->count(),
                 'totalCandidates' => DB::table('candidates')->count(),
-                'totalVotes' => DB::table('election_results')->sum('votes') ?? 0,
+                'totalVotes' => $totalVotes,
             ];
         });
 
