@@ -17,8 +17,12 @@ class CheckInstalled
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Skip check for install routes
-        if ($request->is('install*')) {
+        // Skip check for install, setup-admin and auth routes
+        if ($request->is('install*') ||
+            $request->is('setup-admin*') ||
+            $request->is('login') ||
+            $request->is('register') ||
+            $request->is('logout')) {
             return $next($request);
         }
 

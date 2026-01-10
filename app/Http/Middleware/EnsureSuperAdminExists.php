@@ -19,27 +19,32 @@ class EnsureSuperAdminExists
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Skip check for certain routes
-        if ($request->is('install*') || $request->is('setup-admin*')) {
+        // Skip check for certain routes (install, setup-admin, auth routes)
+        if ($request->is('install*') ||
+            $request->is('setup-admin*') ||
+            $request->is('login') ||
+            $request->is('register') ||
+            $request->is('logout')) {
             return $next($request);
         }
 
-        // Skip if not installed yet
-        if (! File::exists(storage_path('app/installed'))) {
-            return $next($request);
-        }
-
-        // Check if users table exists and has admin
+        // Check if database exists and has users table
         try {
-            if (Schema::hasTable('users')) {
-                $hasAdmin = DB::table('users')->where('is_admin', true)->exists();
+            if (! Schema::hasTable('users')) {
+                // No users table yet - let other middleware handle
+                return $next($request);
+            }
 
-                if (! $hasAdmin) {
-                    return redirect('/setup-admin');
-                }
+            // Check if any admin exists
+            $hasAdmin = DB::table('users')->where('is_admin', true)->exists();
+
+            if (! $hasAdmin) {
+                // No admin exists - redirect to setup
+                return redirect('/setup-admin');
             }
         } catch (\Exception $e) {
-            // If database error, let other middleware handle it
+            // Database error - let other middleware handle it
+            return $next($request);
         }
 
         return $next($request);
