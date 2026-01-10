@@ -1,3 +1,9 @@
+## [1.39.1](https://github.com/xjanova/thaivote/compare/v1.39.0...v1.39.1) (2026-01-10)
+
+### 🐛 Bug Fixes
+
+* Resolve GitHub Actions CI failures for linting and formatting ([d502530](https://github.com/xjanova/thaivote/commit/d5025302cf1a93e4ed9f2c85d5eb76c459324de2))
+
 ## [1.39.0](https://github.com/xjanova/thaivote/compare/v1.38.4...v1.39.0) (2026-01-10)
 
 ### ✨ Features
