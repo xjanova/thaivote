@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Simple script to initialize logo and favicon settings
  * Run this file by accessing: http://your-domain.com/init-settings.php
@@ -6,8 +7,8 @@
  */
 
 // Load Laravel
-require __DIR__.'/../vendor/autoload.php';
-$app = require_once __DIR__.'/../bootstrap/app.php';
+require __DIR__ . '/../vendor/autoload.php';
+$app = require_once __DIR__ . '/../bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
 $app->make(Illuminate\Contracts\Console\Kernel::class);
 
@@ -17,7 +18,7 @@ try {
     $stmt = $pdo->query("SHOW TABLES LIKE 'settings'");
 
     if ($stmt->rowCount() == 0) {
-        die('❌ Error: Settings table does not exist. Please run migrations first.');
+        exit('❌ Error: Settings table does not exist. Please run migrations first.');
     }
 
     // Check if logo and favicon settings already exist
@@ -34,7 +35,7 @@ try {
     // Insert settings
     $now = date('Y-m-d H:i:s');
 
-    if (!$logoExists) {
+    if (! $logoExists) {
         DB::table('settings')->insert([
             'key' => 'site_logo',
             'value' => '',
@@ -46,7 +47,7 @@ try {
         echo '✅ Added site_logo setting<br>';
     }
 
-    if (!$faviconExists) {
+    if (! $faviconExists) {
         DB::table('settings')->insert([
             'key' => 'site_favicon',
             'value' => '',
