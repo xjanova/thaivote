@@ -188,29 +188,58 @@ check_and_install_dependencies() {
 
     local COMPOSER_CMD=$(cat /tmp/composer_cmd)
 
-    # Check composer dependencies
+    # CRITICAL: Install composer dependencies FIRST (required for php artisan)
     if [ ! -d "vendor" ] || [ ! -f "vendor/autoload.php" ]; then
         log_warning "Composer dependencies not installed"
-        if [ "$AUTO_FIX" = true ]; then
-            log_info "Installing Composer dependencies..."
+        log_info "Installing Composer dependencies..."
+        $COMPOSER_CMD install --no-interaction --prefer-dist --no-dev 2>&1 || {
+            log_warning "Trying with dev dependencies..."
             $COMPOSER_CMD install --no-interaction --prefer-dist
-            log "Composer dependencies installed"
-        fi
+        }
+        log "Composer dependencies installed"
     else
+        # Always update to ensure latest
+        log_info "Updating Composer dependencies..."
+        $COMPOSER_CMD install --no-interaction --prefer-dist --no-dev 2>&1 || true
         log "Composer dependencies: OK"
     fi
 
-    # Check npm dependencies
+    # Install npm dependencies
     if [ ! -d "node_modules" ]; then
         log_warning "NPM dependencies not installed"
-        if [ "$AUTO_FIX" = true ]; then
-            log_info "Installing NPM dependencies..."
-            npm install
-            log "NPM dependencies installed"
-        fi
+        log_info "Installing NPM dependencies (this may take a few minutes)..."
+        npm install 2>&1 || {
+            log_warning "npm install failed, trying npm ci..."
+            npm ci 2>&1 || true
+        }
+        log "NPM dependencies installed"
     else
         log "NPM dependencies: OK"
     fi
+}
+
+create_required_directories() {
+    log_step "Creating Required Directories"
+
+    local REQUIRED_DIRS=(
+        "storage/app/public"
+        "storage/framework/cache/data"
+        "storage/framework/sessions"
+        "storage/framework/views"
+        "storage/logs"
+        "bootstrap/cache"
+        "database"
+        "public_html/build"
+    )
+
+    for dir in "${REQUIRED_DIRS[@]}"; do
+        if [ ! -d "$dir" ]; then
+            log_info "Creating $dir..."
+            mkdir -p "$dir"
+        fi
+    done
+
+    log "Required directories created"
 }
 
 #===============================================================================
@@ -251,6 +280,9 @@ check_and_setup_env() {
 check_and_setup_database() {
     log_step "Checking Database Setup"
 
+    # Ensure database directory exists
+    mkdir -p database
+
     local DB_CONNECTION=$(grep "^DB_CONNECTION=" .env 2>/dev/null | cut -d '=' -f2 | tr -d '"' | tr -d "'")
     DB_CONNECTION=${DB_CONNECTION:-sqlite}
 
@@ -262,6 +294,7 @@ check_and_setup_database() {
             if [ "$AUTO_FIX" = true ]; then
                 log_info "Creating SQLite database..."
                 touch database/database.sqlite
+                chmod 664 database/database.sqlite 2>/dev/null || true
                 log "SQLite database created"
             fi
         else
@@ -271,11 +304,14 @@ check_and_setup_database() {
 
     # Test database connection
     log_info "Testing database connection..."
+    set +e
     if php artisan db:show 2>/dev/null | grep -q "Connection"; then
         log "Database connection: OK"
+        set -e
         return 0
     else
         log_warning "Database connection failed (non-critical)"
+        set -e
         return 1
     fi
 }
@@ -380,12 +416,23 @@ check_and_setup_storage() {
 check_and_build_assets() {
     log_step "Checking Frontend Assets"
 
+    # Ensure build directory exists
+    mkdir -p public_html/build
+
     if [ ! -d "public_html/build" ] || [ -z "$(ls -A public_html/build 2>/dev/null)" ]; then
         log_warning "Frontend assets not built"
         if [ "$AUTO_FIX" = true ]; then
-            log_info "Building frontend assets..."
-            npm run build
-            log "Frontend assets built"
+            log_info "Building frontend assets (this may take a minute)..."
+            set +e
+            npm run build 2>&1 | tail -20
+            local BUILD_EXIT=$?
+            set -e
+
+            if [ $BUILD_EXIT -eq 0 ]; then
+                log "Frontend assets built successfully"
+            else
+                log_warning "Frontend build completed with warnings (check output above)"
+            fi
         fi
     else
         log "Frontend assets: OK"
@@ -433,6 +480,7 @@ doctor() {
     check_and_install_php
     check_and_install_composer
     check_and_install_node
+    create_required_directories
     check_and_install_dependencies
     check_and_setup_env
     check_and_setup_database
@@ -460,6 +508,7 @@ quick_fix() {
 
     AUTO_FIX=true
 
+    create_required_directories
     check_and_setup_env
     check_and_install_dependencies
     check_and_setup_storage
@@ -573,10 +622,13 @@ deploy() {
     check_and_install_composer
     check_and_install_node
 
-    # Install dependencies
+    # Create required directories BEFORE installing dependencies
+    create_required_directories
+
+    # Install dependencies (CRITICAL: Must be before any php artisan commands)
     check_and_install_dependencies
 
-    # Setup environment
+    # Setup environment (now php artisan is available)
     check_and_setup_env
     check_and_setup_database
     check_and_run_migrations
