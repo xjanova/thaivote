@@ -1,3 +1,9 @@
+## [1.34.0](https://github.com/xjanova/thaivote/compare/v1.33.0...v1.34.0) (2026-01-10)
+
+### ✨ Features
+
+* improve admin backend system with modern UI/UX ([09a280d](https://github.com/xjanova/thaivote/commit/09a280d63601db772a87af282f10cb08d26133c5))
+
 ## [1.33.0](https://github.com/xjanova/thaivote/compare/v1.32.0...v1.33.0) (2026-01-10)
 
 ### ⚠ BREAKING CHANGES
