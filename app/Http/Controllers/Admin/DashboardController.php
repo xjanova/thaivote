@@ -193,6 +193,7 @@ class DashboardController extends Controller
         switch ($validated['entity_type']) {
             case 'news':
                 $article = NewsArticle::find($validated['entity_id']);
+
                 if ($article) {
                     $article->is_approved = true;
                     $article->save();
@@ -232,6 +233,7 @@ class DashboardController extends Controller
         switch ($validated['entity_type']) {
             case 'news':
                 $article = NewsArticle::find($validated['entity_id']);
+
                 if ($article) {
                     $article->delete();
                     $success = true;
