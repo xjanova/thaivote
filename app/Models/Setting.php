@@ -42,7 +42,7 @@ class Setting extends Model
 
         self::updateOrCreate(
             ['key' => $key],
-            ['value' => $stringValue, 'type' => $type, 'group' => $group]
+            ['value' => $stringValue, 'type' => $type, 'group' => $group],
         );
 
         Cache::forget("setting.{$key}");
@@ -56,6 +56,7 @@ class Setting extends Model
     {
         return Cache::remember('settings.all', 3600, function () {
             $settings = [];
+
             foreach (self::all() as $setting) {
                 $settings[$setting->key] = self::castValue($setting->value, $setting->type);
             }
@@ -70,11 +71,24 @@ class Setting extends Model
     public static function getByGroup(string $group): array
     {
         $settings = [];
+
         foreach (self::where('group', $group)->get() as $setting) {
             $settings[$setting->key] = self::castValue($setting->value, $setting->type);
         }
 
         return $settings;
+    }
+
+    /**
+     * Clear all settings cache.
+     */
+    public static function clearCache(): void
+    {
+        Cache::forget('settings.all');
+
+        foreach (self::pluck('key') as $key) {
+            Cache::forget("setting.{$key}");
+        }
     }
 
     /**
@@ -105,16 +119,5 @@ class Setting extends Model
             'json' => json_encode($value),
             default => (string) $value,
         };
-    }
-
-    /**
-     * Clear all settings cache.
-     */
-    public static function clearCache(): void
-    {
-        Cache::forget('settings.all');
-        foreach (self::pluck('key') as $key) {
-            Cache::forget("setting.{$key}");
-        }
     }
 }

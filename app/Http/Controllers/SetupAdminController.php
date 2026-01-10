@@ -93,13 +93,14 @@ class SetupAdminController extends Controller
                 $user = User::where('email', $request->email)->first();
             } catch (Exception $e2) {
                 return back()->withErrors([
-                    'user' => 'ไม่สามารถสร้างผู้ใช้งานได้: '.$e2->getMessage(),
+                    'user' => 'ไม่สามารถสร้างผู้ใช้งานได้: ' . $e2->getMessage(),
                 ])->withInput();
             }
         }
 
         // Create installed file to mark installation as complete
         $installedPath = storage_path('app/installed');
+
         if (! File::exists($installedPath)) {
             File::put($installedPath, now()->toIso8601String());
         }

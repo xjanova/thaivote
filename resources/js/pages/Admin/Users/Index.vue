@@ -38,13 +38,12 @@ const toggleAdmin = (user) => {
     }
 };
 
-const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('th-TH', {
+const formatDate = (date) =>
+    new Date(date).toLocaleDateString('th-TH', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
     });
-};
 </script>
 
 <template>
@@ -60,12 +59,7 @@ const formatDate = (date) => {
                     :href="route('admin.users.create')"
                     class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
-                    <svg
-                        class="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
@@ -138,7 +132,9 @@ const formatDate = (date) => {
                             >
                                 สร้างเมื่อ
                             </th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th
+                                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
                                 จัดการ
                             </th>
                         </tr>
