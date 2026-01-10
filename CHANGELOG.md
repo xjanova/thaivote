@@ -1,3 +1,13 @@
+## [1.36.0](https://github.com/xjanova/thaivote/compare/v1.35.1...v1.36.0) (2026-01-10)
+
+### ✨ Features
+
+* Create smart deployment system v5.0 ([c7d9fae](https://github.com/xjanova/thaivote/commit/c7d9fae8a2022d0a1f763b589a06937e475c818f))
+
+### 🐛 Bug Fixes
+
+* Setup project dependencies and admin user creation ([cd256e8](https://github.com/xjanova/thaivote/commit/cd256e85b4d79d20c2281b5ed04341cc16b7ba07))
+
 ## [1.35.1](https://github.com/xjanova/thaivote/compare/v1.35.0...v1.35.1) (2026-01-10)
 
 ### 🐛 Bug Fixes
