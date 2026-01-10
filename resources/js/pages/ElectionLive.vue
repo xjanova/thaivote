@@ -28,7 +28,7 @@
 
                 <!-- Stats Cards -->
                 <div class="stats-grid mt-8">
-                    <div class="stat-card" v-for="(stat, i) in mainStats" :key="i">
+                    <div v-for="(stat, i) in mainStats" :key="i" class="stat-card">
                         <div class="stat-icon" :style="{ background: stat.gradient }">
                             <component :is="stat.icon" class="w-6 h-6" />
                         </div>
@@ -362,21 +362,13 @@ const lastUpdate = ref('');
 const electionId = computed(() => props.election?.id || 1);
 
 // Computed
-const countingProgress = computed(() => {
-    return results.value.national?.counting_progress || 0;
-});
+const countingProgress = computed(() => results.value.national?.counting_progress || 0);
 
-const topParties = computed(() => {
-    return results.value.national?.parties?.slice(0, 10) || [];
-});
+const topParties = computed(() => results.value.national?.parties?.slice(0, 10) || []);
 
-const constituencySeats = computed(() => {
-    return results.value.national?.constituency_seats || 0;
-});
+const constituencySeats = computed(() => results.value.national?.constituency_seats || 0);
 
-const partyListSeats = computed(() => {
-    return results.value.national?.party_list_seats || 0;
-});
+const partyListSeats = computed(() => results.value.national?.party_list_seats || 0);
 
 const mainStats = computed(() => [
     {
@@ -407,14 +399,14 @@ const mainStats = computed(() => [
     },
 ]);
 
-const regionalResults = computed(() => {
-    return Object.entries(regions).map(([key, region]) => ({
+const regionalResults = computed(() =>
+    Object.entries(regions).map(([key, region]) => ({
         key,
         ...region,
         totalSeats: results.value.regions?.[key]?.total_seats || 0,
         topParties: results.value.regions?.[key]?.parties || [],
-    }));
-});
+    }))
+);
 
 const recentUpdates = ref([
     { id: 1, time: '19:45', message: 'กรุงเทพฯ นับเสร็จ 90%', party: { color: '#FF6B00' } },

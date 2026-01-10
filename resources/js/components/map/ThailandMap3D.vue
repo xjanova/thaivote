@@ -171,20 +171,24 @@ const selectedProvince = ref(null);
 
 // Three.js objects
 let scene, camera, renderer, controls;
-let provinceMeshes = {};
+const provinceMeshes = {};
 let raycaster, mouse;
 let animationId;
 
 // Province results
 const provinceResults = computed(() => {
-    if (!selectedProvince.value || !props.results.provinces) return [];
+    if (!selectedProvince.value || !props.results.provinces) {
+        return [];
+    }
     const provinceData = props.results.provinces[selectedProvince.value.id];
     return provinceData?.parties?.sort((a, b) => b.seats_won - a.seats_won) || [];
 });
 
 // Top parties
 const topParties = computed(() => {
-    if (!props.results.national) return [];
+    if (!props.results.national) {
+        return [];
+    }
     return props.results.national.parties?.slice(0, 8) || [];
 });
 
@@ -341,8 +345,11 @@ const createProvinceGeometry = (province, bounds, scale, centerX, centerY) => {
         const angle = (i / sides) * Math.PI * 2 - Math.PI / 2;
         const x = Math.cos(angle) * radius;
         const y = Math.sin(angle) * radius;
-        if (i === 0) shape.moveTo(x, y);
-        else shape.lineTo(x, y);
+        if (i === 0) {
+            shape.moveTo(x, y);
+        } else {
+            shape.lineTo(x, y);
+        }
     }
     shape.closePath();
 
@@ -386,7 +393,9 @@ const getProvincePosition = (province, bounds, scale, centerX, centerY) => {
 const getProvinceColor = (province) => {
     if (props.results.provinces && props.results.provinces[province.id]) {
         const winner = props.results.provinces[province.id].parties?.[0];
-        if (winner?.party?.color) return winner.party.color;
+        if (winner?.party?.color) {
+            return winner.party.color;
+        }
     }
     return regions[province.region]?.color || '#6B7280';
 };
@@ -394,7 +403,9 @@ const getProvinceColor = (province) => {
 const getWinnerColor = (province) => {
     if (props.results.provinces && props.results.provinces[province.id]) {
         const winner = props.results.provinces[province.id].parties?.[0];
-        if (winner?.party?.color) return winner.party.color;
+        if (winner?.party?.color) {
+            return winner.party.color;
+        }
     }
     return regions[province.region]?.color || '#6B7280';
 };
@@ -604,9 +615,15 @@ const toggle2D3D = () => {
 };
 
 const formatNumber = (num) => {
-    if (!num) return '0';
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(0)}K`;
+    if (!num) {
+        return '0';
+    }
+    if (num >= 1000000) {
+        return `${(num / 1000000).toFixed(1)}M`;
+    }
+    if (num >= 1000) {
+        return `${(num / 1000).toFixed(0)}K`;
+    }
     return num.toLocaleString('th-TH');
 };
 
