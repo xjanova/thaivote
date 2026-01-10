@@ -5,7 +5,9 @@ use App\Http\Controllers\Admin\AdminElectionController;
 use App\Http\Controllers\Admin\AdminNewsController;
 use App\Http\Controllers\Admin\AdminPartyController;
 use App\Http\Controllers\Admin\AdminSourceController;
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Install\InstallController;
 use App\Http\Controllers\SetupAdminController;
 use Illuminate\Support\Facades\Route;
@@ -117,6 +119,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         Route::get('/pending', [DashboardController::class, 'pending'])->name('pending');
         Route::get('/logs', [DashboardController::class, 'logs'])->name('logs');
         Route::get('/traffic', [DashboardController::class, 'traffic'])->name('traffic');
+        Route::post('/approve', [DashboardController::class, 'approve'])->name('approve');
+        Route::post('/reject', [DashboardController::class, 'reject'])->name('reject');
     });
 
     // พรรคการเมือง (CRUD)
@@ -147,10 +151,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::post('/sources/{source}/fetch', [AdminSourceController::class, 'fetch'])->name('sources.fetch');
 
     // Settings
-    Route::get('/settings', function () {
-        return Inertia::render('Admin/Settings');
-    })->name('settings');
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+    Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
+
+    // ผู้ใช้งาน (User Management)
+    Route::resource('users', AdminUserController::class);
+    Route::post('/users/{user}/toggle-admin', [AdminUserController::class, 'toggleAdmin'])->name('users.toggle-admin');
 });
+
 
 // Auth routes
 require __DIR__ . '/auth.php';
