@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 
 class SetupAdminController extends Controller
@@ -16,10 +18,21 @@ class SetupAdminController extends Controller
      */
     public function show()
     {
-        // If admin already exists, redirect to home
-        $hasAdmin = DB::table('users')->where('is_admin', true)->exists();
-        if ($hasAdmin) {
-            return redirect('/');
+        try {
+            // Check if database is ready
+            if (! Schema::hasTable('users')) {
+                // Redirect to installation if database not ready
+                return redirect('/install');
+            }
+
+            // If admin already exists, redirect to home
+            $hasAdmin = DB::table('users')->where('is_admin', true)->exists();
+            if ($hasAdmin) {
+                return redirect('/');
+            }
+        } catch (Exception $e) {
+            // Database error - redirect to install
+            return redirect('/install');
         }
 
         return view('setup-admin');
@@ -84,6 +97,12 @@ class SetupAdminController extends Controller
                     'user' => 'ไม่สามารถสร้างผู้ใช้งานได้: '.$e2->getMessage(),
                 ])->withInput();
             }
+        }
+
+        // Create installed file to mark installation as complete
+        $installedPath = storage_path('app/installed');
+        if (! File::exists($installedPath)) {
+            File::put($installedPath, now()->toIso8601String());
         }
 
         return redirect('/')->with('success', 'สร้างบัญชีแอดมินเรียบร้อยแล้ว');
