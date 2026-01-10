@@ -30,24 +30,28 @@
                     :value="stats.activeElections"
                     icon="CalendarIcon"
                     color="blue"
+                    :loading="statsLoading"
                 />
                 <StatCard
                     title="พรรคการเมือง"
                     :value="stats.totalParties"
                     icon="UsersIcon"
                     color="purple"
+                    :loading="statsLoading"
                 />
                 <StatCard
                     title="ข่าววันนี้"
                     :value="stats.todayNews"
                     icon="NewspaperIcon"
                     color="green"
+                    :loading="statsLoading"
                 />
                 <StatCard
                     title="แหล่งข้อมูล"
                     :value="stats.activeSources"
                     icon="DatabaseIcon"
                     color="orange"
+                    :loading="statsLoading"
                 />
             </div>
 
