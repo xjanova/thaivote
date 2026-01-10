@@ -29,7 +29,7 @@ export function useToast() {
     };
 
     const remove = (id) => {
-        const index = toasts.value.findIndex(t => t.id === id);
+        const index = toasts.value.findIndex((t) => t.id === id);
         if (index > -1) {
             toasts.value[index].visible = false;
             setTimeout(() => {
@@ -38,21 +38,13 @@ export function useToast() {
         }
     };
 
-    const success = (message, duration) => {
-        return addToast(message, 'success', duration);
-    };
+    const success = (message, duration) => addToast(message, 'success', duration);
 
-    const error = (message, duration) => {
-        return addToast(message, 'error', duration);
-    };
+    const error = (message, duration) => addToast(message, 'error', duration);
 
-    const warning = (message, duration) => {
-        return addToast(message, 'warning', duration);
-    };
+    const warning = (message, duration) => addToast(message, 'warning', duration);
 
-    const info = (message, duration) => {
-        return addToast(message, 'info', duration);
-    };
+    const info = (message, duration) => addToast(message, 'info', duration);
 
     return {
         toasts,

@@ -2,10 +2,7 @@
     <div class="text-center py-12 px-4">
         <!-- Icon -->
         <div class="mx-auto w-24 h-24 mb-4 flex items-center justify-center">
-            <component
-                :is="iconComponent"
-                class="w-full h-full text-gray-300"
-            />
+            <component :is="iconComponent" class="w-full h-full text-gray-300" />
         </div>
 
         <!-- Title -->
@@ -47,14 +44,8 @@ const props = defineProps({
     icon: {
         type: String,
         default: 'inbox',
-        validator: (value) => [
-            'inbox',
-            'users',
-            'document',
-            'calendar',
-            'newspaper',
-            'rss',
-        ].includes(value),
+        validator: (value) =>
+            ['inbox', 'users', 'document', 'calendar', 'newspaper', 'rss'].includes(value),
     },
     actionText: {
         type: String,

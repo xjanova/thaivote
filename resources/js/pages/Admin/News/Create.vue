@@ -235,7 +235,7 @@
 import { Link, useForm } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 
-const props = defineProps({
+defineProps({
     sources: Array,
     sentiments: Array,
 });

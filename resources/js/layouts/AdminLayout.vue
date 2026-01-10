@@ -23,7 +23,10 @@
                     <img :src="siteLogo" alt="Logo" class="h-10 w-auto object-contain" />
                 </div>
                 <span v-else class="text-xl font-bold">{{ siteName }} Admin</span>
-                <button @click="sidebarOpen = false" class="lg:hidden p-1 hover:bg-white/10 rounded">
+                <button
+                    class="lg:hidden p-1 hover:bg-white/10 rounded"
+                    @click="sidebarOpen = false"
+                >
                     <XMarkIcon class="w-5 h-5" />
                 </button>
             </div>
@@ -68,7 +71,10 @@
             <!-- Top Bar -->
             <header class="h-16 bg-white shadow-sm flex items-center justify-between px-6">
                 <div class="flex items-center gap-4">
-                    <button @click="sidebarOpen = !sidebarOpen" class="p-2 hover:bg-gray-100 rounded-lg lg:hidden">
+                    <button
+                        class="p-2 hover:bg-gray-100 rounded-lg lg:hidden"
+                        @click="sidebarOpen = !sidebarOpen"
+                    >
                         <MenuIcon class="w-5 h-5 text-gray-500" />
                     </button>
                     <div class="relative">
@@ -182,8 +188,6 @@ const XMarkIcon = {
         '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>',
 };
 
-const icons = { HomeIcon, CalendarIcon, UsersIcon, UserIcon, NewspaperIcon, CogIcon };
-
 // User management icon
 const UserGroupIcon = {
     template:
@@ -223,7 +227,7 @@ const userInitials = computed(() => {
     const name = userName.value;
     return name
         .split(' ')
-        .map(n => n[0])
+        .map((n) => n[0])
         .join('')
         .toUpperCase()
         .slice(0, 2);

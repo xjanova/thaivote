@@ -1,6 +1,4 @@
-<script setup>
-import { ref } from 'vue';
-</script>
+<script setup></script>
 
 <template>
     <div class="h-screen w-screen bg-gray-900 flex items-center justify-center">

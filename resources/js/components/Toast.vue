@@ -23,8 +23,8 @@
 
                     <!-- Close Button -->
                     <button
-                        @click="remove(toast.id)"
                         class="flex-shrink-0 opacity-70 hover:opacity-100 transition-opacity"
+                        @click="remove(toast.id)"
                     >
                         <XMarkIcon class="w-4 h-4" />
                     </button>

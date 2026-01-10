@@ -178,13 +178,13 @@ const formatDate = (date) =>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <div class="flex items-center justify-end gap-2">
                                     <button
-                                        @click="toggleAdmin(user)"
                                         :class="[
                                             'px-3 py-1 rounded text-xs font-medium',
                                             user.is_admin
                                                 ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
                                                 : 'bg-purple-100 text-purple-700 hover:bg-purple-200',
                                         ]"
+                                        @click="toggleAdmin(user)"
                                     >
                                         {{ user.is_admin ? 'ถอดสิทธิ์' : 'เพิ่มสิทธิ์' }}
                                     </button>
@@ -195,8 +195,8 @@ const formatDate = (date) =>
                                         แก้ไข
                                     </a>
                                     <button
-                                        @click="deleteUser(user)"
                                         class="px-3 py-1 bg-red-100 text-red-700 rounded text-xs font-medium hover:bg-red-200"
+                                        @click="deleteUser(user)"
                                     >
                                         ลบ
                                     </button>

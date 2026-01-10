@@ -170,7 +170,7 @@
 import { Link } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 
-const props = defineProps({
+defineProps({
     candidate: Object,
 });
 

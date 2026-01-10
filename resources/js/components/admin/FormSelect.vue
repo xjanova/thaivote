@@ -18,11 +18,7 @@
             @focus="$emit('focus', $event)"
         >
             <option v-if="placeholder" value="" disabled>{{ placeholder }}</option>
-            <option
-                v-for="option in options"
-                :key="option.value"
-                :value="option.value"
-            >
+            <option v-for="option in options" :key="option.value" :value="option.value">
                 {{ option.label }}
             </option>
         </select>
@@ -90,8 +86,6 @@ const selectClasses = computed(() => [
     props.error
         ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
         : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
-    props.disabled
-        ? 'bg-gray-50 text-gray-500 cursor-not-allowed'
-        : 'bg-white text-gray-900',
+    props.disabled ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-900',
 ]);
 </script>
