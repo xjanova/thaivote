@@ -187,6 +187,7 @@
                             แสดง {{ sources.from }} - {{ sources.to }} จาก
                             {{ sources.total }} รายการ
                         </p>
+                        <!-- eslint-disable vue/no-v-html -- Laravel pagination labels with HTML entities are safe -->
                         <div class="flex gap-1">
                             <Link
                                 v-for="link in sources.links"
@@ -202,6 +203,7 @@
                                 ><span v-html="link.label"
                             /></Link>
                         </div>
+                        <!-- eslint-enable vue/no-v-html -->
                     </div>
                 </div>
             </div>

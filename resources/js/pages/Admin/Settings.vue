@@ -114,8 +114,8 @@ const saveSettings = () => {
                             <input
                                 type="file"
                                 accept="image/png,image/jpeg,image/jpg,image/svg+xml"
-                                @change="handleLogoChange"
                                 class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                @change="handleLogoChange"
                             />
                             <p class="mt-1 text-sm text-gray-500">
                                 PNG, JPG, JPEG หรือ SVG (สูงสุด 2MB)
@@ -140,8 +140,8 @@ const saveSettings = () => {
                             <input
                                 type="file"
                                 accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/x-icon"
-                                @change="handleFaviconChange"
                                 class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                @change="handleFaviconChange"
                             />
                             <p class="mt-1 text-sm text-gray-500">
                                 PNG, JPG, JPEG, SVG หรือ ICO (สูงสุด 1MB)
@@ -307,8 +307,8 @@ const saveSettings = () => {
                 <div class="flex justify-end gap-4">
                     <button
                         type="button"
-                        @click="() => console.log('Form data:', form)"
                         class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm"
+                        @click="() => console.log('Form data:', form)"
                     >
                         Debug Form
                     </button>
