@@ -23,6 +23,7 @@ class ECTScraperService
         'party_db' => 'https://party.ect.go.th/',
         'opendata' => 'http://opendata.ect.go.th/',
         'report_2566' => 'https://ectreport66.ect.go.th/',
+        'report_2569' => 'https://ectreport69.ect.go.th/',
     ];
 
     protected array $provinceEctCodes = [

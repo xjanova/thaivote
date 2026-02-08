@@ -99,10 +99,15 @@ class LiveResultsService
                     'name_en' => $result->party->name_en,
                     'abbreviation' => $result->party->abbreviation,
                     'color' => $result->party->color,
+                    'secondary_color' => $result->party->secondary_color,
                     'party_number' => $result->party->party_number,
+                    'logo' => $result->party->logo,
+                    'leader_name' => $result->party->leader_name,
                     'seats' => $result->total_seats,
                     'constituency_seats' => $result->constituency_seats,
                     'party_list_seats' => $result->party_list_seats,
+                    'constituency_votes' => $result->constituency_votes,
+                    'party_list_votes' => $result->party_list_votes,
                     'total_votes' => $result->total_votes,
                     'vote_percentage' => $totalVotes > 0
                         ? round(($result->total_votes / $totalVotes) * 100, 2)

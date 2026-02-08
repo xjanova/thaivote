@@ -90,6 +90,29 @@ Route::prefix('live')->group(function () {
     Route::get('/stream', [LiveResultsController::class, 'stream']); // Server-Sent Events
 });
 
+// ECT Report 69 Integration
+Route::prefix('ect69')->group(function () {
+    Route::get('/scrape', function () {
+        $service = app(\App\Services\ECTReport69Service::class);
+        $election = \App\Models\Election::where('status', 'counting')
+            ->orWhere('status', 'ongoing')
+            ->orderBy('election_date', 'desc')
+            ->first();
+
+        if (! $election) {
+            return response()->json(['success' => false, 'message' => 'No active election'], 404);
+        }
+
+        $stats = $service->scrapeAndUpdate($election->id);
+
+        return response()->json([
+            'success' => true,
+            'data' => $stats,
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    })->middleware('auth:sanctum');
+});
+
 // Webhook for external data sources
 Route::prefix('webhooks')->middleware('throttle:100,1')->group(function () {
     Route::post('/results/{source}', function ($source) {

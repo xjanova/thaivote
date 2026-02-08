@@ -32,10 +32,25 @@ class ElectionController extends Controller
 
         $parties = Party::active()->get();
 
+        // Enrich national results with party logo/number data
+        $enrichedResults = $nationalResults->map(function ($result) {
+            $data = $result->toArray();
+            if ($result->party) {
+                $data['party'] = array_merge($result->party->toArray(), [
+                    'logo' => $result->party->logo,
+                    'party_number' => $result->party->party_number,
+                    'secondary_color' => $result->party->secondary_color,
+                    'leader_name' => $result->party->leader_name,
+                ]);
+            }
+
+            return $data;
+        });
+
         return response()->json([
             'election' => $election,
             'stats' => $election->stats,
-            'national_results' => $nationalResults,
+            'national_results' => $enrichedResults,
             'parties' => $parties,
         ]);
     }
