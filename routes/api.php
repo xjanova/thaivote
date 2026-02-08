@@ -93,8 +93,8 @@ Route::prefix('live')->group(function () {
 // ECT Report 69 Integration
 Route::prefix('ect69')->group(function () {
     Route::get('/scrape', function () {
-        $service = app(\App\Services\ECTReport69Service::class);
-        $election = \App\Models\Election::where('status', 'counting')
+        $service = app(App\Services\ECTReport69Service::class);
+        $election = App\Models\Election::where('status', 'counting')
             ->orWhere('status', 'ongoing')
             ->orderBy('election_date', 'desc')
             ->first();

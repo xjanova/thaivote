@@ -35,6 +35,7 @@ class ElectionController extends Controller
         // Enrich national results with party logo/number data
         $enrichedResults = $nationalResults->map(function ($result) {
             $data = $result->toArray();
+
             if ($result->party) {
                 $data['party'] = array_merge($result->party->toArray(), [
                     'logo' => $result->party->logo,

@@ -160,6 +160,64 @@ class ECTReport69Service
     }
 
     /**
+     * Manually update results (for use when API is not available)
+     */
+    public function manualUpdate(int $electionId, array $partyResults): int
+    {
+        $updated = 0;
+
+        foreach ($partyResults as $result) {
+            $party = Party::where('party_number', $result['party_number'])->first();
+
+            if (! $party) {
+                continue;
+            }
+
+            NationalResult::updateOrCreate(
+                [
+                    'election_id' => $electionId,
+                    'party_id' => $party->id,
+                ],
+                [
+                    'constituency_votes' => $result['constituency_votes'] ?? 0,
+                    'party_list_votes' => $result['party_list_votes'] ?? 0,
+                    'total_votes' => $result['total_votes'] ?? 0,
+                    'constituency_seats' => $result['constituency_seats'] ?? 0,
+                    'party_list_seats' => $result['party_list_seats'] ?? 0,
+                    'total_seats' => $result['total_seats'] ?? 0,
+                    'rank' => $result['rank'] ?? $updated + 1,
+                ],
+            );
+
+            $updated++;
+        }
+
+        // Update stats
+        $this->updateElectionStats($electionId);
+
+        // Clear cache
+        Cache::forget("live_results_{$electionId}");
+
+        return $updated;
+    }
+
+    /**
+     * Schedule สำหรับ real-time update (ทุก 30 วินาที)
+     */
+    public function scheduledUpdate(): void
+    {
+        $election = Election::where('status', 'counting')
+            ->orWhere('status', 'ongoing')
+            ->first();
+
+        if (! $election) {
+            return;
+        }
+
+        $this->scrapeAndUpdate($election->id);
+    }
+
+    /**
      * Process API response data and store in database
      */
     protected function processApiData(int $electionId, array $data): array
@@ -188,7 +246,7 @@ class ECTReport69Service
                             'party_list_seats' => $result['party_list_seats'] ?? 0,
                             'total_seats' => $result['total_seats'] ?? $result['seats'] ?? 0,
                             'rank' => $result['rank'] ?? 0,
-                        ]
+                        ],
                     );
                     $partiesUpdated++;
                 }
@@ -215,6 +273,7 @@ class ECTReport69Service
     {
         if (isset($data['party_number'])) {
             $party = Party::where('party_number', $data['party_number'])->first();
+
             if ($party) {
                 return $party;
             }
@@ -261,7 +320,7 @@ class ECTReport69Service
                         'seats_won' => $partyResult['seats'] ?? 0,
                         'vote_percentage' => $partyResult['percentage'] ?? 0,
                         'counting_progress' => $data['counting_progress'] ?? 0,
-                    ]
+                    ],
                 );
                 $updated++;
             }
@@ -276,6 +335,7 @@ class ECTReport69Service
     protected function updateElectionStats(int $electionId): void
     {
         $election = Election::find($electionId);
+
         if (! $election) {
             return;
         }
@@ -295,7 +355,7 @@ class ECTReport69Service
                     ->where('counting_progress', 100)
                     ->count(),
                 'constituencies_total' => 400,
-            ]
+            ],
         );
     }
 
@@ -317,63 +377,5 @@ class ECTReport69Service
             ->avg('counting_progress');
 
         return round($avgProgress ?? 0, 1);
-    }
-
-    /**
-     * Manually update results (for use when API is not available)
-     */
-    public function manualUpdate(int $electionId, array $partyResults): int
-    {
-        $updated = 0;
-
-        foreach ($partyResults as $result) {
-            $party = Party::where('party_number', $result['party_number'])->first();
-
-            if (! $party) {
-                continue;
-            }
-
-            NationalResult::updateOrCreate(
-                [
-                    'election_id' => $electionId,
-                    'party_id' => $party->id,
-                ],
-                [
-                    'constituency_votes' => $result['constituency_votes'] ?? 0,
-                    'party_list_votes' => $result['party_list_votes'] ?? 0,
-                    'total_votes' => $result['total_votes'] ?? 0,
-                    'constituency_seats' => $result['constituency_seats'] ?? 0,
-                    'party_list_seats' => $result['party_list_seats'] ?? 0,
-                    'total_seats' => $result['total_seats'] ?? 0,
-                    'rank' => $result['rank'] ?? $updated + 1,
-                ]
-            );
-
-            $updated++;
-        }
-
-        // Update stats
-        $this->updateElectionStats($electionId);
-
-        // Clear cache
-        Cache::forget("live_results_{$electionId}");
-
-        return $updated;
-    }
-
-    /**
-     * Schedule สำหรับ real-time update (ทุก 30 วินาที)
-     */
-    public function scheduledUpdate(): void
-    {
-        $election = Election::where('status', 'counting')
-            ->orWhere('status', 'ongoing')
-            ->first();
-
-        if (! $election) {
-            return;
-        }
-
-        $this->scrapeAndUpdate($election->id);
     }
 }
