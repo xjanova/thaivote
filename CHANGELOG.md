@@ -1,3 +1,9 @@
+## [1.43.1](https://github.com/xjanova/thaivote/compare/v1.43.0...v1.43.1) (2026-02-08)
+
+### 🐛 Bug Fixes
+
+* resolve CI failures - migrate ESLint to v9 flat config, fix code style and security issues ([86cfff2](https://github.com/xjanova/thaivote/commit/86cfff2a8e9b862e5efcf076d9b075d7b760d93d))
+
 ## [1.43.0](https://github.com/xjanova/thaivote/compare/v1.42.1...v1.43.0) (2026-02-08)
 
 ### ✨ Features
