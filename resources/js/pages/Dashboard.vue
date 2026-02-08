@@ -907,7 +907,7 @@
 import { ref, computed, onMounted, onUnmounted, h } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { useResultsStore } from '@/stores/results';
-import { parties as partyData, getPartyByNumber } from '@/data/parties';
+import { getPartyByNumber } from '@/data/parties';
 import ThailandMap from '@/components/map/ThailandMap.vue';
 import SeatDonutChart from '@/components/charts/SeatDonutChart.vue';
 import VoteBarChart from '@/components/charts/VoteBarChart.vue';
@@ -1002,7 +1002,6 @@ const tabs = [
 
 // Computed
 const siteName = computed(() => settings.value.site_name || 'ThaiVote');
-const election = computed(() => resultsStore.election);
 const stats = computed(() => resultsStore.stats);
 
 const invalidPercent = computed(() => {

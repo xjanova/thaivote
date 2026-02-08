@@ -19,8 +19,12 @@ const chartCanvas = ref(null);
 let chartInstance = null;
 
 function buildChart() {
-    if (!chartCanvas.value) return;
-    if (chartInstance) chartInstance.destroy();
+    if (!chartCanvas.value) {
+        return;
+    }
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
 
     const top = props.results.slice(0, props.maxItems);
     const labels = top.map(r => r.party?.abbreviation || r.party?.name_th?.substring(0, 6) || '?');
@@ -33,7 +37,7 @@ function buildChart() {
             labels,
             datasets: [{
                 data,
-                backgroundColor: colors.map(c => c + 'cc'),
+                backgroundColor: colors.map(c => `${c}cc`),
                 borderColor: colors,
                 borderWidth: 1,
                 borderRadius: 6,
@@ -51,8 +55,12 @@ function buildChart() {
                         color: 'rgba(255,255,255,0.3)',
                         font: { size: 10 },
                         callback(v) {
-                            if (v >= 1_000_000) return (v / 1_000_000).toFixed(1) + 'M';
-                            if (v >= 1_000) return (v / 1_000).toFixed(0) + 'K';
+                            if (v >= 1_000_000) {
+                                return `${(v / 1_000_000).toFixed(1)}M`;
+                            }
+                            if (v >= 1_000) {
+                                return `${(v / 1_000).toFixed(0)}K`;
+                            }
                             return v;
                         },
                     },
@@ -96,5 +104,9 @@ function buildChart() {
 
 onMounted(buildChart);
 watch(() => props.results, buildChart, { deep: true });
-onUnmounted(() => { if (chartInstance) chartInstance.destroy(); });
+onUnmounted(() => {
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+});
 </script>

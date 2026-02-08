@@ -25,8 +25,12 @@ const chartCanvas = ref(null);
 let chartInstance = null;
 
 function buildChart() {
-    if (!chartCanvas.value) return;
-    if (chartInstance) chartInstance.destroy();
+    if (!chartCanvas.value) {
+        return;
+    }
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
 
     const top = props.results.slice(0, props.maxItems);
     const others = props.results.slice(props.maxItems);
@@ -96,7 +100,11 @@ function buildChart() {
 
 onMounted(buildChart);
 watch(() => props.results, buildChart, { deep: true });
-onUnmounted(() => { if (chartInstance) chartInstance.destroy(); });
+onUnmounted(() => {
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+});
 </script>
 
 <style scoped>
