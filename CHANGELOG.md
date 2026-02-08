@@ -1,3 +1,9 @@
+## [1.44.1](https://github.com/xjanova/thaivote/compare/v1.44.0...v1.44.1) (2026-02-08)
+
+### 🐛 Bug Fixes
+
+* Resolve ESLint errors in chart components and Dashboard ([c216a33](https://github.com/xjanova/thaivote/commit/c216a338cb3a2fcd37c3a5d64fa341d80e7ae891))
+
 ## [1.44.0](https://github.com/xjanova/thaivote/compare/v1.43.1...v1.44.0) (2026-02-08)
 
 ### ✨ Features
