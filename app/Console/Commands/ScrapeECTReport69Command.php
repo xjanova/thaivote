@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Models\Election;
 use App\Models\NationalResult;
-use App\Models\Party;
 use App\Services\ECTReport69Service;
 use Illuminate\Console\Command;
 
@@ -68,7 +67,7 @@ class ScrapeECTReport69Command extends Command
                 ['API Success', $stats['api_success'] ? 'Yes' : 'No'],
                 ['Parties Updated', $stats['parties_updated']],
                 ['Provinces Updated', $stats['provinces_updated']],
-            ]
+            ],
         );
 
         // Show current standings
@@ -124,7 +123,7 @@ class ScrapeECTReport69Command extends Command
 
         $this->table(
             ['#', 'Party', 'No.', 'Votes', 'Constituency', 'Party List', 'Total Seats'],
-            $rows
+            $rows,
         );
     }
 }

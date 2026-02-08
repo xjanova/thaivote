@@ -8,12 +8,28 @@
                     <div class="flex items-center gap-3">
                         <a href="/" class="flex items-center gap-3">
                             <div v-if="siteLogo" class="flex items-center">
-                                <img :src="siteLogo" alt="Logo" class="h-12 w-auto object-contain" />
+                                <img
+                                    :src="siteLogo"
+                                    alt="Logo"
+                                    class="h-12 w-auto object-contain"
+                                />
                             </div>
                             <div v-else class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
-                                    <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <div
+                                    class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg"
+                                >
+                                    <svg
+                                        class="w-6 h-6 text-white"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
                                     </svg>
                                 </div>
                                 <h1 class="text-xl font-bold text-gray-900">{{ siteName }}</h1>
@@ -31,7 +47,7 @@
                                 'text-sm font-medium transition-colors',
                                 isActive(item.href)
                                     ? 'text-indigo-600'
-                                    : 'text-gray-700 hover:text-indigo-600'
+                                    : 'text-gray-700 hover:text-indigo-600',
                             ]"
                         >
                             {{ item.name }}
@@ -40,14 +56,36 @@
 
                     <!-- Mobile Menu Button -->
                     <button
-                        @click="mobileMenuOpen = !mobileMenuOpen"
                         class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                        @click="mobileMenuOpen = !mobileMenuOpen"
                     >
-                        <svg v-if="!mobileMenuOpen" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        <svg
+                            v-if="!mobileMenuOpen"
+                            class="w-6 h-6"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16"
+                            />
                         </svg>
-                        <svg v-else class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        <svg
+                            v-else
+                            class="w-6 h-6"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"
+                            />
                         </svg>
                     </button>
                 </div>
@@ -64,7 +102,7 @@
                             'block px-4 py-2.5 rounded-lg text-sm font-medium transition-colors',
                             isActive(item.href)
                                 ? 'bg-indigo-50 text-indigo-600'
-                                : 'text-gray-700 hover:bg-gray-50'
+                                : 'text-gray-700 hover:bg-gray-50',
                         ]"
                         @click="mobileMenuOpen = false"
                     >
@@ -87,12 +125,28 @@
                     <div class="col-span-1 md:col-span-2">
                         <div class="flex items-center gap-3 mb-4">
                             <div v-if="siteLogo" class="flex items-center">
-                                <img :src="siteLogo" alt="Logo" class="h-10 w-auto object-contain" />
+                                <img
+                                    :src="siteLogo"
+                                    alt="Logo"
+                                    class="h-10 w-auto object-contain"
+                                />
                             </div>
                             <div v-else class="flex items-center gap-2">
-                                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <div
+                                    class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center"
+                                >
+                                    <svg
+                                        class="w-5 h-5 text-white"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
                                     </svg>
                                 </div>
                                 <h3 class="text-lg font-bold text-gray-900">{{ siteName }}</h3>
@@ -108,7 +162,10 @@
                         <h4 class="font-semibold text-gray-900 mb-4">เมนู</h4>
                         <ul class="space-y-2">
                             <li v-for="item in navigation" :key="item.name">
-                                <a :href="item.href" class="text-gray-600 hover:text-indigo-600 text-sm transition-colors">
+                                <a
+                                    :href="item.href"
+                                    class="text-gray-600 hover:text-indigo-600 text-sm transition-colors"
+                                >
                                     {{ item.name }}
                                 </a>
                             </li>
