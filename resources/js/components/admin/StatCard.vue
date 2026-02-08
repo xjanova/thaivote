@@ -22,8 +22,8 @@
                     ]"
                 >
                     <component
-                        v-if="resolvedIcon"
                         :is="resolvedIcon"
+                        v-if="resolvedIcon"
                         class="w-8 h-8 text-white transition-transform group-hover:scale-110"
                     />
                 </div>

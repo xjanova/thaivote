@@ -1,3 +1,15 @@
+## [1.43.1](https://github.com/xjanova/thaivote/compare/v1.43.0...v1.43.1) (2026-02-08)
+
+### 🐛 Bug Fixes
+
+* resolve CI failures - migrate ESLint to v9 flat config, fix code style and security issues ([86cfff2](https://github.com/xjanova/thaivote/commit/86cfff2a8e9b862e5efcf076d9b075d7b760d93d))
+
+## [1.43.0](https://github.com/xjanova/thaivote/compare/v1.42.1...v1.43.0) (2026-02-08)
+
+### ✨ Features
+
+* Add ECT Report 69 integration with redesigned realtime dashboard ([f9014c2](https://github.com/xjanova/thaivote/commit/f9014c26e9a63b10e73060023ce35e85e996d5fa))
+
 ## [1.42.1](https://github.com/xjanova/thaivote/compare/v1.42.0...v1.42.1) (2026-01-10)
 
 ### 🐛 Bug Fixes
