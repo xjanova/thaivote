@@ -154,6 +154,57 @@
         <main class="container mx-auto px-4 pb-12">
             <!-- Tab: ภาพรวม (Overview) -->
             <div v-if="activeTab === 'overview'" class="space-y-6">
+                <!-- Charts Row -->
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Donut: ที่นั่ง -->
+                    <div class="glass-card p-5">
+                        <h3 class="text-sm font-bold text-white/70 mb-3 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                            </svg>
+                            สัดส่วนที่นั่ง (500)
+                        </h3>
+                        <SeatDonutChart
+                            :results="sortedResults"
+                            :max-items="8"
+                            center-label="ที่นั่งรวม"
+                            :center-value="totalSeatsCount"
+                        />
+                        <!-- Mini Legend -->
+                        <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 mt-4">
+                            <div v-for="r in sortedResults.slice(0, 8)" :key="r.party_id" class="flex items-center gap-1.5">
+                                <div class="w-2.5 h-2.5 rounded-sm flex-shrink-0" :style="{ backgroundColor: r.party?.color }"></div>
+                                <span class="text-[10px] text-white/50 truncate">{{ r.party?.abbreviation }}</span>
+                                <span class="text-[10px] font-bold text-white/80 ml-auto">{{ r.total_seats }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Bar: คะแนนเสียง -->
+                    <div class="glass-card p-5">
+                        <h3 class="text-sm font-bold text-white/70 mb-3 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                            คะแนนเสียงรายพรรค
+                        </h3>
+                        <div class="h-[280px]">
+                            <VoteBarChart :results="sortedResults" :max-items="10" value-key="total_votes" label-suffix="คะแนน" />
+                        </div>
+                    </div>
+                    <!-- Stacked Bar: แบ่งเขต vs บัญชีรายชื่อ -->
+                    <div class="glass-card p-5">
+                        <h3 class="text-sm font-bold text-white/70 mb-3 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                            </svg>
+                            แบ่งเขต vs บัญชีรายชื่อ
+                        </h3>
+                        <div class="h-[280px]">
+                            <SeatCompareChart :results="sortedResults" :max-items="10" />
+                        </div>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- Party Results -->
                     <div class="lg:col-span-2">
@@ -311,6 +362,21 @@
 
             <!-- Tab: แบ่งเขต (Constituency) -->
             <div v-if="activeTab === 'constituency'" class="space-y-6">
+                <!-- Constituency Charts -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-card p-5">
+                        <h3 class="text-sm font-bold text-white/70 mb-3">คะแนนแบ่งเขตรายพรรค</h3>
+                        <div class="h-[280px]">
+                            <VoteBarChart :results="constituencySorted" :max-items="10" value-key="constituency_votes" label-suffix="คะแนน" />
+                        </div>
+                    </div>
+                    <div class="glass-card p-5">
+                        <h3 class="text-sm font-bold text-white/70 mb-3">ที่นั่งแบ่งเขตรายพรรค</h3>
+                        <div class="h-[280px]">
+                            <VoteBarChart :results="constituencySorted" :max-items="10" value-key="constituency_seats" label-suffix="ที่นั่ง" />
+                        </div>
+                    </div>
+                </div>
                 <div class="glass-card">
                     <div class="card-header">
                         <h2 class="text-lg font-bold flex items-center gap-2">
@@ -353,6 +419,21 @@
 
             <!-- Tab: บัญชีรายชื่อ (Party List) -->
             <div v-if="activeTab === 'partylist'" class="space-y-6">
+                <!-- Party List Charts -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-card p-5">
+                        <h3 class="text-sm font-bold text-white/70 mb-3">คะแนนบัญชีรายชื่อ</h3>
+                        <div class="h-[280px]">
+                            <VoteBarChart :results="partyListSorted" :max-items="10" value-key="party_list_votes" label-suffix="คะแนน" />
+                        </div>
+                    </div>
+                    <div class="glass-card p-5">
+                        <h3 class="text-sm font-bold text-white/70 mb-3">ที่นั่งบัญชีรายชื่อ</h3>
+                        <div class="h-[280px]">
+                            <VoteBarChart :results="partyListSorted" :max-items="10" value-key="party_list_seats" label-suffix="ที่นั่ง" />
+                        </div>
+                    </div>
+                </div>
                 <div class="glass-card">
                     <div class="card-header">
                         <h2 class="text-lg font-bold flex items-center gap-2">
@@ -514,6 +595,9 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { useResultsStore } from '@/stores/results';
 import { parties as partyData, getPartyByNumber } from '@/data/parties';
 import ThailandMap from '@/components/map/ThailandMap.vue';
+import SeatDonutChart from '@/components/charts/SeatDonutChart.vue';
+import VoteBarChart from '@/components/charts/VoteBarChart.vue';
+import SeatCompareChart from '@/components/charts/SeatCompareChart.vue';
 import axios from 'axios';
 
 const page = usePage();
@@ -594,6 +678,10 @@ const totalConstituencySeats = computed(() =>
 
 const totalPartyListSeats = computed(() =>
     resultsStore.nationalResults.reduce((sum, r) => sum + (r.party_list_seats || 0), 0)
+);
+
+const totalSeatsCount = computed(() =>
+    resultsStore.nationalResults.reduce((sum, r) => sum + (r.total_seats || 0), 0)
 );
 
 const filteredProvinces = computed(() => {
