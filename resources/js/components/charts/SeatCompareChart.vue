@@ -17,8 +17,12 @@ const chartCanvas = ref(null);
 let chartInstance = null;
 
 function buildChart() {
-    if (!chartCanvas.value) return;
-    if (chartInstance) chartInstance.destroy();
+    if (!chartCanvas.value) {
+        return;
+    }
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
 
     const top = props.results.slice(0, props.maxItems);
     const labels = top.map(r => r.party?.abbreviation || r.party?.name_th?.substring(0, 6) || '?');
@@ -31,7 +35,7 @@ function buildChart() {
                 {
                     label: 'แบ่งเขต',
                     data: top.map(r => r.constituency_seats || 0),
-                    backgroundColor: top.map(r => (r.party?.color || '#6b7280') + 'cc'),
+                    backgroundColor: top.map(r => `${r.party?.color || '#6b7280'}cc`),
                     borderColor: top.map(r => r.party?.color || '#6b7280'),
                     borderWidth: 1,
                     borderRadius: { topLeft: 6, topRight: 6 },
@@ -40,8 +44,8 @@ function buildChart() {
                 {
                     label: 'บัญชีรายชื่อ',
                     data: top.map(r => r.party_list_seats || 0),
-                    backgroundColor: top.map(r => (r.party?.color || '#6b7280') + '55'),
-                    borderColor: top.map(r => (r.party?.color || '#6b7280') + '99'),
+                    backgroundColor: top.map(r => `${r.party?.color || '#6b7280'}55`),
+                    borderColor: top.map(r => `${r.party?.color || '#6b7280'}99`),
                     borderWidth: 1,
                     borderRadius: { topLeft: 6, topRight: 6 },
                     barPercentage: 0.7,
@@ -102,7 +106,9 @@ function buildChart() {
                         footer(items) {
                             const idx = items[0]?.dataIndex;
                             const r = top[idx];
-                            if (!r) return '';
+                            if (!r) {
+                                return '';
+                            }
                             return `รวม: ${r.total_seats || 0} ที่นั่ง`;
                         },
                     },
@@ -118,5 +124,9 @@ function buildChart() {
 
 onMounted(buildChart);
 watch(() => props.results, buildChart, { deep: true });
-onUnmounted(() => { if (chartInstance) chartInstance.destroy(); });
+onUnmounted(() => {
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+});
 </script>
