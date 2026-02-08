@@ -1,3 +1,9 @@
+## [1.44.0](https://github.com/xjanova/thaivote/compare/v1.43.1...v1.44.0) (2026-02-08)
+
+### ✨ Features
+
+* Add Chart.js charts to election dashboard ([158c493](https://github.com/xjanova/thaivote/commit/158c49354b550109c950f706adcb1747cc3c3339))
+
 ## [1.43.1](https://github.com/xjanova/thaivote/compare/v1.43.0...v1.43.1) (2026-02-08)
 
 ### 🐛 Bug Fixes
