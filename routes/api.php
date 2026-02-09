@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\ConstituencyController;
+use App\Http\Controllers\Api\ECTReport69Controller;
 use App\Http\Controllers\Api\ElectionController;
 use App\Http\Controllers\Api\LiveResultsController;
 use App\Http\Controllers\Api\NewsController;
@@ -90,8 +91,11 @@ Route::prefix('live')->group(function () {
     Route::get('/stream', [LiveResultsController::class, 'stream']); // Server-Sent Events
 });
 
-// ECT Report 69 Integration
+// ECT Report 69 Analysis (Public)
 Route::prefix('ect69')->group(function () {
+    Route::post('/analyze', [ECTReport69Controller::class, 'analyze']);
+    Route::post('/anomalies', [ECTReport69Controller::class, 'anomalies']);
+
     Route::get('/scrape', function () {
         $service = app(App\Services\ECTReport69Service::class);
         $election = App\Models\Election::where('status', 'counting')

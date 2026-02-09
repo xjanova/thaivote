@@ -99,6 +99,11 @@ Route::prefix('vote')->group(function () {
     })->name('vote.verify');
 });
 
+// ECT Report 69 - ตรวจสอบผลเลือกตั้ง
+Route::get('/ect-report69', function () {
+    return Inertia::render('ECTReport69');
+})->name('ect-report69');
+
 // API Documentation
 Route::get('/api-docs', function () {
     return Inertia::render('ApiDocs');
