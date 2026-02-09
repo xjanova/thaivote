@@ -1,3 +1,9 @@
+## [1.45.0](https://github.com/xjanova/thaivote/compare/v1.44.1...v1.45.0) (2026-02-09)
+
+### ✨ Features
+
+* Add ECT Report 69 inspection system with anomaly detection and AI analysis ([9fcaf68](https://github.com/xjanova/thaivote/commit/9fcaf68211367ce578645cd10dcd0afba20365c6))
+
 ## [1.44.1](https://github.com/xjanova/thaivote/compare/v1.44.0...v1.44.1) (2026-02-08)
 
 ### 🐛 Bug Fixes
