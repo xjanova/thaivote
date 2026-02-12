@@ -133,6 +133,31 @@ export const useResultsStore = defineStore('results', () => {
 
     const getPartyById = (partyId) => parties.value.find((p) => p.id === partyId);
 
+    // Fetch live stats directly from ECT proxy (fallback when scraper is not running)
+    const fetchEctPartyStats = async () => {
+        try {
+            const response = await axios.get('/api/ect69/stats/party');
+            if (response.data?.success && response.data?.data) {
+                return response.data.data;
+            }
+        } catch {
+            // ECT proxy not available
+        }
+        return null;
+    };
+
+    const fetchEctParties = async () => {
+        try {
+            const response = await axios.get('/api/ect69/parties');
+            if (response.data?.success && response.data?.data) {
+                return response.data.data;
+            }
+        } catch {
+            // ECT proxy not available
+        }
+        return null;
+    };
+
     return {
         // State
         election,
@@ -162,5 +187,7 @@ export const useResultsStore = defineStore('results', () => {
         getProvincesWonByParty,
         updateResults,
         getPartyById,
+        fetchEctPartyStats,
+        fetchEctParties,
     };
 });
