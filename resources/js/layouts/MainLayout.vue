@@ -228,6 +228,7 @@ const siteName = computed(() => settings.value.site_name || 'ThaiVote');
 const navigation = [
     { name: 'หน้าแรก', href: '/' },
     { name: 'ผลการเลือกตั้ง', href: '/results' },
+    { name: 'ตรวจสอบ แบบ 69', href: '/ect-report69' },
     { name: 'พรรคการเมือง', href: '/parties' },
     { name: 'ข่าวสาร', href: '/news' },
     { name: 'แผนที่', href: '/map' },

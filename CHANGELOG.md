@@ -1,3 +1,21 @@
+## [1.45.0](https://github.com/xjanova/thaivote/compare/v1.44.1...v1.45.0) (2026-02-09)
+
+### ✨ Features
+
+* Add ECT Report 69 inspection system with anomaly detection and AI analysis ([9fcaf68](https://github.com/xjanova/thaivote/commit/9fcaf68211367ce578645cd10dcd0afba20365c6))
+
+## [1.44.1](https://github.com/xjanova/thaivote/compare/v1.44.0...v1.44.1) (2026-02-08)
+
+### 🐛 Bug Fixes
+
+* Resolve ESLint errors in chart components and Dashboard ([c216a33](https://github.com/xjanova/thaivote/commit/c216a338cb3a2fcd37c3a5d64fa341d80e7ae891))
+
+## [1.44.0](https://github.com/xjanova/thaivote/compare/v1.43.1...v1.44.0) (2026-02-08)
+
+### ✨ Features
+
+* Add Chart.js charts to election dashboard ([158c493](https://github.com/xjanova/thaivote/commit/158c49354b550109c950f706adcb1747cc3c3339))
+
 ## [1.43.1](https://github.com/xjanova/thaivote/compare/v1.43.0...v1.43.1) (2026-02-08)
 
 ### 🐛 Bug Fixes
