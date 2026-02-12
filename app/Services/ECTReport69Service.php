@@ -97,38 +97,6 @@ class ECTReport69Service
         return $this->fetchJson($url, "stats:{$key}");
     }
 
-    /**
-     * ดึง JSON จาก URL
-     */
-    protected function fetchJson(string $url, string $label): ?array
-    {
-        try {
-            $response = Http::withHeaders($this->headers)
-                ->timeout(30)
-                ->get($url);
-
-            if ($response->successful()) {
-                $data = $response->json();
-                Log::info("ECT69: Fetched {$label} successfully", [
-                    'url' => $url,
-                    'count' => is_array($data) ? count($data) : 'object',
-                ]);
-
-                return $data;
-            }
-
-            Log::warning("ECT69: HTTP {$response->status()} for {$label}", [
-                'url' => $url,
-            ]);
-        } catch (Exception $e) {
-            Log::error("ECT69: Failed to fetch {$label}: {$e->getMessage()}", [
-                'url' => $url,
-            ]);
-        }
-
-        return null;
-    }
-
     // =============================================
     // Sync Methods - ซิงค์ข้อมูลเข้า Database
     // =============================================
@@ -782,6 +750,38 @@ class ECTReport69Service
         }
 
         $this->scrapeAndUpdate($election->id);
+    }
+
+    /**
+     * ดึง JSON จาก URL
+     */
+    protected function fetchJson(string $url, string $label): ?array
+    {
+        try {
+            $response = Http::withHeaders($this->headers)
+                ->timeout(30)
+                ->get($url);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                Log::info("ECT69: Fetched {$label} successfully", [
+                    'url' => $url,
+                    'count' => is_array($data) ? count($data) : 'object',
+                ]);
+
+                return $data;
+            }
+
+            Log::warning("ECT69: HTTP {$response->status()} for {$label}", [
+                'url' => $url,
+            ]);
+        } catch (Exception $e) {
+            Log::error("ECT69: Failed to fetch {$label}: {$e->getMessage()}", [
+                'url' => $url,
+            ]);
+        }
+
+        return null;
     }
 
     // =============================================

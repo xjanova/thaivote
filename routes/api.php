@@ -98,40 +98,40 @@ Route::prefix('ect69')->group(function () {
 
     // Public: proxy ECT reference data (cached)
     Route::get('/parties', function () {
-        $data = \Illuminate\Support\Facades\Cache::remember('ect69_parties', 3600, function () {
-            return app(\App\Services\ECTReport69Service::class)->fetchReference('parties');
+        $data = Illuminate\Support\Facades\Cache::remember('ect69_parties', 3600, function () {
+            return app(App\Services\ECTReport69Service::class)->fetchReference('parties');
         });
 
         return response()->json(['success' => (bool) $data, 'data' => $data]);
     });
 
     Route::get('/provinces', function () {
-        $data = \Illuminate\Support\Facades\Cache::remember('ect69_provinces', 3600, function () {
-            return app(\App\Services\ECTReport69Service::class)->fetchReference('provinces');
+        $data = Illuminate\Support\Facades\Cache::remember('ect69_provinces', 3600, function () {
+            return app(App\Services\ECTReport69Service::class)->fetchReference('provinces');
         });
 
         return response()->json(['success' => (bool) $data, 'data' => $data]);
     });
 
     Route::get('/constituencies', function () {
-        $data = \Illuminate\Support\Facades\Cache::remember('ect69_constituencies', 3600, function () {
-            return app(\App\Services\ECTReport69Service::class)->fetchReference('constituencies');
+        $data = Illuminate\Support\Facades\Cache::remember('ect69_constituencies', 3600, function () {
+            return app(App\Services\ECTReport69Service::class)->fetchReference('constituencies');
         });
 
         return response()->json(['success' => (bool) $data, 'data' => $data]);
     });
 
     Route::get('/candidates/mp', function () {
-        $data = \Illuminate\Support\Facades\Cache::remember('ect69_mp_candidates', 3600, function () {
-            return app(\App\Services\ECTReport69Service::class)->fetchReference('mp_candidates');
+        $data = Illuminate\Support\Facades\Cache::remember('ect69_mp_candidates', 3600, function () {
+            return app(App\Services\ECTReport69Service::class)->fetchReference('mp_candidates');
         });
 
         return response()->json(['success' => (bool) $data, 'data' => $data]);
     });
 
     Route::get('/candidates/party', function () {
-        $data = \Illuminate\Support\Facades\Cache::remember('ect69_party_candidates', 3600, function () {
-            return app(\App\Services\ECTReport69Service::class)->fetchReference('party_candidates');
+        $data = Illuminate\Support\Facades\Cache::remember('ect69_party_candidates', 3600, function () {
+            return app(App\Services\ECTReport69Service::class)->fetchReference('party_candidates');
         });
 
         return response()->json(['success' => (bool) $data, 'data' => $data]);
@@ -139,16 +139,16 @@ Route::prefix('ect69')->group(function () {
 
     // Public: proxy ECT live stats (short cache for real-time)
     Route::get('/stats/party', function () {
-        $data = \Illuminate\Support\Facades\Cache::remember('ect69_stats_party', 15, function () {
-            return app(\App\Services\ECTReport69Service::class)->fetchStats('stats_party');
+        $data = Illuminate\Support\Facades\Cache::remember('ect69_stats_party', 15, function () {
+            return app(App\Services\ECTReport69Service::class)->fetchStats('stats_party');
         });
 
         return response()->json(['success' => (bool) $data, 'data' => $data, 'timestamp' => now()->toIso8601String()]);
     });
 
     Route::get('/stats/constituency', function () {
-        $data = \Illuminate\Support\Facades\Cache::remember('ect69_stats_cons', 15, function () {
-            return app(\App\Services\ECTReport69Service::class)->fetchStats('stats_constituency');
+        $data = Illuminate\Support\Facades\Cache::remember('ect69_stats_cons', 15, function () {
+            return app(App\Services\ECTReport69Service::class)->fetchStats('stats_constituency');
         });
 
         return response()->json(['success' => (bool) $data, 'data' => $data, 'timestamp' => now()->toIso8601String()]);
@@ -157,8 +157,8 @@ Route::prefix('ect69')->group(function () {
     // Admin: trigger sync
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/sync/refs', function () {
-            $service = app(\App\Services\ECTReport69Service::class);
-            $election = \App\Models\Election::where('status', 'counting')
+            $service = app(App\Services\ECTReport69Service::class);
+            $election = App\Models\Election::where('status', 'counting')
                 ->orWhere('status', 'ongoing')
                 ->orderBy('election_date', 'desc')
                 ->first();
@@ -173,8 +173,8 @@ Route::prefix('ect69')->group(function () {
         });
 
         Route::post('/sync/live', function () {
-            $service = app(\App\Services\ECTReport69Service::class);
-            $election = \App\Models\Election::where('status', 'counting')
+            $service = app(App\Services\ECTReport69Service::class);
+            $election = App\Models\Election::where('status', 'counting')
                 ->orWhere('status', 'ongoing')
                 ->orderBy('election_date', 'desc')
                 ->first();
@@ -193,8 +193,8 @@ Route::prefix('ect69')->group(function () {
         });
 
         Route::post('/sync/full', function () {
-            $service = app(\App\Services\ECTReport69Service::class);
-            $election = \App\Models\Election::where('status', 'counting')
+            $service = app(App\Services\ECTReport69Service::class);
+            $election = App\Models\Election::where('status', 'counting')
                 ->orWhere('status', 'ongoing')
                 ->orderBy('election_date', 'desc')
                 ->first();

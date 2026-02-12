@@ -6,6 +6,7 @@ use App\Events\ResultsUpdated;
 use App\Models\Election;
 use App\Models\NationalResult;
 use App\Services\ECTReport69Service;
+use Exception;
 use Illuminate\Console\Command;
 
 class ScrapeECTReport69Command extends Command
@@ -201,7 +202,7 @@ class ScrapeECTReport69Command extends Command
 
             event(new ResultsUpdated($election, $results));
             $this->line('  <fg=cyan>Broadcasted results update</>');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->warn("  Broadcast failed: {$e->getMessage()}");
         }
     }
