@@ -27,22 +27,26 @@ function buildChart() {
     }
 
     const top = props.results.slice(0, props.maxItems);
-    const labels = top.map(r => r.party?.abbreviation || r.party?.name_th?.substring(0, 6) || '?');
-    const data = top.map(r => r[props.valueKey] || 0);
-    const colors = top.map(r => r.party?.color || '#6b7280');
+    const labels = top.map(
+        (r) => r.party?.abbreviation || r.party?.name_th?.substring(0, 6) || '?'
+    );
+    const data = top.map((r) => r[props.valueKey] || 0);
+    const colors = top.map((r) => r.party?.color || '#6b7280');
 
     chartInstance = new Chart(chartCanvas.value, {
         type: 'bar',
         data: {
             labels,
-            datasets: [{
-                data,
-                backgroundColor: colors.map(c => `${c}cc`),
-                borderColor: colors,
-                borderWidth: 1,
-                borderRadius: 6,
-                barPercentage: 0.7,
-            }],
+            datasets: [
+                {
+                    data,
+                    backgroundColor: colors.map((c) => `${c}cc`),
+                    borderColor: colors,
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    barPercentage: 0.7,
+                },
+            ],
         },
         options: {
             responsive: true,

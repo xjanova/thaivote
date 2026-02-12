@@ -4,7 +4,15 @@
 
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue';
-import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
+import {
+    Chart,
+    BarController,
+    BarElement,
+    CategoryScale,
+    LinearScale,
+    Tooltip,
+    Legend,
+} from 'chart.js';
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -25,7 +33,9 @@ function buildChart() {
     }
 
     const top = props.results.slice(0, props.maxItems);
-    const labels = top.map(r => r.party?.abbreviation || r.party?.name_th?.substring(0, 6) || '?');
+    const labels = top.map(
+        (r) => r.party?.abbreviation || r.party?.name_th?.substring(0, 6) || '?'
+    );
 
     chartInstance = new Chart(chartCanvas.value, {
         type: 'bar',
@@ -34,18 +44,18 @@ function buildChart() {
             datasets: [
                 {
                     label: 'แบ่งเขต',
-                    data: top.map(r => r.constituency_seats || 0),
-                    backgroundColor: top.map(r => `${r.party?.color || '#6b7280'}cc`),
-                    borderColor: top.map(r => r.party?.color || '#6b7280'),
+                    data: top.map((r) => r.constituency_seats || 0),
+                    backgroundColor: top.map((r) => `${r.party?.color || '#6b7280'}cc`),
+                    borderColor: top.map((r) => r.party?.color || '#6b7280'),
                     borderWidth: 1,
                     borderRadius: { topLeft: 6, topRight: 6 },
                     barPercentage: 0.7,
                 },
                 {
                     label: 'บัญชีรายชื่อ',
-                    data: top.map(r => r.party_list_seats || 0),
-                    backgroundColor: top.map(r => `${r.party?.color || '#6b7280'}55`),
-                    borderColor: top.map(r => `${r.party?.color || '#6b7280'}99`),
+                    data: top.map((r) => r.party_list_seats || 0),
+                    backgroundColor: top.map((r) => `${r.party?.color || '#6b7280'}55`),
+                    borderColor: top.map((r) => `${r.party?.color || '#6b7280'}99`),
                     borderWidth: 1,
                     borderRadius: { topLeft: 6, topRight: 6 },
                     barPercentage: 0.7,

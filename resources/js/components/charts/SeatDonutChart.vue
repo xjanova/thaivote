@@ -36,9 +36,9 @@ function buildChart() {
     const others = props.results.slice(props.maxItems);
     const othersTotal = others.reduce((s, r) => s + (r.total_seats || 0), 0);
 
-    const labels = top.map(r => r.party?.name_th || r.party?.abbreviation || 'ไม่ทราบ');
-    const data = top.map(r => r.total_seats || 0);
-    const colors = top.map(r => r.party?.color || '#6b7280');
+    const labels = top.map((r) => r.party?.name_th || r.party?.abbreviation || 'ไม่ทราบ');
+    const data = top.map((r) => r.total_seats || 0);
+    const colors = top.map((r) => r.party?.color || '#6b7280');
 
     if (othersTotal > 0) {
         labels.push('พรรคอื่น');
@@ -57,14 +57,16 @@ function buildChart() {
         type: 'doughnut',
         data: {
             labels,
-            datasets: [{
-                data,
-                backgroundColor: colors,
-                borderColor: 'rgba(0,0,0,0.3)',
-                borderWidth: 1,
-                hoverBorderColor: '#fff',
-                hoverBorderWidth: 2,
-            }],
+            datasets: [
+                {
+                    data,
+                    backgroundColor: colors,
+                    borderColor: 'rgba(0,0,0,0.3)',
+                    borderWidth: 1,
+                    hoverBorderColor: '#fff',
+                    hoverBorderWidth: 2,
+                },
+            ],
         },
         options: {
             responsive: true,
