@@ -1,3 +1,14 @@
+## [1.46.0](https://github.com/xjanova/thaivote/compare/v1.45.0...v1.46.0) (2026-02-12)
+
+### ✨ Features
+
+* Integrate real ECT Report 69 API endpoints for election data ([2ebcdf3](https://github.com/xjanova/thaivote/commit/2ebcdf3095865a97a988ad5142ed15ec60b5fe2a))
+
+### 🐛 Bug Fixes
+
+* Downgrade eslint to ^9.39.2 for eslint-plugin-vue compatibility ([a527474](https://github.com/xjanova/thaivote/commit/a5274744ceea88c35b293711a653908208db7787))
+* format ectReport69Data.js with Prettier to pass CI lint check ([bbb85bb](https://github.com/xjanova/thaivote/commit/bbb85bb5bdfbccdcfd19b39ec5b66cc4dcf4f1a4))
+
 ## [1.45.0](https://github.com/xjanova/thaivote/compare/v1.44.1...v1.45.0) (2026-02-09)
 
 ### ✨ Features
