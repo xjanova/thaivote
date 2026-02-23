@@ -15,14 +15,14 @@
         "test:coverage": "vitest run --coverage"
     },
     "devDependencies": {
-        "@tailwindcss/vite": "^4.0.0",
+        "@tailwindcss/vite": "^4.2.0",
         "@vitest/coverage-v8": "^4.0.18",
         "@vue/test-utils": "^2.4.0",
         "axios": "^1.13.5",
         "concurrently": "^9.0.1",
         "eslint": "^9.39.2",
         "eslint-config-prettier": "^10.1.8",
-        "eslint-plugin-vue": "^10.7.0",
+        "eslint-plugin-vue": "^10.8.0",
         "globals": "^17.3.0",
         "jsdom": "^28.0.0",
         "laravel-vite-plugin": "^2.1.0",
